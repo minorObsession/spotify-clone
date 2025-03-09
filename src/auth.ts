@@ -1,5 +1,4 @@
 import { base64encode, generateRandomString, sha256 } from "./auth/authHelpers";
-console.log("script running...");
 const clientId = "91915dd042e1406aa1ca2fef874d5e1b";
 const redirectUri = "http://127.0.0.1:5173/home";
 const scope = "user-read-private user-read-email";
@@ -7,13 +6,21 @@ const scope = "user-read-private user-read-email";
 // Check if we're in the callback with an auth code
 const urlParams = new URLSearchParams(window.location.search);
 let authCode: string | null = urlParams.get("code");
-console.log("authCode:", authCode);
-const storedCodeVerifier = window.localStorage.getItem("code_verifier");
-console.log("storedCodeVerifier:", storedCodeVerifier);
+console.log("TOP OF THE SCRIPT: authCode:", authCode);
+const storedCodeVerifier: string | null =
+  window.localStorage.getItem("code_verifier");
+console.log("TOP OF THE SCRIPT: storedCodeVerifier:", storedCodeVerifier);
 
 // if YES auth code and YES code verifier - request token
 if (authCode && storedCodeVerifier) {
-  await requestToken(authCode, storedCodeVerifier);
+  // is there an active access token in LS ?
+  const isThereAToken = Boolean(localStorage.getItem("access_token"));
+  console.log(isThereAToken);
+
+  // if no active token, request it
+  if (!isThereAToken) await requestToken(authCode, storedCodeVerifier);
+
+  // if token about to expire, refresh it
 }
 
 // If YES auth code but NO code verifier, then start over
@@ -21,12 +28,14 @@ if (authCode && !storedCodeVerifier) {
   localStorage.clear();
   authCode = null;
   // ! re-start flow
+  console.log("If YES auth code but NO code verifier, then start over");
 }
 // If NO auth code but YES code verifier, then start over
 if (!authCode && storedCodeVerifier) {
   localStorage.clear();
   authCode = null;
   // ! re-start flow
+  console.log("If NO auth code but YES code verifier, then start over");
 }
 
 // if NO auth code and NO code verifier - start whole auth flow
@@ -56,7 +65,7 @@ if (!authCode && !storedCodeVerifier) {
 
 async function requestToken(authCode: string | null, codeVerifier: string) {
   try {
-    console.log("Requesting token with code_verifier:", codeVerifier);
+    console.log("Requesting token ...");
     const url = "https://accounts.spotify.com/api/token";
 
     const payload = {

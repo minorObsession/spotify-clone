@@ -63,7 +63,8 @@ if (authCode && storedCodeVerifier) {
 
 async function requestToken(authCode: string, codeVerifier: string) {
   try {
-    console.log("Requesting token with code_verifier:", codeVerifier);
+    console.log("Requesting token with authCode:", authCode);
+    console.log("Requesting token with codeVerifier:", codeVerifier);
     const url = "https://accounts.spotify.com/api/token";
 
     const payload = {
