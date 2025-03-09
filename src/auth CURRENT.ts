@@ -1,39 +1,19 @@
-import { base64encode, generateRandomString, sha256 } from "./auth/authHelpers";
+import { base64encode, generateCodeVerifier, sha256 } from "./auth/authHelpers";
 console.log("script running...");
 const clientId = "91915dd042e1406aa1ca2fef874d5e1b";
 const redirectUri = "http://127.0.0.1:5173/home";
 const scope = "user-read-private user-read-email";
 
-// Check if we're in the callback with an auth code
-const urlParams = new URLSearchParams(window.location.search);
-let authCode = urlParams.get("code");
+let authCode: null | string = null;
 console.log("authCode:", authCode);
-const storedCodeVerifier = window.localStorage.getItem("code_verifier");
+let storedCodeVerifier: null | string = null;
+storedCodeVerifier = window.localStorage.getItem("code_verifier");
 console.log("storedCodeVerifier:", storedCodeVerifier);
 
-// if YES auth code and YES code verifier - request token
-if (authCode && storedCodeVerifier) {
-  await requestToken(authCode, storedCodeVerifier);
-}
-
-// If YES auth code but NO code verifier, then start over
-if (authCode && !storedCodeVerifier) {
-  localStorage.clear();
-  authCode = null;
-  // ! re-start flow
-}
-// If NO auth code but YES code verifier, then start over
-if (!authCode && storedCodeVerifier) {
-  localStorage.clear();
-  authCode = null;
-  // ! re-start flow
-}
-
-// if NO auth code and NO code verifier - start whole auth flow
-if (!authCode && !storedCodeVerifier) {
-  // Generate code challenge from the verifier
-  const codeVerifier = generateRandomString(64);
-  window.localStorage.setItem("code_verifier", codeVerifier);
+const authFlow = async () => {
+  // if (storedCodeVerifier)
+  // Generate code verifier and code challenge from the verifier
+  const codeVerifier = generateCodeVerifier();
   const hashed = await sha256(codeVerifier);
   const codeChallenge = base64encode(hashed);
 
@@ -50,11 +30,38 @@ if (!authCode && !storedCodeVerifier) {
 
   // Append params to URL and then redirect
   authUrl.search = new URLSearchParams(params).toString();
-  console.log("Redirecting to Spotify login...");
   window.location.href = authUrl.toString();
+
+  // after redirect - set auth code based on url
+
+  const urlParams = new URLSearchParams(window.location.search);
+  authCode = urlParams.get("code");
+
+  console.log("flow finished");
+};
+// if NO auth code and NO code verifier - start whole auth flow
+if (!authCode && !storedCodeVerifier) {
+  await authFlow();
 }
 
-async function requestToken(authCode: string | null, codeVerifier: string) {
+// If YES auth code but NO code verifier, generate verifier and then request token
+if (authCode && !storedCodeVerifier) {
+  generateCodeVerifier();
+}
+// If NO auth code but YES code verifier, DELETE code verifier to reset the flow
+if (!authCode && storedCodeVerifier) {
+  localStorage.removeItem("code_verifier");
+  // console.log("code ver removed ... ");
+  await authFlow();
+}
+
+// if YES auth code and YES code verifier - request token
+if (authCode && storedCodeVerifier) {
+  console.log("requesting token...");
+  await requestToken(authCode, storedCodeVerifier);
+}
+
+async function requestToken(authCode: string, codeVerifier: string) {
   try {
     console.log("Requesting token with code_verifier:", codeVerifier);
     const url = "https://accounts.spotify.com/api/token";
@@ -67,7 +74,7 @@ async function requestToken(authCode: string | null, codeVerifier: string) {
       body: new URLSearchParams({
         client_id: clientId,
         grant_type: "authorization_code",
-        code: authCode!,
+        code: authCode,
         redirect_uri: redirectUri,
         code_verifier: codeVerifier,
       }),
@@ -81,13 +88,9 @@ async function requestToken(authCode: string | null, codeVerifier: string) {
       localStorage.setItem("access_token", data.access_token);
       console.log("Authentication successful!");
     } else {
-      localStorage.clear();
-      authCode = null;
       console.error("Authentication failed:", data);
     }
   } catch (err) {
     console.error("Error requesting token:", err);
-    localStorage.clear();
-    authCode = null;
   }
 }
