@@ -6,7 +6,7 @@ const scope = "user-read-private user-read-email";
 
 // Check if we're in the callback with an auth code
 const urlParams = new URLSearchParams(window.location.search);
-let authCode = urlParams.get("code");
+let authCode: string | null = urlParams.get("code");
 console.log("authCode:", authCode);
 const storedCodeVerifier = window.localStorage.getItem("code_verifier");
 console.log("storedCodeVerifier:", storedCodeVerifier);
