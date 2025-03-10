@@ -47,14 +47,31 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
     (accessToken && refreshToken && true) || false
   );
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const codeVerifier = localStorage.getItem("code_verifier") || null;
+
   let authCode = useRef(
     codeVerifier
       ? new URLSearchParams(window.location.search).get("code")
       : null
   );
+
+  // ! TO READ AUTH CODE FORM URL
+  useEffect(() => {
+    if (isAuthenticated) return;
+
+    const isCodePresentInUrl: boolean = new URLSearchParams(
+      window.location.search
+    ).get("code")
+      ? true
+      : false;
+
+    if (isCodePresentInUrl)
+      authCode.current = new URLSearchParams(window.location.search).get(
+        "code"
+      );
+  }, [isAuthenticated]);
 
   // Token request function
   async function requestToken(authCode: string, codeVerifier: string) {
@@ -99,7 +116,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // ! Step 1: CHECK LOCAL STORAGE, IF NO TOKEN THEN REQUEST AUTH CODE
   useEffect(() => {
-    authCode.current = null;
+    // authCode.current = null;
     if (isAuthenticated) {
       console.log("USER isAuthenticated ✅ NOT GONNA START initializeAuth");
       return;
@@ -109,7 +126,14 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     async function requestAuthCodeAndRedirect() {
       if (isAuthenticated || accessToken || refreshToken) {
         console.log("✅ ALREADY AUTHENTICATED ");
+        return;
       }
+
+      if (authCode.current !== null) {
+        console.log("authCode:", authCode);
+        return;
+      }
+
       // Generate code challenge from the verifier
       const codeVerifier = generateRandomString(64);
       window.localStorage.setItem("code_verifier", codeVerifier);
@@ -135,9 +159,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       window.location.href = authUrl.toString();
     }
 
-    const initializeAuth = async () => {
-      console.log("initializeAuth running...");
-
+    async function initializeAuth() {
       try {
         setIsLoading(true);
 
@@ -149,13 +171,11 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
           setAccessToken(storedAccessToken);
           setRefreshToken(storedRefreshToken);
           setIsAuthenticated(true);
-          setIsLoading(false);
           console.log("✅ USER IS Authenticated!!!");
           return;
         }
 
         // ! if no token in LS
-
         await requestAuthCodeAndRedirect();
       } catch (error) {
         console.error("Auth initialization error:", error);
@@ -163,20 +183,25 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false);
         console.log("step1 effect finished");
       }
-    };
+    }
 
     initializeAuth();
   }, [isAuthenticated, accessToken, refreshToken]);
 
   // ! Step 2: RETRIEVE AUTH CODE FROM URL THEN REQUEST TOKEN
   useEffect(() => {
-    // const codeVerifier = localStorage.getItem("code_verifier");
     if (isAuthenticated || !codeVerifier || authCode.current === null) {
-      console.log("STOPPING STEP 2:", "isAuthenticated:", isAuthenticated);
+      console.log(
+        "STOPPING STEP 2:",
+        "isAuthenticated:",
+        isAuthenticated === true && "✅"
+      );
       return;
     }
-
-    requestToken(authCode.current, codeVerifier);
+    if (authCode.current !== null && typeof authCode.current === "string") {
+      console.log("starting the token request..");
+      requestToken(authCode.current, codeVerifier);
+    }
   }, [authCode, isAuthenticated, codeVerifier]);
 
   // Login function

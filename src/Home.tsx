@@ -1,15 +1,16 @@
 import { NavLink } from "react-router-dom";
-// import { isUserAuthorized } from "./auth/auth";
+// import { useAuth } from "./auth/AuthContext";
 // import { useEffect } from "react";
 
 function Home() {
-  // ! clean up the url
+  // const { isAuthenticated } = useAuth();
 
+  // ! clean up the url
   // useEffect(() => {
-  //   if (!isUserAuthorized) return;
+  //   if (!isAuthenticated) return;
   //   // Get current URL without query parameters
   //   const url = new URL(window.location.href);
-
+  //   console.log(url);
   //   // If the URL has a 'code' parameter, remove it
   //   if (url.searchParams.has("code")) {
   //     url.searchParams.delete("code");
@@ -17,7 +18,7 @@ function Home() {
   //     // Use history.replaceState to update the URL without reloading the page
   //     window.history.replaceState({}, document.title, url.toString());
   //   }
-  // }, []);
+  // }, [isAuthenticated]);
 
   return (
     <div>

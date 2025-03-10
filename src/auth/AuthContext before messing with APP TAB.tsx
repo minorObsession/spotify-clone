@@ -1,5 +1,11 @@
 // src/auth/AuthContext.tsx
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 import { base64encode, generateRandomString, sha256 } from "./authHelpers";
 
 // Configuration
@@ -17,7 +23,7 @@ interface AuthContextType {
   accessToken: string | null;
   refreshToken: string | null;
   login?: () => Promise<void>;
-  logout: () => void;
+  logout?: () => void;
   isLoading: boolean;
 }
 
@@ -32,15 +38,45 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [refreshToken, setRefreshToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [accessToken, setAccessToken] = useState<string | null>(
+    localStorage.getItem("access_token") || null
+  );
+  const [refreshToken, setRefreshToken] = useState<string | null>(
+    localStorage.getItem("refresh_token") || null
+  );
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
+    (accessToken && refreshToken && true) || false
+  );
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const codeVerifier = localStorage.getItem("code_verifier") || null;
+
+  let authCode = useRef(
+    codeVerifier
+      ? new URLSearchParams(window.location.search).get("code")
+      : null
+  );
+
+  // ! TO READ AUTH CODE FORM URL
+  useEffect(() => {
+    if (isAuthenticated) return;
+
+    const isCodePresentInUrl: boolean = new URLSearchParams(
+      window.location.search
+    ).get("code")
+      ? true
+      : false;
+
+    if (isCodePresentInUrl)
+      authCode.current = new URLSearchParams(window.location.search).get(
+        "code"
+      );
+  }, [isAuthenticated]);
+
   // Token request function
-  const requestToken = async (authCode: string, codeVerifier: string) => {
+  async function requestToken(authCode: string, codeVerifier: string) {
     console.log("requestToken running...");
 
-    // setTimeout(() => {}, 5000);
     try {
       const response = await fetch(AUTH_CONFIG.tokenUrl, {
         method: "POST",
@@ -68,24 +104,62 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         return true;
       } else {
         console.error("Authentication failed:", data);
-        logout();
+        // logout();
         return false;
       }
     } catch (error) {
       console.error("Error requesting token:", error);
-      logout();
+      // logout();
       return false;
     }
-  };
-  // Initialize authentication state
+  }
+
+  // ! Step 1: CHECK LOCAL STORAGE, IF NO TOKEN THEN REQUEST AUTH CODE
   useEffect(() => {
-    if (isAuthenticated) return;
+    // authCode.current = null;
+    if (isAuthenticated) {
+      console.log("USER isAuthenticated ✅ NOT GONNA START initializeAuth");
+      return;
+    } else {
+      // console.log('user NOT authenticated.. mocing ')
+    }
+    async function requestAuthCodeAndRedirect() {
+      if (isAuthenticated || accessToken || refreshToken) {
+        console.log("✅ ALREADY AUTHENTICATED ");
+        return;
+      }
 
-    console.log("effect running...");
+      if (authCode.current !== null) {
+        console.log("authCode:", authCode);
+        return;
+      }
 
-    const initializeAuth = async () => {
-      console.log("initializeAuth running...");
+      // Generate code challenge from the verifier
+      const codeVerifier = generateRandomString(64);
+      window.localStorage.setItem("code_verifier", codeVerifier);
+      window.sessionStorage.setItem("code_verifier", codeVerifier);
+      const hashed = await sha256(codeVerifier);
+      const codeChallenge = base64encode(hashed);
 
+      // Build authorization URL
+      const authUrl = new URL("https://accounts.spotify.com/authorize");
+      const params = {
+        response_type: "code",
+        client_id: AUTH_CONFIG.clientId,
+        scope: AUTH_CONFIG.scope,
+        code_challenge_method: "S256",
+        code_challenge: codeChallenge,
+        redirect_uri: AUTH_CONFIG.redirectUri,
+      };
+
+      // Append params to URL and then redirect
+      authUrl.search = new URLSearchParams(params).toString();
+      console.log("Redirecting to Spotify login...");
+
+      window.location.href = authUrl.toString();
+    }
+
+    async function initializeAuth() {
       try {
         setIsLoading(true);
 
@@ -97,50 +171,38 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
           setAccessToken(storedAccessToken);
           setRefreshToken(storedRefreshToken);
           setIsAuthenticated(true);
-          setIsLoading(false);
-          console.log("token found and stored in state.. EFFECT DONE");
+          console.log("✅ USER IS Authenticated!!!");
           return;
         }
-        console.log("effect did not find token in LS, continuing...");
-        // ! IF NO ACCESS TOKEN IN LS
-        const urlParams = new URLSearchParams(window.location.search);
-        let authCode: string | null = urlParams.get("code");
-        const storedCodeVerifier: string | null =
-          window.localStorage.getItem("code_verifier");
-        console.log("authCode:", authCode);
-        console.log("code_verifier:", storedCodeVerifier);
 
-        if (authCode && storedCodeVerifier) {
-          // Exchange code for token
-          await requestToken(authCode, storedCodeVerifier);
-          // ! NOT COMPLETELY FOLLOWING
-          // Clean up URL without reloading the page
-          window.history.replaceState(
-            {},
-            document.title,
-            window.location.pathname
-          );
-        } else if (
-          // ! PROBABLY THE SAME AS: (!authCode || !storedCodeVerifier)
-          (authCode && !storedCodeVerifier) ||
-          (!authCode && storedCodeVerifier)
-        ) {
-          // Inconsistent state, clear everything and start over
-          localStorage.removeItem("code_verifier");
-          localStorage.removeItem("access_token");
-          localStorage.removeItem("refresh_token");
-          setIsAuthenticated(false);
-        }
-
-        setIsLoading(false);
+        // ! if no token in LS
+        await requestAuthCodeAndRedirect();
       } catch (error) {
         console.error("Auth initialization error:", error);
+      } finally {
         setIsLoading(false);
+        console.log("step1 effect finished");
       }
-    };
+    }
 
     initializeAuth();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, accessToken, refreshToken]);
+
+  // ! Step 2: RETRIEVE AUTH CODE FROM URL THEN REQUEST TOKEN
+  useEffect(() => {
+    if (isAuthenticated || !codeVerifier || authCode.current === null) {
+      console.log(
+        "STOPPING STEP 2:",
+        "isAuthenticated:",
+        isAuthenticated === true && "✅"
+      );
+      return;
+    }
+    if (authCode.current !== null && typeof authCode.current === "string") {
+      console.log("starting the token request..");
+      requestToken(authCode.current, codeVerifier);
+    }
+  }, [authCode, isAuthenticated, codeVerifier]);
 
   // Login function
 
@@ -176,15 +238,15 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   //   }
   // };
 
-  // Logout function
-  const logout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("code_verifier");
-    setAccessToken(null);
-    setRefreshToken(null);
-    setIsAuthenticated(false);
-  };
+  // // Logout function
+  // const logout = () => {
+  //   localStorage.removeItem("access_token");
+  //   localStorage.removeItem("refresh_token");
+  //   localStorage.removeItem("code_verifier");
+  //   setAccessToken(null);
+  //   setRefreshToken(null);
+  //   setIsAuthenticated(false);
+  // };
 
   // Context value
   const contextValueObject: AuthContextType = {
@@ -192,7 +254,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     accessToken,
     refreshToken,
     // login,
-    logout,
+    // logout,
     isLoading,
   };
 
