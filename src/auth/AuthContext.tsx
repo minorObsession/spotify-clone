@@ -57,27 +57,26 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       : null
   );
 
-  // ! TO READ AUTH CODE FORM URL
-  useEffect(() => {
-    if (isAuthenticated) return;
+  // // ! TO READ AUTH CODE FORM URL
+  // useEffect(() => {
+  //   if (isAuthenticated) return;
 
-    const isCodePresentInUrl: boolean = new URLSearchParams(
-      window.location.search
-    ).get("code")
-      ? true
-      : false;
+  //   const isCodePresentInUrl: boolean = new URLSearchParams(
+  //     window.location.search
+  //   ).get("code")
+  //     ? true
+  //     : false;
 
-    if (isCodePresentInUrl)
-      authCode.current = new URLSearchParams(window.location.search).get(
-        "code"
-      );
-  }, [isAuthenticated]);
+  //   if (isCodePresentInUrl)
+  //     authCode.current = new URLSearchParams(window.location.search).get(
+  //       "code"
+  //     );
+  // }, [isAuthenticated]);
 
   // Token request function
   async function requestToken(authCode: string, codeVerifier: string) {
-    console.log("requestToken running...");
-
     try {
+      console.log("requestToken running...");
       const response = await fetch(AUTH_CONFIG.tokenUrl, {
         method: "POST",
         headers: {
@@ -120,24 +119,25 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     if (isAuthenticated) {
       console.log("USER isAuthenticated ✅ NOT GONNA START initializeAuth");
       return;
-    } else {
-      // console.log('user NOT authenticated.. mocing ')
     }
+
     async function requestAuthCodeAndRedirect() {
-      if (isAuthenticated || accessToken || refreshToken) {
+      if (isAuthenticated) {
         console.log("✅ ALREADY AUTHENTICATED ");
         return;
       }
 
       if (authCode.current !== null) {
-        console.log("authCode:", authCode);
+        console.log(
+          "authCode exists so no need to request it.. authCode:",
+          authCode
+        );
         return;
       }
 
       // Generate code challenge from the verifier
       const codeVerifier = generateRandomString(64);
       window.localStorage.setItem("code_verifier", codeVerifier);
-      window.sessionStorage.setItem("code_verifier", codeVerifier);
       const hashed = await sha256(codeVerifier);
       const codeChallenge = base64encode(hashed);
 
@@ -155,7 +155,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       // Append params to URL and then redirect
       authUrl.search = new URLSearchParams(params).toString();
       console.log("Redirecting to Spotify login...");
-
       window.location.href = authUrl.toString();
     }
 
@@ -171,7 +170,9 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
           setAccessToken(storedAccessToken);
           setRefreshToken(storedRefreshToken);
           setIsAuthenticated(true);
-          console.log("✅ USER IS Authenticated!!!");
+          console.log(
+            "✅ USER IS Authenticated! the requestAuthCodeAndRedirect will never run !!"
+          );
           return;
         }
 
@@ -194,7 +195,9 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log(
         "STOPPING STEP 2:",
         "isAuthenticated:",
-        isAuthenticated === true && "✅"
+        isAuthenticated === true && "✅",
+        "authCode:",
+        authCode.current
       );
       return;
     }
@@ -202,7 +205,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log("starting the token request..");
       requestToken(authCode.current, codeVerifier);
     }
-  }, [authCode, isAuthenticated, codeVerifier]);
+  }, [isAuthenticated, codeVerifier]);
 
   // Login function
 
