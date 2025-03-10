@@ -9,13 +9,8 @@ interface ProtectedRouteProps {
 
 // ! ASSUMING there is a useAuth() context hook!
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated } = useAuth();
   const location = useLocation();
-
-  if (isLoading) {
-    // You could return a loading spinner here
-    return <div>Loading authentication...</div>;
-  }
 
   if (!isAuthenticated) {
     // Redirect to root if not authenticated

@@ -1,16 +1,25 @@
-import { Outlet } from "react-router";
+import { Outlet, useNavigate } from "react-router";
+import { useAuth } from "./auth/AuthContext";
+import { useEffect } from "react";
 
 function Root() {
-  return (
-    <>
-      <menu className="header">
-        <li>link1</li>
-        <li>link2</li>
-        <li>link3</li>
-      </menu>
-      <Outlet />
-    </>
-  );
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated && window.location.pathname === "/") navigate("home");
+  }, [isAuthenticated, navigate]);
+
+  // if (!isAuthenticated)
+  //   return (
+  //     <>
+  //       <h1>this is the root page - no user authenticated</h1>;
+  //       <button className="">Login</button>
+  //     </>
+  //   );
+
+  // ! if authenticatd user
+  return <Outlet />;
 }
 
 export default Root;
