@@ -38,14 +38,20 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(
+    localStorage.getItem("access_token") || null
+  );
+  const [refreshToken, setRefreshToken] = useState<string | null>(
+    localStorage.getItem("refresh_token") || null
+  );
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
+    (accessToken && refreshToken && true) || false
+  );
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const codeVerifierPresent = localStorage.getItem("code_verifier") || false;
+  const codeVerifier = localStorage.getItem("code_verifier") || null;
   let authCode = useRef(
-    codeVerifierPresent
+    codeVerifier
       ? new URLSearchParams(window.location.search).get("code")
       : null
   );
@@ -54,7 +60,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   async function requestToken(authCode: string, codeVerifier: string) {
     console.log("requestToken running...");
 
-    // setTimeout(() => {}, 5000);
     try {
       const response = await fetch(AUTH_CONFIG.tokenUrl, {
         method: "POST",
@@ -92,37 +97,42 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  async function requestAuthCodeAndRedirect() {
-    // Generate code challenge from the verifier
-    const codeVerifier = generateRandomString(64);
-    window.localStorage.setItem("code_verifier", codeVerifier);
-    window.sessionStorage.setItem("code_verifier", codeVerifier);
-    const hashed = await sha256(codeVerifier);
-    const codeChallenge = base64encode(hashed);
-
-    // Build authorization URL
-    const authUrl = new URL("https://accounts.spotify.com/authorize");
-    const params = {
-      response_type: "code",
-      client_id: AUTH_CONFIG.clientId,
-      scope: AUTH_CONFIG.scope,
-      code_challenge_method: "S256",
-      code_challenge: codeChallenge,
-      redirect_uri: AUTH_CONFIG.redirectUri,
-    };
-
-    // Append params to URL and then redirect
-    authUrl.search = new URLSearchParams(params).toString();
-    console.log("Redirecting to Spotify login...");
-    window.location.href = authUrl.toString();
-  }
-
   // ! Step 1: CHECK LOCAL STORAGE, IF NO TOKEN THEN REQUEST AUTH CODE
   useEffect(() => {
     authCode.current = null;
     if (isAuthenticated) {
       console.log("USER isAuthenticated ✅ NOT GONNA START initializeAuth");
       return;
+    } else {
+      // console.log('user NOT authenticated.. mocing ')
+    }
+    async function requestAuthCodeAndRedirect() {
+      if (isAuthenticated || accessToken || refreshToken) {
+        console.log("✅ ALREADY AUTHENTICATED ");
+      }
+      // Generate code challenge from the verifier
+      const codeVerifier = generateRandomString(64);
+      window.localStorage.setItem("code_verifier", codeVerifier);
+      window.sessionStorage.setItem("code_verifier", codeVerifier);
+      const hashed = await sha256(codeVerifier);
+      const codeChallenge = base64encode(hashed);
+
+      // Build authorization URL
+      const authUrl = new URL("https://accounts.spotify.com/authorize");
+      const params = {
+        response_type: "code",
+        client_id: AUTH_CONFIG.clientId,
+        scope: AUTH_CONFIG.scope,
+        code_challenge_method: "S256",
+        code_challenge: codeChallenge,
+        redirect_uri: AUTH_CONFIG.redirectUri,
+      };
+
+      // Append params to URL and then redirect
+      authUrl.search = new URLSearchParams(params).toString();
+      console.log("Redirecting to Spotify login...");
+
+      window.location.href = authUrl.toString();
     }
 
     const initializeAuth = async () => {
@@ -156,18 +166,18 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     initializeAuth();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, accessToken, refreshToken]);
 
   // ! Step 2: RETRIEVE AUTH CODE FROM URL THEN REQUEST TOKEN
   useEffect(() => {
-    const codeVerifier = localStorage.getItem("code_verifier");
+    // const codeVerifier = localStorage.getItem("code_verifier");
     if (isAuthenticated || !codeVerifier || authCode.current === null) {
       console.log("STOPPING STEP 2:", "isAuthenticated:", isAuthenticated);
       return;
     }
 
     requestToken(authCode.current, codeVerifier);
-  }, [authCode, isAuthenticated]);
+  }, [authCode, isAuthenticated, codeVerifier]);
 
   // Login function
 
