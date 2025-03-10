@@ -7,7 +7,6 @@ import React, {
   useRef,
 } from "react";
 import { base64encode, generateRandomString, sha256 } from "./authHelpers";
-import { useSearchParams } from "react-router-dom";
 
 // Configuration
 const AUTH_CONFIG = {
@@ -121,10 +120,8 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   // ! Step 1: CHECK LOCAL STORAGE, IF NO TOKEN THEN REQUEST AUTH CODE
   useEffect(() => {
     authCode.current = null;
-    if (isAuthenticated || authCode.current !== null) {
-      console.log(
-        "isAuthenticated or authCode present.. NOT GONNA START initializeAuth"
-      );
+    if (isAuthenticated) {
+      console.log("USER isAuthenticated ✅ NOT GONNA START initializeAuth");
       return;
     }
 
@@ -143,7 +140,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
           setRefreshToken(storedRefreshToken);
           setIsAuthenticated(true);
           setIsLoading(false);
-          console.log("✅ USER IS AUTHORIZED");
+          console.log("✅ USER IS Authenticated!!!");
           return;
         }
 
