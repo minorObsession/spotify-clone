@@ -1,13 +1,6 @@
 // src/auth/AuthContext.tsx
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useRef,
-} from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { base64encode, generateRandomString, sha256 } from "./authHelpers";
-import { useSearchParams } from "react-router-dom";
 
 // Configuration
 const AUTH_CONFIG = {
@@ -24,7 +17,7 @@ interface AuthContextType {
   accessToken: string | null;
   refreshToken: string | null;
   login?: () => Promise<void>;
-  logout?: () => void;
+  logout: () => void;
   isLoading: boolean;
 }
 
@@ -43,16 +36,8 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  const codeVerifierPresent = localStorage.getItem("code_verifier") || false;
-  let authCode = useRef(
-    codeVerifierPresent
-      ? new URLSearchParams(window.location.search).get("code")
-      : null
-  );
-
   // Token request function
-  async function requestToken(authCode: string, codeVerifier: string) {
+  const requestToken = async (authCode: string, codeVerifier: string) => {
     console.log("requestToken running...");
 
     // setTimeout(() => {}, 5000);
@@ -83,50 +68,20 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         return true;
       } else {
         console.error("Authentication failed:", data);
-        // logout();
+        logout();
         return false;
       }
     } catch (error) {
       console.error("Error requesting token:", error);
-      // logout();
+      logout();
       return false;
     }
-  }
-
-  async function requestAuthCodeAndRedirect() {
-    // Generate code challenge from the verifier
-    const codeVerifier = generateRandomString(64);
-    window.localStorage.setItem("code_verifier", codeVerifier);
-    window.sessionStorage.setItem("code_verifier", codeVerifier);
-    const hashed = await sha256(codeVerifier);
-    const codeChallenge = base64encode(hashed);
-
-    // Build authorization URL
-    const authUrl = new URL("https://accounts.spotify.com/authorize");
-    const params = {
-      response_type: "code",
-      client_id: AUTH_CONFIG.clientId,
-      scope: AUTH_CONFIG.scope,
-      code_challenge_method: "S256",
-      code_challenge: codeChallenge,
-      redirect_uri: AUTH_CONFIG.redirectUri,
-    };
-
-    // Append params to URL and then redirect
-    authUrl.search = new URLSearchParams(params).toString();
-    console.log("Redirecting to Spotify login...");
-    window.location.href = authUrl.toString();
-  }
-
-  // ! Step 1: CHECK LOCAL STORAGE, IF NO TOKEN THEN REQUEST AUTH CODE
+  };
+  // Initialize authentication state
   useEffect(() => {
-    authCode.current = null;
-    if (isAuthenticated || authCode.current !== null) {
-      console.log(
-        "isAuthenticated or authCode present.. NOT GONNA START initializeAuth"
-      );
-      return;
-    }
+    if (isAuthenticated) return;
+
+    console.log("effect running...");
 
     const initializeAuth = async () => {
       console.log("initializeAuth running...");
@@ -143,34 +98,49 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
           setRefreshToken(storedRefreshToken);
           setIsAuthenticated(true);
           setIsLoading(false);
-          console.log("✅ USER IS AUTHORIZED");
+          console.log("token found and stored in state.. EFFECT DONE");
           return;
         }
+        console.log("effect did not find token in LS, continuing...");
+        // ! IF NO ACCESS TOKEN IN LS
+        const urlParams = new URLSearchParams(window.location.search);
+        let authCode: string | null = urlParams.get("code");
+        const storedCodeVerifier: string | null =
+          window.localStorage.getItem("code_verifier");
+        console.log("authCode:", authCode);
+        console.log("code_verifier:", storedCodeVerifier);
 
-        // ! if no token in LS
+        if (authCode && storedCodeVerifier) {
+          // Exchange code for token
+          await requestToken(authCode, storedCodeVerifier);
+          // ! NOT COMPLETELY FOLLOWING
+          // Clean up URL without reloading the page
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+          );
+        } else if (
+          // ! PROBABLY THE SAME AS: (!authCode || !storedCodeVerifier)
+          (authCode && !storedCodeVerifier) ||
+          (!authCode && storedCodeVerifier)
+        ) {
+          // Inconsistent state, clear everything and start over
+          localStorage.removeItem("code_verifier");
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("refresh_token");
+          setIsAuthenticated(false);
+        }
 
-        await requestAuthCodeAndRedirect();
+        setIsLoading(false);
       } catch (error) {
         console.error("Auth initialization error:", error);
-      } finally {
         setIsLoading(false);
-        console.log("step1 effect finished");
       }
     };
 
     initializeAuth();
   }, [isAuthenticated]);
-
-  // ! Step 2: RETRIEVE AUTH CODE FROM URL THEN REQUEST TOKEN
-  useEffect(() => {
-    const codeVerifier = localStorage.getItem("code_verifier");
-    if (isAuthenticated || !codeVerifier || authCode.current === null) {
-      console.log("STOPPING STEP 2:", "isAuthenticated:", isAuthenticated);
-      return;
-    }
-
-    requestToken(authCode.current, codeVerifier);
-  }, [authCode, isAuthenticated]);
 
   // Login function
 
@@ -206,15 +176,15 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   //   }
   // };
 
-  // // Logout function
-  // const logout = () => {
-  //   localStorage.removeItem("access_token");
-  //   localStorage.removeItem("refresh_token");
-  //   localStorage.removeItem("code_verifier");
-  //   setAccessToken(null);
-  //   setRefreshToken(null);
-  //   setIsAuthenticated(false);
-  // };
+  // Logout function
+  const logout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("code_verifier");
+    setAccessToken(null);
+    setRefreshToken(null);
+    setIsAuthenticated(false);
+  };
 
   // Context value
   const contextValueObject: AuthContextType = {
@@ -222,7 +192,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     accessToken,
     refreshToken,
     // login,
-    // logout,
+    logout,
     isLoading,
   };
 
