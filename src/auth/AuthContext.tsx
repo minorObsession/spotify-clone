@@ -17,10 +17,17 @@ const AUTH_CONFIG = {
   tokenUrl: "https://accounts.spotify.com/api/token",
 };
 
+interface AccessTokenType {
+  expiresAtDate?: string;
+  now?: string;
+  expiresAt: number;
+  token: string;
+}
+
 // Type definitions
 interface AuthContextType {
   isAuthenticated: boolean;
-  accessToken: string | null;
+  accessToken: AccessTokenType | null;
   refreshToken: string | null;
   logout: () => void;
   isLoading: boolean;
@@ -36,9 +43,12 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [accessToken, setAccessToken] = useState<string | null>(
-    localStorage.getItem("access_token") || null
-  );
+  const [accessToken, setAccessToken] = useState<AccessTokenType | null>(() => {
+    return JSON.parse(
+      localStorage.getItem("access_token") || "null"
+    ) as AccessTokenType | null;
+  });
+
   const [refreshToken, setRefreshToken] = useState<string | null>(
     localStorage.getItem("refresh_token") || null
   );
@@ -64,15 +74,17 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     async function initializeAuth() {
+      if (isAuthenticated) return;
       try {
         setIsLoading(true);
 
         // Check for stored tokens first
         const storedAccessToken = localStorage.getItem("access_token");
+        console.log(storedAccessToken);
         const storedRefreshToken = localStorage.getItem("refresh_token");
 
         if (storedAccessToken) {
-          setAccessToken(storedAccessToken);
+          setAccessToken(JSON.parse(storedAccessToken));
           setRefreshToken(storedRefreshToken);
           setIsAuthenticated(true);
           console.log(
@@ -172,19 +184,19 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             JSON.stringify({
               token: data.access_token,
               expiresAt: Date.now() + data.expires_in * 1000,
+              expiresAtDate: new Date(Date.now() + data.expires_in * 1000),
+              now: new Date(Date.now()),
             })
           );
           localStorage.setItem("refresh_token", data.refresh_token);
-          setAccessToken(data.access_token);
+          const tokenFromLs = localStorage.getItem("access_token");
+          setAccessToken(JSON.parse(tokenFromLs!));
           setRefreshToken(data.refresh_token);
           setIsAuthenticated(true);
           console.log(
             "✅ both tokens successfully stored - user authenticated"
           );
-        } else {
-          console.error("Authentication failed:", data);
-          // logout();
-        }
+        } else throw new Error("token could not be fetched");
       } catch (error) {
         console.error("Error requesting token:", error);
         // logout();
@@ -192,57 +204,69 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, codeVerifier, accessToken]);
 
+  // ! run refresh 5 min before token expiry
   useEffect(() => {
-    const safetyNetForRefresh = 59 * 60 * 1000; // 59 minutes
-    let accessTokenExpiresAt: number;
+    async function autoRefreshToken() {
+      try {
+        if (!refreshToken) throw new Error("refresh token could not be found!");
 
-    const accessTokenRaw = localStorage.getItem("access_token");
-    if (accessTokenRaw !== null) {
-      accessTokenExpiresAt = JSON.parse(accessTokenRaw);
-      console.log(accessTokenExpiresAt);
-    } else {
-      console.log("No access token found in localStorage.");
+        const payload = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            grant_type: "refresh_token",
+            refresh_token: refreshToken,
+            client_id: AUTH_CONFIG.clientId,
+          }),
+        };
+        const response = await fetch(AUTH_CONFIG.tokenUrl, payload);
+        const data = await response.json();
+        if (response.ok) {
+          localStorage.setItem(
+            "access_token",
+            JSON.stringify({
+              token: data.access_token,
+              expiresAt: Date.now() + data.expires_in * 1000,
+              expiresAtDate: new Date(Date.now() + data.expires_in * 1000),
+              now: new Date(Date.now()),
+            })
+          );
+          localStorage.setItem("refresh_token", data.refresh_token);
+          const tokenFromLs = localStorage.getItem("access_token");
+          setAccessToken(JSON.parse(tokenFromLs!));
+          setRefreshToken(data.refresh_token);
+          setIsAuthenticated(true);
+          console.log(
+            "✅ both tokens successfully stored - user authenticated"
+          );
+        } else throw new Error("refreshing failed - respones was bad..");
+
+        console.log("✅ token sucessfully refreshed!!!!");
+      } catch (err) {
+        console.error("🛑 ERROR", err);
+      }
     }
 
-    // ! need to subscribe to currentTime
-    // debugger;
+    // !!!! PROBLEMS:
+    // effect only running on first mount
+    // keeps running after successfull retreival
+
+    const safetyNetMinutes = 59;
 
     // ! every 30s check access token against currentTime
     setInterval(() => {
-      const minutesLeft =
-        (accessTokenExpiresAt - Date.now() - safetyNetForRefresh) / 1000 / 60;
+      if (!accessToken?.expiresAt) return;
+      const minutesLeft = (accessToken?.expiresAt - Date.now()) / 1000 / 60;
       console.log("minuteLeft:", minutesLeft);
-      if (accessTokenExpiresAt && minutesLeft < 10) {
+
+      if (minutesLeft < safetyNetMinutes) {
         // ! run refresh fn
-        console.log("run refresh");
+        autoRefreshToken();
       }
-    }, 30000);
-    // ! 59 min earlier, refresh token
-  }, []);
-  // async function autoRefreshToken(params: type) {
-  //   // refresh token that has been previously stored
-  //   const refreshToken = localStorage.getItem("refresh_token");
-  //   const url = "https://accounts.spotify.com/api/token";
-
-  //   const payload = {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/x-www-form-urlencoded",
-  //     },
-  //     body: new URLSearchParams({
-  //       grant_type: "refresh_token",
-  //       refresh_token: refreshToken,
-  //       client_id: clientId,
-  //     }),
-  //   };
-  //   const body = await fetch(AUTH_CONFIG.tokenUrl, payload);
-  //   const response = await body.json();
-
-  //   localStorage.setItem("access_token", response.accessToken);
-  //   if (response.refreshToken) {
-  //     localStorage.setItem("refresh_token", response.refreshToken);
-  //   }
-  // }
+    }, 5000);
+  }, [accessToken?.expiresAt, refreshToken]);
 
   // Logout function
 
