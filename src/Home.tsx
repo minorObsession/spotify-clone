@@ -1,9 +1,17 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext";
 import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "./state/store";
+import { getUserAsync } from "./state/user/user";
+import Header from "./components/Header";
+import Sidebar from "./components/Sidebar";
 
 function Home() {
   const { isAuthenticated, logout } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
+
+  // const userPhoto = useSelector((state: RootState) => state.user.photo);
 
   // ! clean up the url if auth code is present in it
   useEffect(() => {
@@ -21,11 +29,15 @@ function Home() {
 
   return (
     <div>
-      <h1>homepage</h1>
-      <NavLink to="/other">GO TO OTHER PAGE</NavLink>
+      <Header />
+      <Sidebar />
+      <main>
+        <Outlet />
+      </main>
       <button onClick={logout} className="">
         Logout
       </button>
+      <button onClick={() => dispatch(getUserAsync())}>GET USER</button>
     </div>
   );
 }

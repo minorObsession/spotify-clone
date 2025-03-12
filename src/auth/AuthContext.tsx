@@ -16,7 +16,6 @@ const AUTH_CONFIG = {
   authUrl: "https://accounts.spotify.com/authorize",
   tokenUrl: "https://accounts.spotify.com/api/token",
 };
-
 interface AccessTokenType {
   expiresAtDate?: string;
   now?: string;
@@ -206,7 +205,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // ! run refresh 5 min before token expiry
   useEffect(() => {
-    console.log("interval based effect just ran");
     async function autoRefreshToken() {
       try {
         if (!refreshToken) throw new Error("refresh token could not be found!");

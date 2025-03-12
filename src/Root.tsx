@@ -10,15 +10,6 @@ function Root() {
     if (isAuthenticated && window.location.pathname === "/") navigate("home");
   }, [isAuthenticated, navigate]);
 
-  // if (!isAuthenticated)
-  //   return (
-  //     <>
-  //       <h1>this is the root page - no user authenticated</h1>;
-  //       <button className="">Login</button>
-  //     </>
-  //   );
-
-  // ! if authenticatd user
   return <Outlet />;
 }
 
