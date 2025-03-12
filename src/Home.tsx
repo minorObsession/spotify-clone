@@ -1,8 +1,7 @@
-import { NavLink, Outlet, useLoaderData } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext";
-import { use, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "./state/store";
+import { useEffect } from "react";
+
 import Sidebar from "./components/Sidebar";
 import { useScreenWidthRem } from "./hooks/useScreenWidthRem";
 import MobileNav from "./components/MobileNav";

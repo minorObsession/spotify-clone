@@ -3,7 +3,6 @@ import { RootState } from "../state/store";
 
 function UserAvatar() {
   const userPhoto = useSelector((state: RootState) => state.user.photo);
-  console.log(userPhoto);
 
   if (!userPhoto) return null;
 
