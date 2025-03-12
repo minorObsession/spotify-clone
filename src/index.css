@@ -1,3 +1,66 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .text-2xs {
+    font-size: 0.85rem; /* 10.4px */
+    line-height: 0.8rem; /* Adjust line-height for readability */
+  }
+
+  .grid-layout-m {
+    display: grid;
+    /* grid-template-columns: 1fr; */
+    grid-template-rows: auto 10fr 1fr auto;
+    grid-template-areas:
+      "top"
+      "main"
+      "playback"
+      "nav";
+  }
+
+  .grid-top-m {
+    grid-area: top;
+  }
+
+  .grid-main-m {
+    grid-area: main;
+  }
+
+  .grid-playback-m {
+    grid-area: playback;
+  }
+
+  .grid-nav-m {
+    grid-area: nav;
+  }
+
+  /* ! LARGE */
+  .grid-layout-l {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    grid-template-rows: 0.5fr 10fr 1.5fr;
+    grid-template-areas:
+      "nav nav"
+      "sidebar main"
+      "playback playback";
+  }
+
+  .grid-nav-l {
+    grid-area: nav;
+  }
+
+  .grid-sidebar-l {
+    grid-area: sidebar;
+  }
+
+  .grid-main-l {
+    grid-area: main;
+  }
+
+  .grid-playback-l {
+    grid-area: playback;
+  }
+}
+
 body {
   margin: 0 auto;
 }

@@ -1,5 +1,7 @@
+// ! ONLY FOR DESKTOP VIEW
+
 function Sidebar() {
-  return <div></div>;
+  return <aside className={``}>{/*  */}</aside>;
 }
 
 export default Sidebar;

@@ -4,12 +4,20 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "./state/store";
 import { getUserAsync } from "./state/user/user";
-import Header from "./components/Header";
+import DesktopNav from "./components/DesktopNav";
 import Sidebar from "./components/Sidebar";
+import { useScreenWidthRem } from "./hooks/useScreenWidthRem";
+import MobileNav from "./components/MobileNav";
+import DesktopPlayback from "./components/DesktopPlayback";
+import MobilePlayback from "./components/MobilePlayback";
+import MobileHeader from "./components/MobileHeader";
+import RecTabs from "./components/MobileHeaderTabs";
+import RecentlyPlayed from "./components/RecentlyPlayed";
 
 function Home() {
   const { isAuthenticated, logout } = useAuth();
   const dispatch = useDispatch<AppDispatch>();
+  const { isLargeScreen } = useScreenWidthRem();
 
   // const userPhoto = useSelector((state: RootState) => state.user.photo);
 
@@ -27,19 +35,38 @@ function Home() {
     }
   }, [isAuthenticated]);
 
-  return (
-    <div>
-      <Header />
+  // ! TWO RETURN BLOCKS DEPENING ON SCREEN SIZE???
+
+  // ! LARGE SCREEN LAYOUT
+  return isLargeScreen ? (
+    <div className={`grid-layout-l h-screen w-screen`}>
+      <DesktopNav />
       <Sidebar />
       <main>
+        <h1>main element</h1>
+        <Outlet />
+        RecTabs
+      </main>
+      <DesktopPlayback />
+    </div>
+  ) : (
+    //  ! SMALL SCREEN LAYOUT
+    <div className={`grid-layout-m h-screen w-screen`}>
+      <MobileHeader />
+      <main>
+        <RecentlyPlayed />
         <Outlet />
       </main>
-      <button onClick={logout} className="">
-        Logout
-      </button>
-      <button onClick={() => dispatch(getUserAsync())}>GET USER</button>
+      <MobilePlayback />
+      <MobileNav />
     </div>
   );
 }
 
 export default Home;
+{
+  /* <button onClick={logout} className="">
+        Logout
+      </button>
+      <button onClick={() => dispatch(getUserAsync())}>GET USER</button> */
+}

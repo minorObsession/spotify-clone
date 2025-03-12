@@ -1,0 +1,7 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "prettier.printWidth": 80,
+  "prettier.tabWidth": 2,
+  "plugins": ["prettier-plugin-tailwindcss"]
+}

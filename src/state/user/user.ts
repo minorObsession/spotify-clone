@@ -2,10 +2,10 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 // import { useAuth } from "../../auth/AuthContext";
 
 interface UserStateTypes {
-  username: string | null;
-  photo: string | null;
-  userID: string | null;
-  email: string | null;
+  username: string;
+  photo: string;
+  userID: string;
+  email: string;
 
   // playlists:
 }
@@ -15,10 +15,10 @@ interface GenericPayload {
 }
 
 const initialState: UserStateTypes = {
-  username: null,
-  photo: null,
-  userID: null,
-  email: null,
+  username: "",
+  photo: "",
+  userID: "",
+  email: "",
 };
 
 const UserSlice = createSlice({
@@ -43,7 +43,7 @@ const UserSlice = createSlice({
             state.username = action.payload?.display_name;
             state.email = action.payload?.email;
           }
-        }
+        },
       );
   },
 });
