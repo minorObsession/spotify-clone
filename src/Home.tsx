@@ -1,25 +1,21 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLoaderData } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext";
-import { useEffect } from "react";
+import { use, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "./state/store";
-import { getUserAsync } from "./state/user/user";
-import DesktopNav from "./components/DesktopNav";
 import Sidebar from "./components/Sidebar";
 import { useScreenWidthRem } from "./hooks/useScreenWidthRem";
 import MobileNav from "./components/MobileNav";
 import DesktopPlayback from "./components/DesktopPlayback";
 import MobilePlayback from "./components/MobilePlayback";
-import MobileHeader from "./components/MobileHeader";
-import RecTabs from "./components/MobileHeaderTabs";
+
 import RecentlyPlayed from "./components/RecentlyPlayed";
+import DesktopNav from "./components/DesktopNav";
+import MobileHeader from "./components/MobileHeader";
 
 function Home() {
-  const { isAuthenticated, logout } = useAuth();
-  const dispatch = useDispatch<AppDispatch>();
+  const { isAuthenticated } = useAuth();
   const { isLargeScreen } = useScreenWidthRem();
-
-  // const userPhoto = useSelector((state: RootState) => state.user.photo);
 
   // ! clean up the url if auth code is present in it
   useEffect(() => {
@@ -35,23 +31,19 @@ function Home() {
     }
   }, [isAuthenticated]);
 
-  // ! TWO RETURN BLOCKS DEPENING ON SCREEN SIZE???
-
   // ! LARGE SCREEN LAYOUT
   return isLargeScreen ? (
-    <div className={`grid-layout-l h-screen w-screen`}>
+    <div className={`grid-layout-l h-screen w-screen overflow-x-hidden`}>
       <DesktopNav />
       <Sidebar />
       <main>
-        <h1>main element</h1>
         <Outlet />
-        RecTabs
       </main>
       <DesktopPlayback />
     </div>
   ) : (
     //  ! SMALL SCREEN LAYOUT
-    <div className={`grid-layout-m h-screen w-screen`}>
+    <div className={`grid-layout-m h-screen w-screen overflow-x-hidden`}>
       <MobileHeader />
       <main>
         <RecentlyPlayed />

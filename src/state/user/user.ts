@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-// import { useAuth } from "../../auth/AuthContext";
 
 interface UserStateTypes {
   username: string;
@@ -50,16 +49,16 @@ const UserSlice = createSlice({
 
 // ! createAsyncThunk(1st arg TYPE, 2nd callback fn)
 export const getUserAsync = createAsyncThunk("user/getUserAsync", async () => {
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  console.log(Date.now());
   try {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     const getAccessToken = () =>
       JSON.parse(localStorage.getItem("access_token") || "");
-
     const accessToken = getAccessToken();
 
     if (!accessToken)
       return new Error("access token expired or it doesn't exist");
-
     const res = await fetch("https://api.spotify.com/v1/me", {
       method: "GET",
       headers: {

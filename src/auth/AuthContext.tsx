@@ -44,15 +44,15 @@ const AuthContext = createContext<AuthContextType>({
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const [accessToken, setAccessToken] = useState<AccessTokenType | null>(() => {
     return JSON.parse(
-      localStorage.getItem("access_token") || "null"
+      localStorage.getItem("access_token") || "null",
     ) as AccessTokenType | null;
   });
 
   const [refreshToken, setRefreshToken] = useState<string | null>(
-    localStorage.getItem("refresh_token") || null
+    localStorage.getItem("refresh_token") || null,
   );
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
-    (accessToken && refreshToken && true) || false
+    (accessToken && refreshToken && true) || false,
   );
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -62,7 +62,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   let authCode = useRef(
     codeVerifier
       ? new URLSearchParams(window.location.search).get("code")
-      : null
+      : null,
   );
 
   // ! Login auth Step 1: CHECK LOCAL STORAGE, IF NO TOKEN THEN REQUEST AUTH CODE
@@ -87,7 +87,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
           setRefreshToken(storedRefreshToken);
           setIsAuthenticated(true);
           console.log(
-            "✅ USER IS Authenticated! the requestAuthCodeAndRedirect will never run !!"
+            "✅ USER IS Authenticated! the requestAuthCodeAndRedirect will never run !!",
           );
           return;
         }
@@ -111,7 +111,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       if (authCode.current !== null) {
         console.log(
           "authCode exists so no need to request it.. authCode:",
-          authCode
+          authCode,
         );
         return;
       }
@@ -150,7 +150,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         "isAuthenticated:",
         isAuthenticated === true && "✅",
         "authCode:",
-        authCode.current
+        authCode.current,
       );
       return;
     }
@@ -185,7 +185,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
               expiresAt: Date.now() + data.expires_in * 1000,
               expiresAtDate: new Date(Date.now() + data.expires_in * 1000),
               now: new Date(Date.now()),
-            })
+            }),
           );
           localStorage.setItem("refresh_token", data.refresh_token);
           const tokenFromLs = localStorage.getItem("access_token");
@@ -193,7 +193,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
           setRefreshToken(data.refresh_token);
           setIsAuthenticated(true);
           console.log(
-            "✅ both tokens successfully stored - user authenticated"
+            "✅ both tokens successfully stored - user authenticated",
           );
         } else throw new Error("token could not be fetched");
       } catch (error) {
@@ -233,7 +233,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
               expiresAt: Date.now() + data.expires_in * 1000,
               expiresAtDate: new Date(Date.now() + data.expires_in * 1000),
               now: new Date(Date.now()),
-            })
+            }),
           );
           localStorage.setItem("refresh_token", data.refresh_token);
           const tokenFromLs = localStorage.getItem("access_token");
@@ -241,7 +241,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
           setRefreshToken(data.refresh_token);
           setIsAuthenticated(true);
           console.log(
-            "✅ both tokens successfully stored - user authenticated"
+            "✅ both tokens successfully stored - user authenticated",
           );
         } else throw new Error("refreshing failed - respones was bad..");
 

@@ -5,9 +5,9 @@ interface RecentTabProps {
   children: React.ReactNode;
 }
 
-const RecentTab: React.FC<RecentTabProps> = () => {
+const RecentTab: React.FC<RecentTabProps> = ({ children }) => {
   return (
-    <article className="grid grid-cols-[1fr_3fr] grid-rows-[2fr_1fr] p-0.5">
+    <article className="grid max-w-1/2 grow grid-cols-[1fr_3fr] grid-rows-[2fr_1fr] p-1">
       <RecenThumbnail />
       <RecentNameAndProgress />
     </article>

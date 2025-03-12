@@ -3,10 +3,13 @@ import Root from "./Root";
 import Home from "./Home";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import AuthProvider from "./auth/AuthContext";
-
-// stack:
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "./state/store";
+import { getUserAsync } from "./state/user/user";
 
 function App() {
+  const dispatch = useDispatch<AppDispatch>();
+
   const router = createBrowserRouter([
     {
       path: "/",
@@ -15,6 +18,10 @@ function App() {
         {
           path: "home",
           element: <Home />,
+          loader: async () => {
+            await dispatch(getUserAsync());
+            return null;
+          },
           children: [{}],
         },
       ],
