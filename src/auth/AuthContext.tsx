@@ -206,6 +206,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // ! run refresh 5 min before token expiry
   useEffect(() => {
+    console.log("interval based effect just ran");
     async function autoRefreshToken() {
       try {
         if (!refreshToken) throw new Error("refresh token could not be found!");
@@ -222,7 +223,10 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
           }),
         };
         const response = await fetch(AUTH_CONFIG.tokenUrl, payload);
+        console.log("response:", response);
         const data = await response.json();
+        console.log(data);
+
         if (response.ok) {
           localStorage.setItem(
             "access_token",
@@ -251,11 +255,11 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // !!!! PROBLEMS:
     // effect only running on first mount
-    // keeps running after successfull retreival
+    // keeps listening after successfull retreival
 
-    const safetyNetMinutes = 59;
+    const safetyNetMinutes = 5;
 
-    // ! every 30s check access token against currentTime
+    // ! check access token against currentTime every minute
     setInterval(() => {
       if (!accessToken?.expiresAt) return;
       const minutesLeft = (accessToken?.expiresAt - Date.now()) / 1000 / 60;
@@ -265,7 +269,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         // ! run refresh fn
         autoRefreshToken();
       }
-    }, 5000);
+    }, 60000);
   }, [accessToken?.expiresAt, refreshToken]);
 
   // Logout function
