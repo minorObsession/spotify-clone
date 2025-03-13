@@ -1,17 +1,17 @@
 import RecentNameAndProgress from "./RecentNameAndProgress";
-import RecenThumbnail from "./RecenThumbnail";
+import RecenThumbnail from "./RecentThumbnail";
 
 interface RecentTabProps {
-  children: React.ReactNode;
+  // key:
 }
 
-const RecentTab: React.FC<RecentTabProps> = ({ children }) => {
+function RecentTab({}: RecentTabProps) {
   return (
     <article className="grid max-w-1/2 grow grid-cols-[1fr_3fr] grid-rows-[2fr_1fr] p-1">
       <RecenThumbnail />
       <RecentNameAndProgress />
     </article>
   );
-};
+}
 
 export default RecentTab;

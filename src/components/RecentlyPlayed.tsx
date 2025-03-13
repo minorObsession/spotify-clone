@@ -2,22 +2,14 @@
 import RecentTab from "./RecentTab";
 
 function RecentlyPlayed() {
+  const limitNumOfTabs = (array: any[], numTabs = 8): any[] =>
+    array.slice(0, numTabs);
+
   return (
     <div className="flex flex-wrap bg-amber-300 p-2">
-      <RecentTab>
-        recently p box REALLY LONG SHOW MANGE LIKE SO LONG..
-      </RecentTab>
-      <RecentTab>recently p box</RecentTab>
-      <RecentTab>recently p box</RecentTab>
-      <RecentTab>recently p box</RecentTab>
-      <RecentTab>recently p box</RecentTab>
-      <RecentTab>recently p box</RecentTab>
-      <RecentTab>recently p box</RecentTab>
-      <RecentTab>recently p box</RecentTab>
-      <RecentTab>recently p box</RecentTab>
-      <RecentTab>recently p box</RecentTab>
-      <RecentTab>recently p box</RecentTab>
-      <RecentTab>recently p box</RecentTab>
+      {[1, 2, 3, 4, 5].map((t, i) => (
+        <RecentTab key={i} />
+      ))}
     </div>
   );
 }

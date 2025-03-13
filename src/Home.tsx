@@ -8,9 +8,9 @@ import MobileNav from "./components/MobileNav";
 import DesktopPlayback from "./components/DesktopPlayback";
 import MobilePlayback from "./components/MobilePlayback";
 
-import RecentlyPlayed from "./components/RecentlyPlayed";
 import DesktopNav from "./components/DesktopNav";
 import MobileHeader from "./components/MobileHeader";
+import RecentlyPlayed from "./components/RecentlyPlayed";
 
 function Home() {
   const { isAuthenticated } = useAuth();
@@ -35,7 +35,8 @@ function Home() {
     <div className={`grid-layout-l h-screen w-screen overflow-x-hidden`}>
       <DesktopNav />
       <Sidebar />
-      <main>
+      <main className="">
+        <RecentlyPlayed />
         <Outlet />
       </main>
       <DesktopPlayback />

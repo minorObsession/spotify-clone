@@ -1,12 +1,18 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { getAccessToken } from "../../auth/authHelpers";
+import { RootState } from "../store";
+export interface Playlist {
+  name: string;
+  id: string;
+  images: any[];
+}
 
 interface UserStateTypes {
   username: string;
   photo: string;
   userID: string;
   email: string;
-
-  // playlists:
+  playlists: Playlist[];
 }
 
 interface GenericPayload {
@@ -18,7 +24,13 @@ const initialState: UserStateTypes = {
   photo: "",
   userID: "",
   email: "",
+  playlists: [],
 };
+
+// ! make new SLICE FOR PLAYLISTS
+// ! make new SLICE FOR PODCASTS
+// ! make new SLICE FOR PODCASTS
+//
 
 const UserSlice = createSlice({
   name: "user",
@@ -43,18 +55,59 @@ const UserSlice = createSlice({
             state.email = action.payload?.email;
           }
         },
+      )
+      .addCase(getPlaylists.pending, () => {
+        console.log("pending playlists...");
+      })
+      .addCase(
+        getPlaylists.fulfilled,
+        (state, action: PayloadAction<GenericPayload>) => {
+          // ! reused twice
+          if (typeof action.payload === "object" && action.payload !== null) {
+            state.playlists = action.payload.items;
+          }
+        },
       );
   },
 });
+
+export const getPlaylists = createAsyncThunk(
+  "user/getPlaylists",
+  async (_, thunkAPI) => {
+    try {
+      const accessToken = getAccessToken();
+      const state = thunkAPI.getState() as RootState;
+      const id = state.user.userID;
+
+      if (!accessToken)
+        return new Error("🛑 🛑 access token expired or it doesn't exist");
+
+      const res = await fetch(
+        `https://api.spotify.com/v1/users/${id}/playlists`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken.token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      if (!res.ok) throw new Error("no user or bad request");
+
+      const playlists = await res.json();
+      return playlists;
+    } catch (err) {
+      console.error("🛑 ❌", err);
+    }
+  },
+);
 
 // ! createAsyncThunk(1st arg TYPE, 2nd callback fn)
 export const getUserAsync = createAsyncThunk("user/getUserAsync", async () => {
   console.log(Date.now());
   try {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    const getAccessToken = () =>
-      JSON.parse(localStorage.getItem("access_token") || "");
+    // await new Promise((resolve) => setTimeout(resolve, 1000));
     const accessToken = getAccessToken();
 
     if (!accessToken)

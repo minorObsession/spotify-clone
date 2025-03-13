@@ -5,7 +5,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import AuthProvider from "./auth/AuthContext";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "./state/store";
-import { getUserAsync } from "./state/user/user";
+import { getPlaylists, getUserAsync } from "./state/user/user";
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
@@ -20,6 +20,7 @@ function App() {
           element: <Home />,
           loader: async () => {
             await dispatch(getUserAsync());
+            await dispatch(getPlaylists());
             return null;
           },
           children: [{}],
