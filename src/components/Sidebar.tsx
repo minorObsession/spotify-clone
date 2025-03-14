@@ -4,7 +4,7 @@ import { usePlaylistStore } from "../state_z/playlists";
 
 function Sidebar() {
   const playlists = usePlaylistStore((store) => store.playlists);
-  console.log(playlists);
+  // console.log(playlists);
   // if (!playlists) return null;
 
   return (

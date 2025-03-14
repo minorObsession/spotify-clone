@@ -65,8 +65,35 @@
 //   // ! Login auth Step 1: CHECK LOCAL STORAGE, IF NO TOKEN THEN REQUEST AUTH CODE
 //   useEffect(() => {
 //     if (isAuthenticated) {
-//       console.log("USER isAuthenticated ✅ NOT GONNA START ");
+//       console.log("USER isAuthenticated ✅ NOT GONNA START initializeAuth");
 //       return;
+//     }
+
+//     async function initializeAuth() {
+//       if (isAuthenticated) return;
+//       try {
+//         // Check for stored tokens first
+//         const storedAccessToken = localStorage.getItem("access_token");
+//         console.log(storedAccessToken);
+//         const storedRefreshToken = localStorage.getItem("refresh_token");
+
+//         if (storedAccessToken) {
+//           setAccessToken(JSON.parse(storedAccessToken));
+//           setRefreshToken(storedRefreshToken);
+//           setIsAuthenticated(true);
+//           console.log(
+//             "✅ USER IS Authenticated! the requestAuthCodeAndRedirect will never run !!",
+//           );
+//           return;
+//         }
+
+//         // ! if no token in LS
+//         await requestAuthCodeAndRedirect();
+//       } catch (error) {
+//         console.error("Auth initialization error:", error);
+//       } finally {
+//         console.log("step1 effect finished");
+//       }
 //     }
 
 //     async function requestAuthCodeAndRedirect() {
@@ -74,7 +101,6 @@
 //         console.log("✅ ALREADY AUTHENTICATED ");
 //         return;
 //       }
-//       console.log("...running requestAuthCodeAndRedirect →→→");
 
 //       if (authCode.current !== null) {
 //         console.log(
@@ -107,7 +133,7 @@
 //       window.location.href = authUrl.toString();
 //     }
 
-//     requestAuthCodeAndRedirect();
+//     initializeAuth();
 //   }, [isAuthenticated, accessToken, refreshToken]);
 
 //   // ! Login auth Step 2: RETRIEVE AUTH CODE FROM URL THEN REQUEST TOKEN
@@ -145,7 +171,6 @@
 //         });
 
 //         const data = await response.json();
-//         console.log("data for aaacccttt:", data);
 //         if (response.ok) {
 //           localStorage.setItem(
 //             "access_token",
@@ -192,6 +217,7 @@
 //         const response = await fetch(AUTH_CONFIG.tokenUrl, payload);
 //         console.log("response:", response);
 //         const data = await response.json();
+//         console.log(data);
 
 //         if (response.ok) {
 //           localStorage.setItem(

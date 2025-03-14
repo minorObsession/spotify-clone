@@ -18,5 +18,8 @@ export const base64encode = (input: ArrayBuffer) => {
     .replace(/\//g, "_");
 };
 
-export const getAccessToken = () =>
-  JSON.parse(localStorage.getItem("access_token") || "");
+export const getAccessToken = () => {
+  const token = localStorage.getItem("access_token");
+  if (token !== null) return JSON.parse(token);
+  else return null;
+};

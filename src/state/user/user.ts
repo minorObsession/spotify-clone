@@ -106,7 +106,6 @@ export const getPlaylists = createAsyncThunk(
 
 // ! createAsyncThunk(1st arg TYPE, 2nd callback fn)
 export const getUserAsync = createAsyncThunk("user/getUserAsync", async () => {
-  console.log(Date.now());
   try {
     // await new Promise((resolve) => setTimeout(resolve, 1000));
     const accessToken = getAccessToken();

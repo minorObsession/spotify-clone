@@ -18,9 +18,12 @@ export const useUserStore = create<UserState>((set) => ({
   email: "",
   // setUser: (user) => set((state) => ({ ...state, ...user })),
   getUser: async () => {
-    console.log("get user invoked");
     try {
+      // await new Promise((res) => setTimeout(() => res, 1000));
+
       const accessToken = getAccessToken();
+      console.log(accessToken);
+
       if (!accessToken)
         throw new Error("Access token expired or doesn't exist");
 
@@ -34,13 +37,14 @@ export const useUserStore = create<UserState>((set) => ({
       if (!res.ok) throw new Error("No user or bad request");
 
       const user = await res.json();
-      console.log(user);
       set({
         username: user.display_name,
         photo: user.images?.[0]?.url || "",
         userID: user.id,
         email: user.email,
       });
+
+      return user;
     } catch (err) {
       console.error("🛑 ❌", err);
     }

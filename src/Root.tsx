@@ -1,9 +1,9 @@
 import { Outlet, useNavigate } from "react-router";
-import { useAuth } from "./auth/AuthContext";
 import { useEffect } from "react";
+import { useAuthStore } from "./auth/Auth.z";
 
 function Root() {
-  const { isAuthenticated } = useAuth();
+  const isAuthenticated = useAuthStore((store) => store.isAuthenticated);
   const navigate = useNavigate();
 
   useEffect(() => {

@@ -1,5 +1,4 @@
 import { Outlet } from "react-router-dom";
-import { useAuth } from "./auth/AuthContext";
 import { useEffect } from "react";
 
 import Sidebar from "./components/Sidebar";
@@ -11,24 +10,25 @@ import MobilePlayback from "./components/MobilePlayback";
 import DesktopNav from "./components/DesktopNav";
 import MobileHeader from "./components/MobileHeader";
 import RecentlyPlayed from "./components/RecentlyPlayed";
+import { useAuthStore } from "./auth/Auth.z";
 
 function Home() {
-  const { isAuthenticated } = useAuth();
+  const isAuthenticated = useAuthStore((store) => store.isAuthenticated);
   const { isLargeScreen } = useScreenWidthRem();
 
-  // ! clean up the url if auth code is present in it
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    // Get current URL without query parameters
-    const url = new URL(window.location.href);
-    // If the URL has a 'code' parameter, remove it
-    if (url.searchParams.has("code")) {
-      url.searchParams.delete("code");
+  // // ! clean up the url if auth code is present in it
+  // useEffect(() => {
+  //   if (!isAuthenticated) return;
+  //   // Get current URL without query parameters
+  //   const url = new URL(window.location.href);
+  //   // If the URL has a 'code' parameter, remove it
+  //   if (url.searchParams.has("code")) {
+  //     url.searchParams.delete("code");
 
-      // Use history.replaceState to update the URL without reloading the page
-      window.history.replaceState({}, document.title, url.toString());
-    }
-  }, [isAuthenticated]);
+  //     // Use history.replaceState to update the URL without reloading the page
+  //     window.history.replaceState({}, document.title, url.toString());
+  //   }
+  // }, [isAuthenticated]);
 
   // ! LARGE SCREEN LAYOUT
   return isLargeScreen ? (
@@ -56,9 +56,3 @@ function Home() {
 }
 
 export default Home;
-{
-  /* <button onClick={logout} className="">
-        Logout
-      </button>
-      <button onClick={() => dispatch(getUserAsync())}>GET USER</button> */
-}
