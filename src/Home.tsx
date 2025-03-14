@@ -16,19 +16,19 @@ function Home() {
   const isAuthenticated = useAuthStore((store) => store.isAuthenticated);
   const { isLargeScreen } = useScreenWidthRem();
 
-  // // ! clean up the url if auth code is present in it
-  // useEffect(() => {
-  //   if (!isAuthenticated) return;
-  //   // Get current URL without query parameters
-  //   const url = new URL(window.location.href);
-  //   // If the URL has a 'code' parameter, remove it
-  //   if (url.searchParams.has("code")) {
-  //     url.searchParams.delete("code");
+  // ! clean up the url if auth code is present in it
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    // Get current URL without query parameters
+    const url = new URL(window.location.href);
+    // If the URL has a 'code' parameter, remove it
+    if (url.searchParams.has("code")) {
+      url.searchParams.delete("code");
 
-  //     // Use history.replaceState to update the URL without reloading the page
-  //     window.history.replaceState({}, document.title, url.toString());
-  //   }
-  // }, [isAuthenticated]);
+      // Use history.replaceState to update the URL without reloading the page
+      window.history.replaceState({}, document.title, url.toString());
+    }
+  }, [isAuthenticated]);
 
   // ! LARGE SCREEN LAYOUT
   return isLargeScreen ? (
