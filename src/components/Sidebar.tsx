@@ -1,10 +1,9 @@
 // ! ONLY FOR DESKTOP VIEW
-import { useSelector } from "react-redux";
-import { RootState } from "../state/store";
 import UserPlaylist from "./UserPlaylist";
+import { usePlaylistStore } from "../state_z/playlists";
 
 function Sidebar() {
-  const playlists = useSelector((state: RootState) => state.user.playlists);
+  const playlists = usePlaylistStore((store) => store.playlists);
   console.log(playlists);
   // if (!playlists) return null;
 

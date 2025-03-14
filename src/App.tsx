@@ -3,12 +3,16 @@ import Root from "./Root";
 import Home from "./Home";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import AuthProvider from "./auth/AuthContext";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "./state/store";
-import { getPlaylists, getUserAsync } from "./state/user/user";
+
+import { useUserStore } from "./state_z/user";
+import { usePlaylistStore } from "./state_z/playlists";
 
 function App() {
-  const dispatch = useDispatch<AppDispatch>();
+  // const dispatch = useDispatch<AppDispatch>();
+
+  const getUser = useUserStore((store) => store.getUser);
+
+  const getPlaylists = usePlaylistStore((store) => store.getPlaylists);
 
   const router = createBrowserRouter([
     {
@@ -19,8 +23,8 @@ function App() {
           path: "home",
           element: <Home />,
           loader: async () => {
-            await dispatch(getUserAsync());
-            await dispatch(getPlaylists());
+            await getUser();
+            await getPlaylists();
             return null;
           },
           children: [{}],

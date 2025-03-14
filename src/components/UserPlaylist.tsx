@@ -2,7 +2,7 @@ import { Playlist } from "../state/user/user";
 import RecenThumbnail from "./RecentThumbnail";
 
 function UserPlaylist({ name, images, id }: Playlist) {
-  console.log(images);
+  // console.log(images);
 
   return (
     <div

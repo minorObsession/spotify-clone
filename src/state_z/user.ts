@@ -1,0 +1,48 @@
+import { create } from "zustand";
+import { getAccessToken } from "../auth/authHelpers";
+
+interface UserState {
+  username: string;
+  photo: string;
+  userID: string;
+  email: string;
+  // ! get partial types
+  // setUser: (user: Partial<UserState>) => void;
+  getUser: () => Promise<void>;
+}
+
+export const useUserStore = create<UserState>((set) => ({
+  username: "",
+  photo: "",
+  userID: "",
+  email: "",
+  // setUser: (user) => set((state) => ({ ...state, ...user })),
+  getUser: async () => {
+    console.log("get user invoked");
+    try {
+      const accessToken = getAccessToken();
+      if (!accessToken)
+        throw new Error("Access token expired or doesn't exist");
+
+      const res = await fetch("https://api.spotify.com/v1/me", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken.token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!res.ok) throw new Error("No user or bad request");
+
+      const user = await res.json();
+      console.log(user);
+      set({
+        username: user.display_name,
+        photo: user.images?.[0]?.url || "",
+        userID: user.id,
+        email: user.email,
+      });
+    } catch (err) {
+      console.error("🛑 ❌", err);
+    }
+  },
+}));

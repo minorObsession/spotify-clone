@@ -1,8 +1,7 @@
-import { useSelector } from "react-redux";
-import { RootState } from "../state/store";
+import { useUserStore } from "../state_z/user";
 
 function UserAvatar() {
-  const userPhoto = useSelector((state: RootState) => state.user.photo);
+  const userPhoto = useUserStore((store) => store.photo);
 
   if (!userPhoto) return null;
 

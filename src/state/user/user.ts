@@ -64,6 +64,7 @@ const UserSlice = createSlice({
         (state, action: PayloadAction<GenericPayload>) => {
           // ! reused twice
           if (typeof action.payload === "object" && action.payload !== null) {
+            console.log(action.payload);
             state.playlists = action.payload.items;
           }
         },
