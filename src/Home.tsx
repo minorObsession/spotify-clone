@@ -9,9 +9,10 @@ import MobilePlayback from "./components/MobilePlayback";
 
 import DesktopNav from "./components/DesktopNav";
 import MobileHeader from "./components/MobileHeader";
-import RecentlyPlayedDesktop from "./components/RecentlyPlayedDesktop";
+
 import { useAuthStore } from "./auth/Auth.z";
 import RecentlyPlayedMobile from "./components/RecentlyPlayedMobile";
+import RecentlyPlayedDesktop from "./components/RecentlyPlayedDesktop";
 
 function Home() {
   const isAuthenticated = useAuthStore((store) => store.isAuthenticated);

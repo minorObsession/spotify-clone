@@ -34,7 +34,7 @@ export interface AuthState {
   requestAuthCodeAndRedirect: () => Promise<void>;
   requestToken: (authCode: string, codeVerifier: string) => Promise<void>;
   autoRefreshToken: () => Promise<void>;
-  logTokensFromState: () => void;
+  // logTokensFromState: () => void;
 }
 
 // --- Zustand Store ---
@@ -57,6 +57,7 @@ export const useAuthStore = create<AuthState>()(
     // --- Public Action: Initialize Auth Flow ---s
     // ! MINE
     initAuth: async () => {
+      console.log("initAuth called");
       // 1. Check localStorage for existing tokens
       const storedAccessTokenString = localStorage.getItem("access_token");
       const storedRefreshToken = localStorage.getItem("refresh_token");
@@ -223,6 +224,7 @@ export const useAuthStore = create<AuthState>()(
       }
     },
 
+    // ! how to 'clean up' ? this is constantly running..
     // --- Internal Action: Auto–Refresh Token ---
     autoRefreshToken: async () => {
       const safetyNetMinutes = 5; // refresh 5 minutes before expiry

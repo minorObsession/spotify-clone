@@ -11,6 +11,7 @@ interface UserState {
   getUser: () => Promise<void>;
 }
 
+// ! USER INFO TO BE STORED AND RETRIEVED FROM LS
 export const useUserStore = create<UserState>((set) => ({
   username: "",
   photo: "",
