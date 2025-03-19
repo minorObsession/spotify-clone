@@ -1,6 +1,6 @@
-import { create } from "zustand";
 import { getAccessToken } from "../auth/authHelpers";
-import { devtools } from "zustand/middleware";
+import { StateStore } from "./store";
+import { StateCreator } from "zustand";
 
 export interface UserSlice {
   username: string;
@@ -12,44 +12,86 @@ export interface UserSlice {
   getUser: () => Promise<void>;
 }
 
-// ! USER INFO TO BE STORED AND RETRIEVED FROM LS
-export const useUserStore = create<UserSlice>()(
-  devtools((set) => ({
-    username: "",
-    photo: "",
-    userID: "",
-    email: "",
-    // setUser: (user) => set((state) => ({ ...state, ...user })),
-    getUser: async () => {
-      try {
-        // await new Promise((res) => setTimeout(() => res, 1000));
+export const createUserSlice: StateCreator<
+  StateStore,
+  [["zustand/devtools", never]],
+  [],
+  UserSlice
+> = (set) => ({
+  username: "",
+  photo: "",
+  userID: "",
+  email: "",
+  getUser: async () => {
+    try {
+      const accessToken = getAccessToken();
 
-        const accessToken = getAccessToken();
+      if (!accessToken)
+        throw new Error("Access token expired or doesn't exist");
 
-        if (!accessToken)
-          throw new Error("Access token expired or doesn't exist");
+      const res = await fetch("https://api.spotify.com/v1/me", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken.token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!res.ok) throw new Error("No user or bad request");
 
-        const res = await fetch("https://api.spotify.com/v1/me", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken.token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        if (!res.ok) throw new Error("No user or bad request");
+      const user = await res.json();
+      set({
+        username: user.display_name,
+        photo: user.images?.[0]?.url || "",
+        userID: user.id,
+        email: user.email,
+      });
 
-        const user = await res.json();
-        set({
-          username: user.display_name,
-          photo: user.images?.[0]?.url || "",
-          userID: user.id,
-          email: user.email,
-        });
+      return user;
+    } catch (err) {
+      console.error("🛑 ❌", err);
+    }
+  },
+});
 
-        return user;
-      } catch (err) {
-        console.error("🛑 ❌", err);
-      }
-    },
-  })),
-);
+// ! OLD WAY
+// // ! USER INFO TO BE STORED AND RETRIEVED FROM LS
+// export const useUserStore = create<UserSlice>()(
+//   devtools((set) => ({
+//     username: "",
+//     photo: "",
+//     userID: "",
+//     email: "",
+//     // setUser: (user) => set((state) => ({ ...state, ...user })),
+//     getUser: async () => {
+//       try {
+//         // await new Promise((res) => setTimeout(() => res, 1000));
+
+//         const accessToken = getAccessToken();
+
+//         if (!accessToken)
+//           throw new Error("Access token expired or doesn't exist");
+
+//         const res = await fetch("https://api.spotify.com/v1/me", {
+//           method: "GET",
+//           headers: {
+//             Authorization: `Bearer ${accessToken.token}`,
+//             "Content-Type": "application/json",
+//           },
+//         });
+//         if (!res.ok) throw new Error("No user or bad request");
+
+//         const user = await res.json();
+//         set({
+//           username: user.display_name,
+//           photo: user.images?.[0]?.url || "",
+//           userID: user.id,
+//           email: user.email,
+//         });
+
+//         return user;
+//       } catch (err) {
+//         console.error("🛑 ❌", err);
+//       }
+//     },
+//   })),
+// );

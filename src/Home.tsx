@@ -10,12 +10,15 @@ import MobilePlayback from "./components/MobilePlayback";
 import DesktopNav from "./components/DesktopNav";
 import MobileHeader from "./components/MobileHeader";
 
-import { useAuthStore } from "./state/Auth.z";
+// import { useAuthStore } from "./state/Auth.z";
 import RecentlyPlayedMobile from "./components/RecentlyPlayedMobile";
 import RecentlyPlayedDesktop from "./components/RecentlyPlayedDesktop";
+import { useStateStore } from "./state/store";
 
 function Home() {
-  const isAuthenticated = useAuthStore((store) => store.isAuthenticated);
+  // const isAuthenticated = useAuthStore((store) => store.isAuthenticated);
+  const isAuthenticated = useStateStore((store) => store.isAuthenticated);
+
   const { isLargeScreen } = useScreenWidthRem();
 
   // ! clean up the url if auth code is present in it

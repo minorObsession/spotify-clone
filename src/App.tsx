@@ -2,12 +2,13 @@
 import Root from "./Root";
 import Home from "./Home";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { useUserStore } from "./state/user";
-import { usePlaylistStore } from "./state/playlists";
+import { useStateStore } from "./state/store";
+// import { useUserStore } from "./state/user";
+// import { usePlaylistStore } from "./state/playlists";
 
 function App() {
-  const getUser = useUserStore((store) => store.getUser);
-  const getPlaylists = usePlaylistStore((store) => store.getPlaylists);
+  const getUser = useStateStore((store) => store.getUser);
+  const getPlaylists = useStateStore((store) => store.getPlaylists);
   // const initAuth = useAuthStore((store) => store.initAuth);
 
   const router = createBrowserRouter([
