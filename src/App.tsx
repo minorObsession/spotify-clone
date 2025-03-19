@@ -2,8 +2,8 @@
 import Root from "./Root";
 import Home from "./Home";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { useUserStore } from "./state_z/user";
-import { usePlaylistStore } from "./state_z/playlists";
+import { useUserStore } from "./state/user";
+import { usePlaylistStore } from "./state/playlists";
 
 function App() {
   const getUser = useUserStore((store) => store.getUser);

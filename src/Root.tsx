@@ -1,6 +1,6 @@
 import { Outlet, useNavigate } from "react-router";
 import { useEffect } from "react";
-import { useAuthStore } from "./auth/Auth.z";
+import { useAuthStore } from "./state/Auth.z";
 
 function Root() {
   const isAuthenticated = useAuthStore((store) => store.isAuthenticated);
@@ -10,6 +10,7 @@ function Root() {
 
   useEffect(() => {
     const verifyAuth = async () => {
+      console.log("isAuthenticated:", isAuthenticated);
       if (isAuthenticated) {
         autoRefreshToken();
         navigate("home");

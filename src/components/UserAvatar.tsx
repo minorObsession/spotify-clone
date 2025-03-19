@@ -1,4 +1,4 @@
-import { useUserStore } from "../state_z/user";
+import { useUserStore } from "../state/user";
 
 function UserAvatar() {
   const userPhoto = useUserStore((store) => store.photo);

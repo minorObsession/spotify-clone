@@ -5,8 +5,8 @@ function RecentlyPlayedDesktop() {
   //   array.slice(0, numTabs);
 
   return (
-    <div className="flex flex-wrap bg-amber-300 p-2 md:grid md:w-full md:grid-cols-[repeat(auto-fill,_minmax(10rem,_25%))]">
-      {[1, 2, 3, 4, 5].map((t, i) => (
+    <div className="flex flex-wrap bg-amber-300 p-2 sm:grid-cols-[repeat(2,_minmax(15rem,_1fr))] sm:grid-rows-4 md:grid md:grid-cols-[repeat(4,_minmax(9rem,_1fr))] md:grid-rows-2">
+      {[1, 2, 3, 4, 5, 6, 7, 8].map((t, i) => (
         <RecentTab key={i} />
       ))}
     </div>

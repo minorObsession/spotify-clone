@@ -10,7 +10,7 @@ import MobilePlayback from "./components/MobilePlayback";
 import DesktopNav from "./components/DesktopNav";
 import MobileHeader from "./components/MobileHeader";
 
-import { useAuthStore } from "./auth/Auth.z";
+import { useAuthStore } from "./state/Auth.z";
 import RecentlyPlayedMobile from "./components/RecentlyPlayedMobile";
 import RecentlyPlayedDesktop from "./components/RecentlyPlayedDesktop";
 
@@ -37,7 +37,7 @@ function Home() {
     <div className={`grid-layout-l h-screen w-screen overflow-x-hidden`}>
       <DesktopNav />
       <Sidebar />
-      <main className="">
+      <main className="flex flex-col">
         <RecentlyPlayedDesktop />
         <Outlet />
       </main>

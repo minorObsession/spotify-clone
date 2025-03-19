@@ -24,7 +24,7 @@ export interface AccessTokenType {
   now?: string;
 }
 
-export interface AuthState {
+export interface AuthSlice {
   isAuthenticated: boolean;
   accessToken: AccessTokenType | null;
   refreshToken: string | null;
@@ -38,7 +38,7 @@ export interface AuthState {
 }
 
 // --- Zustand Store ---
-export const useAuthStore = create<AuthState>()(
+export const useAuthStore = create<AuthSlice>()(
   devtools((set, get) => ({
     // --- Initial State ---
     isAuthenticated: Boolean(localStorage.getItem("access_token")),
@@ -107,51 +107,6 @@ export const useAuthStore = create<AuthState>()(
         await get().requestAuthCodeAndRedirect();
       }
     },
-
-    // initAuth: async () => {
-    //   const storedAccessTokenString = localStorage.getItem("access_token");
-    //   const storedRefreshToken = localStorage.getItem("refresh_token");
-
-    //   console.log(
-    //     "Checking localStorage at init:",
-    //     storedAccessTokenString,
-    //     storedRefreshToken,
-    //   );
-
-    //   if (storedAccessTokenString && storedRefreshToken) {
-    //     try {
-    //       const accessToken: AccessTokenType = JSON.parse(
-    //         storedAccessTokenString,
-    //       );
-    //       if (Date.now() < accessToken.expiresAt) {
-    //         set({
-    //           accessToken,
-    //           refreshToken: storedRefreshToken,
-    //           isAuthenticated: true,
-    //         });
-    //         get().autoRefreshToken();
-    //         return;
-    //       }
-    //     } catch (error) {
-    //       console.error("Error parsing stored access token", error);
-    //     }
-    //   }
-
-    //   const urlParams = new URLSearchParams(window.location.search);
-    //   const authCode = urlParams.get("code");
-    //   const storedCodeVerifier = localStorage.getItem("code_verifier");
-
-    //   if (authCode && storedCodeVerifier) {
-    //     await get().requestToken(authCode, storedCodeVerifier);
-    //     window.history.replaceState(
-    //       {},
-    //       document.title,
-    //       window.location.pathname,
-    //     );
-    //   } else {
-    //     await get().requestAuthCodeAndRedirect();
-    //   }
-    // },
 
     // --- Internal Action: Request Auth Code & Redirect ---
     requestAuthCodeAndRedirect: async () => {
@@ -272,6 +227,8 @@ export const useAuthStore = create<AuthState>()(
                 refreshToken: data.refresh_token || refreshToken,
                 isAuthenticated: true,
               });
+
+              console.log("token successfully refreshed!");
             } else {
               throw new Error("Refreshing token failed.");
             }
