@@ -22,7 +22,6 @@ export const useUserStore = create<UserState>((set) => ({
       // await new Promise((res) => setTimeout(() => res, 1000));
 
       const accessToken = getAccessToken();
-      console.log(accessToken);
 
       if (!accessToken)
         throw new Error("Access token expired or doesn't exist");

@@ -1,9 +1,8 @@
-// ! FOR BOTH VIEWS
 import RecentTab from "./RecentTab";
 
-function RecentlyPlayed() {
-  const limitNumOfTabs = (array: any[], numTabs = 8): any[] =>
-    array.slice(0, numTabs);
+function RecentlyPlayedDesktop() {
+  // const limitNumOfTabs = (array: any[], numTabs = 8): any[] =>
+  //   array.slice(0, numTabs);
 
   return (
     <div className="flex flex-wrap bg-amber-300 p-2">
@@ -14,4 +13,4 @@ function RecentlyPlayed() {
   );
 }
 
-export default RecentlyPlayed;
+export default RecentlyPlayedDesktop;

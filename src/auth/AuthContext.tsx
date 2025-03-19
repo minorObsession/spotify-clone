@@ -226,17 +226,17 @@
 //     const safetyNetMinutes = 5;
 
 //     // ! check access token against currentTime every minute
-//     setInterval(() => {
-//       if (!accessToken?.expiresAt) return;
-//       const minutesLeft = (accessToken?.expiresAt - Date.now()) / 1000 / 60;
-//       console.log("minuteLeft:", minutesLeft);
+// setInterval(() => {
+//   if (!accessToken?.expiresAt) return;
+//   const minutesLeft = (accessToken?.expiresAt - Date.now()) / 1000 / 60;
+//   console.log("minuteLeft:", minutesLeft);
 
-//       if (minutesLeft < safetyNetMinutes) {
-//         // ! run refresh fn
-//         autoRefreshToken();
-//       }
-//     }, 60000);
-//   }, [accessToken?.expiresAt, refreshToken]);
+//   if (minutesLeft < safetyNetMinutes) {
+//     // ! run refresh fn
+//     autoRefreshToken();
+//   }
+// }, 60000);
+// }, [accessToken?.expiresAt, refreshToken]);
 
 //   // Logout function
 

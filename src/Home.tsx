@@ -9,8 +9,9 @@ import MobilePlayback from "./components/MobilePlayback";
 
 import DesktopNav from "./components/DesktopNav";
 import MobileHeader from "./components/MobileHeader";
-import RecentlyPlayed from "./components/RecentlyPlayed";
+import RecentlyPlayedDesktop from "./components/RecentlyPlayedDesktop";
 import { useAuthStore } from "./auth/Auth.z";
+import RecentlyPlayedMobile from "./components/RecentlyPlayedMobile";
 
 function Home() {
   const isAuthenticated = useAuthStore((store) => store.isAuthenticated);
@@ -36,7 +37,7 @@ function Home() {
       <DesktopNav />
       <Sidebar />
       <main className="">
-        <RecentlyPlayed />
+        <RecentlyPlayedDesktop />
         <Outlet />
       </main>
       <DesktopPlayback />
@@ -46,7 +47,7 @@ function Home() {
     <div className={`grid-layout-m h-screen w-screen overflow-x-hidden`}>
       <MobileHeader />
       <main>
-        <RecentlyPlayed />
+        <RecentlyPlayedMobile />
         <Outlet />
       </main>
       <MobilePlayback />
