@@ -3,7 +3,7 @@ interface RecentThumbnailProps {
 }
 
 function RecentThumbnail({ img }: RecentThumbnailProps) {
-  return <img className="row-span-2 w-14 max-w-16 min-w-8" src={img} />;
+  return <img className="row-span-2 w-10 max-w-12 min-w-8" src={img} />;
 }
 
 export default RecentThumbnail;

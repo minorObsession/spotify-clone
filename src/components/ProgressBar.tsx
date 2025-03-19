@@ -3,6 +3,7 @@ interface ProgressBarProps {
   currValue: number;
   bgColor?: string; // Accepts Tailwind class or hex color
   barColor?: string; // Accepts Tailwind class or hex color
+  additionalClasses?: string;
 }
 
 function ProgressBar({
@@ -10,6 +11,7 @@ function ProgressBar({
   currValue,
   bgColor = "bg-gray-200", // Default background color
   barColor = "bg-blue-500", // Default progress bar color
+  additionalClasses,
 }: ProgressBarProps) {
   // Check if the color is a hex value or Tailwind class
   const bgStyle = bgColor.startsWith("#") ? { backgroundColor: bgColor } : {};
@@ -19,7 +21,7 @@ function ProgressBar({
 
   return (
     <div
-      className={`relative h-2 w-full overflow-hidden rounded-lg ${!bgColor.startsWith("#") ? bgColor : ""}`}
+      className={`relative h-2 w-full overflow-hidden rounded-lg ${!bgColor.startsWith("#") ? bgColor : ""} ${additionalClasses}`}
       style={bgStyle}
     >
       <div

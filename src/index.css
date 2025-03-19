@@ -37,7 +37,7 @@
   .grid-layout-l {
     display: grid;
     grid-template-columns: 1fr 2.5fr;
-    grid-template-rows: 0.5fr 10fr 1.5fr;
+    grid-template-rows: 0.5fr 10fr 1fr;
     grid-template-areas:
       "nav nav"
       "sidebar main"
@@ -58,6 +58,18 @@
 
   .grid-playback-l {
     grid-area: playback;
+  }
+
+  .playlist-item {
+    @apply grid grid-cols-[1fr_4fr] grid-rows-[1fr_1fr] items-center truncate p-1 text-sm;
+  }
+
+  .playlist-title {
+    @apply self-end truncate text-xs sm:text-sm;
+  }
+
+  .playlist-owner {
+    @apply text-xs italic sm:text-sm;
   }
 }
 
