@@ -14,10 +14,12 @@ import MobileHeader from "./components/MobileHeader";
 import RecentlyPlayedMobile from "./components/RecentlyPlayedMobile";
 import RecentlyPlayedDesktop from "./components/RecentlyPlayedDesktop";
 import { useStateStore } from "./state/store";
+import Thumbnail from "./components/Thumbnail";
 
 function Home() {
   // const isAuthenticated = useAuthStore((store) => store.isAuthenticated);
   const isAuthenticated = useStateStore((store) => store.isAuthenticated);
+  const username = useStateStore((store) => store.username);
 
   const { isLargeScreen } = useScreenWidthRem();
 
@@ -42,6 +44,101 @@ function Home() {
       <Sidebar />
       <main className="flex flex-col">
         <RecentlyPlayedDesktop />
+        {/* // ! suggestions */}
+        <div className="p-2">
+          <h2 className="">Made for {username}</h2>
+          {/* // ! suggestions container */}
+          <div className="sw-full flex gap-5 overflow-x-scroll">
+            {/* // ! SUGGSTED CARD */}
+            <div className="flex w-40 flex-col gap-2 border-1 p-1">
+              <div className="">
+                <Thumbnail
+                  img="https://mosaic.scdn.co/640/ab67616d00001e024ca68d59a4a29c856a4a39c2ab67616d00001e025fd7c284c0b719ad07b8eac2ab67616d00001e0270b88fc5a2e13bc5440d947cab67616d00001e029e1cfc756886ac782e363d79"
+                  width="w-[100%]"
+                />
+              </div>
+              <p className="truncate">
+                artists display long saguyfagafsgfajfgjfasgasgfasgf
+              </p>
+            </div>
+            {/* // ! SUGGSTED CARD */}
+            <div className="flex w-40 flex-col gap-2 border-1 p-1">
+              <div className="">
+                <Thumbnail
+                  img="https://mosaic.scdn.co/640/ab67616d00001e024ca68d59a4a29c856a4a39c2ab67616d00001e025fd7c284c0b719ad07b8eac2ab67616d00001e0270b88fc5a2e13bc5440d947cab67616d00001e029e1cfc756886ac782e363d79"
+                  width="w-[100%]"
+                />
+              </div>
+              <p className="truncate">
+                artists display long saguyfagafsgfajfgjfasgasgfasgf
+              </p>
+            </div>
+            {/* // ! SUGGSTED CARD */}
+            <div className="flex w-40 flex-col gap-2 border-1 p-1">
+              <div className="">
+                <Thumbnail
+                  img="https://mosaic.scdn.co/640/ab67616d00001e024ca68d59a4a29c856a4a39c2ab67616d00001e025fd7c284c0b719ad07b8eac2ab67616d00001e0270b88fc5a2e13bc5440d947cab67616d00001e029e1cfc756886ac782e363d79"
+                  width="w-[100%]"
+                />
+              </div>
+              <p className="truncate">
+                artists display long saguyfagafsgfajfgjfasgasgfasgf
+              </p>
+            </div>
+            {/* // ! SUGGSTED CARD */}
+            <div className="flex w-40 flex-col gap-2 border-1 p-1">
+              <div className="">
+                <Thumbnail
+                  img="https://mosaic.scdn.co/640/ab67616d00001e024ca68d59a4a29c856a4a39c2ab67616d00001e025fd7c284c0b719ad07b8eac2ab67616d00001e0270b88fc5a2e13bc5440d947cab67616d00001e029e1cfc756886ac782e363d79"
+                  width="w-[100%]"
+                />
+              </div>
+              <p className="truncate">
+                artists display long saguyfagafsgfajfgjfasgasgfasgf
+              </p>
+            </div>
+            {/* // ! SUGGSTED CARD */}
+            <div className="flex w-40 flex-col gap-2 border-1 p-1">
+              <div className="">
+                <Thumbnail
+                  img="https://mosaic.scdn.co/640/ab67616d00001e024ca68d59a4a29c856a4a39c2ab67616d00001e025fd7c284c0b719ad07b8eac2ab67616d00001e0270b88fc5a2e13bc5440d947cab67616d00001e029e1cfc756886ac782e363d79"
+                  width="w-[100%]"
+                />
+              </div>
+              <p className="truncate">
+                artists display long saguyfagafsgfajfgjfasgasgfasgf
+              </p>
+            </div>
+
+            {/* // ! SUGGSTED CARD */}
+            <div className="flex w-40 flex-col gap-2 border-1 p-1">
+              <div className="">
+                <Thumbnail
+                  img="https://mosaic.scdn.co/640/ab67616d00001e024ca68d59a4a29c856a4a39c2ab67616d00001e025fd7c284c0b719ad07b8eac2ab67616d00001e0270b88fc5a2e13bc5440d947cab67616d00001e029e1cfc756886ac782e363d79"
+                  width="w-[100%]"
+                />
+              </div>
+              <p className="truncate">
+                artists display long saguyfagafsgfajfgjfasgasgfasgf
+              </p>
+            </div>
+            {/* // ! SUGGSTED CARD */}
+            <div className="flex w-40 flex-col gap-2 border-1 p-1">
+              <div className="">
+                <Thumbnail
+                  img="https://mosaic.scdn.co/640/ab67616d00001e024ca68d59a4a29c856a4a39c2ab67616d00001e025fd7c284c0b719ad07b8eac2ab67616d00001e0270b88fc5a2e13bc5440d947cab67616d00001e029e1cfc756886ac782e363d79"
+                  width="w-[100%]"
+                />
+              </div>
+              <p className="truncate">
+                artists display long saguyfagafsgfajfgjfasgasgfasgf
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* // ! new releases */}
+        <div className="p-2">R</div>
         <Outlet />
       </main>
       <DesktopPlayback />
