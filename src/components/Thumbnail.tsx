@@ -4,7 +4,7 @@ interface ThumbnailProps {
 }
 
 function Thumbnail({ img, width = "w-12" }: ThumbnailProps) {
-  return <img className={`row-span-2 ${width}`} src={img} />;
+  return <img className={`row-span-2 ${width} min-w-full`} src={img} />;
 }
 
 export default Thumbnail;

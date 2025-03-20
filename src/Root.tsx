@@ -14,8 +14,8 @@ function Root() {
 
   useEffect(() => {
     const verifyAuth = async () => {
-      console.log("isAuthenticated:", isAuthenticated);
       if (isAuthenticated) {
+        // ! to start the auto refresh timer
         autoRefreshToken();
         navigate("home");
       } else await initAuth();
