@@ -56,6 +56,10 @@ function FullPreview() {
 export async function loader({ params }: ActionFunctionArgs) {
   // * from url decide the type - playlist, show or album and call corresponding function
 
+  // ! check if already in LS
+
+  // ! no playlist in LS - fetch it from API
+
   const { getPlaylistOrShow } = useStateStore.getState();
 
   if (!params.id || typeof params.id !== "string") {

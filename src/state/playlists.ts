@@ -30,11 +30,11 @@ export interface DetailedPlaylist {
 
 export interface PlaylistSlice {
   playlists: UserPlaylistType[];
-  playlist: any[];
-  getUserPlaylists: () => Promise<void>;
+  playlist: Record<string, unknown>;
+  getUserPlaylists: () => Promise<UserPlaylistType[]>;
   getPlaylistOrShow: (
     id: string,
-    type?: "playlists" | "shows" | "album",
+    type?: "playlists" | "shows" | "albums",
   ) => Promise<null>;
 }
 
@@ -45,7 +45,7 @@ export const createPlaylistSlice: StateCreator<
   PlaylistSlice
 > = (set) => ({
   playlists: [],
-  playlist: [],
+  playlist: {},
   getUserPlaylists: async () => {
     try {
       // ! access token
@@ -61,7 +61,7 @@ export const createPlaylistSlice: StateCreator<
 
       if (storedPlaylists) {
         set({ playlists: storedPlaylists });
-        return;
+        return storedPlaylists;
       }
 
       // ! if not in LS, then fetch
@@ -90,8 +90,11 @@ export const createPlaylistSlice: StateCreator<
       localStorage.setItem("user_playlists", JSON.stringify(items));
 
       set({ playlists: formattedPlaylists });
+
+      return formattedPlaylists;
     } catch (err) {
       console.error("🛑 ❌", err);
+      return []; // ensures the function always returns UserPlaylistType[]
     }
   },
 
@@ -105,11 +108,13 @@ export const createPlaylistSlice: StateCreator<
       }
 
       // ! check LS for playlist
-      const storedPlaylist = getFromLocalStorage<any[]>(`playlist_${id}`);
+      const storedPlaylist = getFromLocalStorage<Record<string, unknown>>(
+        `playlist_${id}`,
+      );
 
       if (storedPlaylist) {
         set({ playlist: storedPlaylist });
-        return;
+        return storedPlaylist;
       }
 
       // ! if not in LS, then fetch playlist
@@ -128,6 +133,8 @@ export const createPlaylistSlice: StateCreator<
 
       // ! store this playlist in LS
       localStorage.setItem(`playlist_${id}`, JSON.stringify(data));
+
+      set({ playlist: data });
 
       return data;
     } catch (err) {

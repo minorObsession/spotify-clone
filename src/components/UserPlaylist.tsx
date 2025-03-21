@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router";
-import { Playlist } from "../state/playlists";
+import { UserPlaylistType } from "../state/playlists";
 import Thumbnail from "./Thumbnail";
 
-function UserPlaylist({ name, images, id, ownerName }: Playlist) {
+function UserPlaylist({ name, images, id, ownerName }: UserPlaylistType) {
   // console.log(id);
   const navigate = useNavigate();
 
