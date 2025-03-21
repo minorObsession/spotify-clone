@@ -41,13 +41,15 @@ function Home() {
     <div className={`grid-layout-l h-screen w-screen overflow-x-hidden`}>
       <DesktopNav />
       <Sidebar />
-      <main className="flex max-w-screen flex-col overflow-hidden border-r-4 bg-blue-100">
+      <main className="flex max-w-screen flex-col overflow-hidden bg-blue-100">
         {isHomepage ? (
           <>
             <RecentlyPlayedDesktop />
             <SuggestionsRow />
             {/* // ! suggestions - albums by artist you follow */}
             {/* // ! suggestions - audiobooks */}
+
+            <SuggestionsRow />
           </>
         ) : (
           <Outlet />

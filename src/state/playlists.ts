@@ -17,25 +17,26 @@ export interface UserPlaylistType {
 // data.images[0]
 // data.owner.display_name
 // data.owner.id - to look for avatar image
-export interface DetailedPlaylist {
-  name: string;
-  id: string;
-  playlistImages: any[]; // maybe get only 1 img
-  ownerName: string;
-  ownerID: string; // needed to get owner avatar image
-  tracks: any[];
-  totalPlaybackDuration: number; // add up tracks duration + format
-  artists: string[];
-}
 
+export interface DetailedPlaylistType {
+  id: string;
+  name: string;
+  type: string;
+  ownerName: string;
+  ownerId: string;
+  tracks: object[];
+  numTracks: number;
+  totalDurationMs: number;
+  imageUrl: string;
+}
 export interface PlaylistSlice {
   playlists: UserPlaylistType[];
-  playlist: Record<string, unknown>;
+  playlist: DetailedPlaylistType | object;
   getUserPlaylists: () => Promise<UserPlaylistType[]>;
   getPlaylistOrShow: (
     id: string,
     type?: "playlists" | "shows" | "albums",
-  ) => Promise<null>;
+  ) => Promise<DetailedPlaylistType>;
 }
 
 export const createPlaylistSlice: StateCreator<
@@ -108,7 +109,7 @@ export const createPlaylistSlice: StateCreator<
       }
 
       // ! check LS for playlist
-      const storedPlaylist = getFromLocalStorage<Record<string, unknown>>(
+      const storedPlaylist = getFromLocalStorage<DetailedPlaylistType>(
         `playlist_${id}`,
       );
 
@@ -130,15 +131,33 @@ export const createPlaylistSlice: StateCreator<
       if (!res.ok) throw new Error("No playlist or bad request");
 
       const data = await res.json();
+      console.log(data);
+      const totalDurationMs = data.tracks.items.reduce(
+        (sum: number, item: any) => sum + (item.track?.duration_ms || 0),
+        0,
+      );
+
+      const playlist: DetailedPlaylistType = {
+        name: data.name,
+        id: data.id,
+        type: data.type,
+        tracks: data.tracks.items,
+        numTracks: data.tracks.items.length,
+        totalDurationMs,
+        imageUrl: data.images.length > 0 ? data.images[0].url : null,
+        ownerName: data.owner.display_name,
+        ownerId: data.owner.id,
+      };
+
+      set({ playlist });
 
       // ! store this playlist in LS
-      localStorage.setItem(`playlist_${id}`, JSON.stringify(data));
+      localStorage.setItem(`playlist_${id}`, JSON.stringify(playlist));
 
-      set({ playlist: data });
-
-      return data;
+      return playlist;
     } catch (err) {
       console.error("🛑 ❌", err);
+      throw new Error("Failed to fetch playlist/show");
     }
   },
 });
