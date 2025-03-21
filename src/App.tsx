@@ -7,21 +7,12 @@ import FullPreview, {
   loader as playlistLoader,
 } from "./components/FullPreview";
 import PageNotFound from "./components/PageNotFound";
-// import { useUserStore } from "./state/user";
-// import { usePlaylistStore } from "./state/playlists";
+
+// TODO:
 
 function App() {
   const getUser = useStateStore((store) => store.getUser);
   const getUserPlaylists = useStateStore((store) => store.getUserPlaylists);
-
-  // ! FULL PREVIEW:
-
-  // user click on playlist
-  // url changes playlist:ID
-  // redirect to main --> home/playlist
-  // read URL to start api request
-  // loading spinner
-  // content displays in main BASED ON URL
 
   const router = createBrowserRouter([
     {
@@ -31,9 +22,11 @@ function App() {
         {
           path: "home",
           element: <Home />,
+          // * this loader is kind of a "initStore" or "initApp" - maybe move it somewhere
           loader: async () => {
             await getUser();
             await getUserPlaylists();
+            // await getRecTracks();
             return null;
           },
           children: [

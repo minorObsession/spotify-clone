@@ -1,20 +1,41 @@
-import { getAccessToken } from "../auth/authHelpers";
+import { getFromLocalStorage } from "../auth/authHelpers";
 import { StateCreator } from "zustand";
-import { useStateStore, StateStore } from "./store";
+import { StateStore } from "./store";
+import { AccessTokenType } from "./Auth.z";
 
-export interface UserPlaylist {
+export interface UserPlaylistType {
   name: string;
   id: string;
   images: any[];
   ownerName: string;
 }
 
-// export interface DetailedPlaylist {}
+// data.tracks.items (length)
+// ! items.forEach (item) ->
+// 1) item.track.duration_ms... add up total duration;
+// 2) item.track.name.artists ->  (arr).forEach (artist)-> artist.name (to display name)
+// data.images[0]
+// data.owner.display_name
+// data.owner.id - to look for avatar image
+export interface DetailedPlaylist {
+  name: string;
+  id: string;
+  playlistImages: any[]; // maybe get only 1 img
+  ownerName: string;
+  ownerID: string; // needed to get owner avatar image
+  tracks: any[];
+  totalPlaybackDuration: number; // add up tracks duration + format
+  artists: string[];
+}
 
 export interface PlaylistSlice {
-  playlists: UserPlaylist[];
+  playlists: UserPlaylistType[];
+  playlist: any[];
   getUserPlaylists: () => Promise<void>;
-  getPlaylistOrShow: (id: string) => Promise<null>;
+  getPlaylistOrShow: (
+    id: string,
+    type?: "playlists" | "shows" | "album",
+  ) => Promise<null>;
 }
 
 export const createPlaylistSlice: StateCreator<
@@ -24,16 +45,27 @@ export const createPlaylistSlice: StateCreator<
   PlaylistSlice
 > = (set) => ({
   playlists: [],
+  playlist: [],
   getUserPlaylists: async () => {
-    console.log("running getUserPlaylists");
     try {
-      const accessToken = getAccessToken();
-      // const userID = useStateStore.getState().userID;
-
-      if (!accessToken)
+      // ! access token
+      const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
+      if (!accessToken) {
+        // * maybe call requestToken here...
         throw new Error("Access token expired or doesn't exist");
-      // if (!userID) throw new Error("User ID is missing");
+      }
 
+      // ! check local storage for playlists
+      const storedPlaylists =
+        getFromLocalStorage<UserPlaylistType[]>("user_playlists");
+
+      if (storedPlaylists) {
+        set({ playlists: storedPlaylists });
+        return;
+      }
+
+      // ! if not in LS, then fetch
+      console.log("🛜 getUserPlaylists will call api...");
       const res = await fetch(`https://api.spotify.com/v1/me/playlists`, {
         method: "GET",
         headers: {
@@ -44,46 +76,59 @@ export const createPlaylistSlice: StateCreator<
       if (!res.ok) throw new Error("No playlists or bad request");
 
       const { items } = await res.json();
-      // Extract only the relevant playlist info
-      const formattedPlaylists: UserPlaylist[] = items.map((playlist: any) => ({
-        name: playlist.name,
-        id: playlist.id,
-        images: playlist.images || [],
-        ownerName: playlist.owner?.display_name || "",
-      }));
+
+      const formattedPlaylists: UserPlaylistType[] = items.map(
+        (playlist: any) => ({
+          name: playlist.name,
+          id: playlist.id,
+          images: playlist.images || [],
+          ownerName: playlist.owner?.display_name || "",
+        }),
+      );
+
+      // ! store playlists in LS
+      localStorage.setItem("user_playlists", JSON.stringify(items));
+
       set({ playlists: formattedPlaylists });
     } catch (err) {
       console.error("🛑 ❌", err);
     }
   },
-  getPlaylistOrShow: async (id) => {
+
+  getPlaylistOrShow: async (id, type = "playlists") => {
     try {
-      const accessToken = getAccessToken();
-      // const userID = useStateStore.getState().userID;
-
-      if (!accessToken)
+      // ! access token LS check
+      const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
+      if (!accessToken) {
+        // * maybe call requestToken here...
         throw new Error("Access token expired or doesn't exist");
+      }
 
-      const res = await fetch(`https://api.spotify.com/v1/playlists/${id}`, {
+      // ! check LS for playlist
+      const storedPlaylist = getFromLocalStorage<any[]>(`playlist_${id}`);
+
+      if (storedPlaylist) {
+        set({ playlist: storedPlaylist });
+        return;
+      }
+
+      // ! if not in LS, then fetch playlist
+      console.log("🛜 getPlaylistOrShow will call api...");
+      const res = await fetch(`https://api.spotify.com/v1/${type}/${id}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken.token}`,
           "Content-Type": "application/json",
         },
       });
-      if (!res.ok) throw new Error("No playlists or bad request");
+
+      if (!res.ok) throw new Error("No playlist or bad request");
 
       const data = await res.json();
-      console.log(data);
 
-      // Extract only the relevant playlist info
-      // const formattedPlaylists: UserPlaylist[] = items.map((playlist: any) => ({
-      //   name: playlist.name,
-      //   id: playlist.id,
-      //   images: playlist.images || [],
-      //   ownerName: playlist.owner?.display_name || "",
-      // }));
-      // set({ playlists: formattedPlaylists });
+      // ! store this playlist in LS
+      localStorage.setItem(`playlist_${id}`, JSON.stringify(data));
+
       return data;
     } catch (err) {
       console.error("🛑 ❌", err);

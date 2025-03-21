@@ -18,8 +18,15 @@ export const base64encode = (input: ArrayBuffer) => {
     .replace(/\//g, "_");
 };
 
-export const getAccessToken = () => {
-  const token = localStorage.getItem("access_token");
-  if (token !== null) return JSON.parse(token);
+// * put into REUSABLE folder
+export const getFromLocalStorage = <T>(key: string): T | null => {
+  const item = localStorage.getItem(key);
+  if (item !== null) return JSON.parse(item);
   else return null;
 };
+
+// export const getAccessToken = (): User | null => {
+//   const token = localStorage.getItem("access_token");
+//   if (token !== null) return JSON.parse(token);
+//   else return null;
+// };

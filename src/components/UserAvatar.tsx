@@ -1,7 +1,7 @@
 import { useStateStore } from "../state/store";
 
 function UserAvatar() {
-  const userPhoto = useStateStore((store) => store.photo);
+  const userPhoto = useStateStore((store) => store.user.photo);
 
   if (!userPhoto) return null;
 

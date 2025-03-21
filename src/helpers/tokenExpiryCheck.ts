@@ -11,8 +11,8 @@ const decodeToken = (token: string) => {
 
 export const tokenExpiresAt = (
   token: string,
-  returnFormat?: "seconds" | "milliseconds"
-): number | null => {
+  returnFormat?: "seconds" | "milliseconds",
+): number | undefined => {
   const decoded = decodeToken(token);
   if (decoded && decoded.exp) {
     const expirationTimeInMs = decoded.exp * 1000;
@@ -20,7 +20,6 @@ export const tokenExpiresAt = (
 
     return returnFormat === "seconds" ? decoded.exp : expirationTimeInMs;
   }
-  return null;
 };
 // ! USAGE:
 // tokenExpiresAt(tokenString)
