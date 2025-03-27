@@ -61,7 +61,7 @@
   }
 
   .playlist-item {
-    @apply grid grid-cols-[1fr_4fr] grid-rows-[1fr_1fr] items-center truncate p-1 md:p-1.5 lg:grid-cols-[1fr_5fr];
+    @apply grid grid-cols-[auto_1fr] items-center gap-x-2 truncate p-0.5 md:gap-x-3;
   }
 
   .playlist-title {
@@ -73,7 +73,7 @@
   }
 
   .playlist-row {
-    @apply container grid grid-cols-[3fr_1fr] items-center justify-between border border-b-2 px-2 sm:grid-cols-[3fr_1fr_1fr] lg:grid-cols-[3fr_1.5fr_1fr_1fr] lg:px-3;
+    @apply container grid grid-cols-[3fr_1fr_0.2fr] items-center justify-between border border-b-2 px-2 sm:grid-cols-[3fr_1fr_1fr_0.2fr] lg:grid-cols-[3fr_1.5fr_1fr_1fr_0.2fr] lg:px-3;
   }
 }
 

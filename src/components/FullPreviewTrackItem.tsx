@@ -9,13 +9,12 @@ interface TrackProps {
   index: number;
 }
 
-function FullPreviewTrack({ track, index }: TrackProps) {
+function FullPreviewTrackItem({ track, index }: TrackProps) {
   const { screenWidth: screenWidthRem } = useScreenWidthRem();
-
   console.log(track);
 
   const artists = track.artists.reduce(
-    (acc: string, artist: Record<string, any>, i, array) => {
+    (acc: string, artist: Record<string, any>, i: number, array: []) => {
       let artistNamePlus = artist.name + ", ";
 
       if (i + 1 === array.length)
@@ -27,9 +26,7 @@ function FullPreviewTrack({ track, index }: TrackProps) {
     "",
   );
   const album = track.album.name;
-
   const playbackTime = track.duration_ms;
-
   const timeToDisplay = flexibleMillisecondsConverter(playbackTime)
     .split("min")
     .map((el, i) => {
@@ -49,7 +46,7 @@ function FullPreviewTrack({ track, index }: TrackProps) {
 
   return (
     <div className="playlist-row text-2xs">
-      <div className="grid grid-cols-[1fr_5fr] grid-rows-[1fr_1fr] items-center gap-x-2.5 truncate p-1 sm:grid-cols-[1fr_5fr] md:grid-cols-[1fr_7fr] md:p-1.5 lg:gap-x-2">
+      <div className="playlist-item truncate p-1">
         {/* // ! number + thumbnail   */}
         <div className="row-span-2 flex items-center gap-2 lg:gap-3">
           <span>{index}</span>
@@ -66,18 +63,18 @@ function FullPreviewTrack({ track, index }: TrackProps) {
       </div>
 
       {screenWidthRem > 64 && <p className="truncate">{album}</p>}
+
       {screenWidthRem > 102 && <p className="truncate">date</p>}
 
-      {/* // !  */}
-      <div className="flex items-center gap-1.5 justify-self-end lg:gap-3">
-        <p className="">{timeToDisplay}</p>
-        {/* // ! only when hovered */}
-        <span>
-          <SlOptions />
-        </span>
-      </div>
+      {/* // ! DURATION */}
+
+      <p className="text-right">{timeToDisplay}</p>
+      {/* // ! only when hovered */}
+
+      {/* // ! replace true with isHovered */}
+      <span className="justify-self-end">{false ? "" : <SlOptions />}</span>
     </div>
   );
 }
 
-export default memo(FullPreviewTrack);
+export default memo(FullPreviewTrackItem);

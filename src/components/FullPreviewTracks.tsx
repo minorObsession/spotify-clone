@@ -1,4 +1,4 @@
-import FullPreviewTrack from "./FullPreviewTrack";
+import FullPreviewTrack from "./FullPreviewTrackItem";
 
 interface FullPreviewTracksProps {
   tracks: any[];
