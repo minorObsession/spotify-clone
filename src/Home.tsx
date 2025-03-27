@@ -38,10 +38,10 @@ function Home() {
 
   // ! LARGE SCREEN LAYOUT
   return isLargeScreen ? (
-    <div className={`grid-layout-l h-screen w-screen overflow-x-hidden`}>
+    <div className={`grid-layout-l overflow-hidden`}>
       <DesktopNav />
       <Sidebar />
-      <main className="flex max-w-screen flex-col overflow-hidden bg-blue-100">
+      <main className="grid-main-l flex flex-col overflow-y-auto bg-blue-100 pb-5">
         {isHomepage ? (
           <>
             <RecentlyPlayedDesktop />

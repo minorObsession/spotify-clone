@@ -35,6 +35,7 @@
 
   /* ! LARGE */
   .grid-layout-l {
+    height: 100vh;
     display: grid;
     grid-template-columns: 1fr 2.5fr;
     grid-template-rows: 0.5fr 10fr 1fr;
@@ -65,7 +66,7 @@
   }
 
   .playlist-title {
-    @apply self-end truncate text-xs sm:text-sm;
+    @apply self-end truncate text-xs sm:text-sm md:text-base lg:text-lg;
   }
 
   .playlist-owner {
@@ -73,13 +74,14 @@
   }
 
   .playlist-row {
-    @apply container grid grid-cols-[3fr_1fr_0.2fr] items-center justify-between border border-b-2 px-2 sm:grid-cols-[3fr_1fr_1fr_0.2fr] lg:grid-cols-[3fr_1.5fr_1fr_1fr_0.2fr] lg:px-3;
+    @apply container grid grid-cols-[3fr_1fr_0.2fr] items-center justify-between border border-b-1 px-2 sm:grid-cols-[3fr_1fr_1fr_0.2fr] lg:grid-cols-[3fr_1.5fr_1fr_1fr_0.2fr] lg:px-3;
   }
 }
 
 body,
 html {
   margin: 0 auto;
-  max-width: 100vw;
-  overflow-x: hidden;
+  max-width: 100lvw;
+  /* min-height: 100lvh; */
+  overflow: hidden;
 }

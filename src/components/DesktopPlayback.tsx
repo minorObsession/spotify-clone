@@ -5,7 +5,7 @@ import CurrentlyPlayng from "./CurrentlyPlayng";
 
 function DesktopPlayback() {
   return (
-    <footer className="fixed bottom-0 z-10 col-span-2 flex w-screen items-center justify-between gap-10 bg-amber-200 px-3">
+    <footer className="grid-playback-l z-10 col-span-2 flex h-[clamp(10lvh_15lvh_10rem)] w-screen items-center justify-between gap-10 bg-amber-200 px-3">
       {/* // ! currently playing item (reuse grid from sidebar) */}
       <CurrentlyPlayng />
 

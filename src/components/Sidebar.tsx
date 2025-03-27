@@ -9,7 +9,7 @@ function Sidebar() {
 
   return (
     <aside
-      className={`h-screen min-w-[20vw] overflow-y-scroll bg-amber-600 p-2`}
+      className={`grid-sidebar-l min-w-[20vw] overflow-y-auto bg-amber-600 p-2 py-5`}
     >
       {playlists?.map((playlist) => (
         <UserPlaylist

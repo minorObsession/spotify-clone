@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { HTMLAttributes, memo, MouseEventHandler, useRef } from "react";
 import { flexibleMillisecondsConverter } from "../helpers/helperFunctions";
 import { SlOptions } from "react-icons/sl";
 import Thumbnail from "./Thumbnail";
@@ -11,19 +11,10 @@ interface TrackProps {
 
 function FullPreviewTrackItem({ track, index }: TrackProps) {
   const { screenWidth: screenWidthRem } = useScreenWidthRem();
-  console.log(track);
+  const selectedTrackId = useRef<string | null>(null);
 
-  const artists = track.artists.reduce(
-    (acc: string, artist: Record<string, any>, i: number, array: []) => {
-      let artistNamePlus = artist.name + ", ";
-
-      if (i + 1 === array.length)
-        artistNamePlus = artistNamePlus.replace(",", "");
-
-      acc += artistNamePlus;
-      return acc;
-    },
-    "",
+  const artists: [] = track.artists.map(
+    (artist: Record<string, any>) => artist.name,
   );
   const album = track.album.name;
   const playbackTime = track.duration_ms;
@@ -41,28 +32,54 @@ function FullPreviewTrackItem({ track, index }: TrackProps) {
       }
       return el;
     });
-
   const thumbnailUrl = track.album.images[0].url;
 
+  //   const handleTrackSelect = (
+  //     e: DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>,
+  //   ) => {
+  //     // ! match with track object to find id
+  //     const selectedTrack = e.target.textContent;
+  // selectedTrackId.current =
+
+  //     // ! make api call with ID
+  //   };
+
   return (
-    <div className="playlist-row text-2xs">
+    <div className="playlist-row text:xs hover:bg-amber-400 lg:text-lg">
       <div className="playlist-item truncate p-1">
         {/* // ! number + thumbnail   */}
         <div className="row-span-2 flex items-center gap-2 lg:gap-3">
           <span>{index}</span>
           <Thumbnail
-            additionalClasses="w-7 md:w-7.5 lg:w-10"
+            additionalClasses="w-7 md:w-7.5 lg:w-8.5"
             img={thumbnailUrl}
           />
         </div>
         {/* // ! TRACK name */}
-        <p className="truncate" key={track.name}>
+        <span
+          onClick={handleTrackSelect}
+          className="w-fit truncate underline-offset-1 hover:cursor-pointer hover:underline"
+          key={track.name}
+        >
           {track.name}
-        </p>
-        <p className="text-2xs truncate">{artists}</p>
+        </span>
+        <span className="text-2xs w-fit truncate md:text-sm lg:text-sm">
+          {artists.map((artist, i) => (
+            <span
+              key={i}
+              className="underline-offset-1 hover:cursor-pointer hover:underline"
+            >
+              {i + 1 === artists.length ? artist : `${artist}, `}
+            </span>
+          ))}
+        </span>
       </div>
 
-      {screenWidthRem > 64 && <p className="truncate">{album}</p>}
+      {screenWidthRem > 64 && (
+        <p className="truncate underline-offset-1 hover:cursor-pointer hover:underline">
+          {album}
+        </p>
+      )}
 
       {screenWidthRem > 102 && <p className="truncate">date</p>}
 
@@ -72,7 +89,10 @@ function FullPreviewTrackItem({ track, index }: TrackProps) {
       {/* // ! only when hovered */}
 
       {/* // ! replace true with isHovered */}
-      <span className="justify-self-end">{false ? "" : <SlOptions />}</span>
+      {/* // ! add full desc on  hover */}
+      <span className="justify-self-end hover:cursor-pointer">
+        {false ? "" : <SlOptions />}
+      </span>
     </div>
   );
 }
