@@ -9,6 +9,7 @@ import FullPreview, {
 import PageNotFound from "./components/PageNotFound";
 
 // TODO:
+// ! add react query for some fetching!
 
 function App() {
   const getUser = useStateStore((store) => store.getUser);

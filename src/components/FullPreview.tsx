@@ -6,7 +6,9 @@ import {
 import { useStateStore } from "../state/store";
 import FullPreviewOverview from "./FullPreviewOverview";
 import { DetailedPlaylistType } from "../state/playlists";
+import FullPreviewTracks from "./FullPreviewTracks";
 
+// ! BUILDING THE PREVIRE PAGE
 function FullPreview() {
   // ! from url decide the type - playlist, show or album
   // ! type it
@@ -22,13 +24,16 @@ function FullPreview() {
   // data.owner.display_name
   // data.owner.id - to look for avatar image
 
+  const rawTracks = (data as unknown as { tracks: any }).tracks;
+  const tracksArr = Array.isArray(rawTracks) ? rawTracks : rawTracks.items;
+
   return (
     <div className="flex h-full flex-col gap-3 overflow-y-scroll bg-amber-800 p-3 md:p-4">
       <button className="self-start" onClick={() => navigate("/home")}>
         &larr;
       </button>
-
       <FullPreviewOverview data={data} />
+      <FullPreviewTracks tracks={tracksArr} />
     </div>
   );
 }

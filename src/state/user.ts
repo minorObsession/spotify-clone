@@ -12,7 +12,7 @@ export interface UserType {
 export interface UserSlice {
   // ! get partial types
   user: UserType | null;
-  getUser: () => Promise<void>;
+  getUser: () => Promise<UserType>;
 }
 
 export const createUserSlice: StateCreator<
@@ -22,7 +22,7 @@ export const createUserSlice: StateCreator<
   UserSlice
 > = (set) => ({
   user: null,
-  getUser: async () => {
+  getUser: async (): Promise<UserType> => {
     try {
       const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
       if (!accessToken)
@@ -34,7 +34,7 @@ export const createUserSlice: StateCreator<
 
       if (storedUser) {
         set({ user: storedUser });
-        return;
+        return storedUser;
       }
 
       // ! if not in LS, then fetch user
@@ -46,6 +46,7 @@ export const createUserSlice: StateCreator<
           "Content-Type": "application/json",
         },
       });
+
       if (!res.ok) throw new Error("No user or bad request");
 
       const data = await res.json();
@@ -63,9 +64,15 @@ export const createUserSlice: StateCreator<
 
       localStorage.setItem("user", JSON.stringify(userObject));
 
-      return data;
+      return userObject;
     } catch (err) {
       console.error("🛑 ❌", err);
+      return {
+        username: "",
+        photo: "",
+        userID: "",
+        email: "",
+      };
     }
   },
 });

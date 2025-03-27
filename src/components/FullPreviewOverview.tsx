@@ -1,3 +1,4 @@
+import { flexibleMillisecondsConverter } from "../helpers/helperFunctions";
 import { DetailedPlaylistType } from "../state/playlists";
 import { useStateStore } from "../state/store";
 import Thumbnail from "./Thumbnail";
@@ -6,10 +7,9 @@ import UserAvatar from "./UserAvatar";
 interface FullPreviewOverviewProps {
   data: DetailedPlaylistType;
 }
-
 function FullPreviewOverview({ data }: FullPreviewOverviewProps) {
-  console.log(data);
-  const currentUserID = useStateStore((store) => store.user?.userID);
+  // console.log(data);
+  const currentUserID = useStateStore((store) => store.user?.userID); // for getting the image
 
   // // ! getting artist form each track
   // data.tracks.items.forEach((item: any) => {
@@ -22,6 +22,27 @@ function FullPreviewOverview({ data }: FullPreviewOverviewProps) {
   const currUserOwnsPlaylist = Boolean(
     currentUserID && data.ownerId === currentUserID,
   );
+
+  const getPlaylistLenght = () => {
+    const rawTracks = (data as unknown as { tracks: any }).tracks;
+    const tracksArr = Array.isArray(rawTracks) ? rawTracks : rawTracks.items;
+    return flexibleMillisecondsConverter(
+      tracksArr.reduce((acc: number, track: any) => {
+        acc += track.track.duration_ms;
+        return acc;
+      }, 0),
+    );
+  };
+  // const getPlaylistLenght = () => {
+  //   const rawTracks = (data as unknown as { tracks: any }).tracks;
+  //   const tracksArr = Array.isArray(rawTracks) ? rawTracks : rawTracks.items;
+  //   return flexibleMillisecondsConverter(
+  //     tracksArr.reduce((acc: number, track: any) => {
+  //       acc += track.track.duration_ms;
+  //       return acc;
+  //     }, 0),
+  //   );
+  // };
 
   return (
     // {/* // ! image and title */}
@@ -41,11 +62,11 @@ function FullPreviewOverview({ data }: FullPreviewOverviewProps) {
         <h1 className="text-xl font-bold sm:text-3xl md:text-4xl lg:w-[12ch] lg:whitespace-pre-wrap">
           {data.name}
         </h1>
-        {/* // ! user div */}
+        {/* // ! user div DYNAMICALLY IMPORT PLAYLIST PHOTO */}
         <div className="flex items-center gap-1">
           {currUserOwnsPlaylist && <UserAvatar />}
           <span>{data.ownerName}</span>
-          <span>length</span>
+          <span>{getPlaylistLenght() || ""}</span>
         </div>
       </div>
     </div>
