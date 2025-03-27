@@ -1,13 +1,17 @@
 interface ThumbnailProps {
   img: string;
-  width?: string;
+  minWidth?: string;
   additionalClasses?: string;
 }
 
-function Thumbnail({ img, width = "w-12", additionalClasses }: ThumbnailProps) {
+function Thumbnail({
+  img,
+  minWidth = "min-w-7",
+  additionalClasses,
+}: ThumbnailProps) {
   return (
     <img
-      className={`row-span-2 aspect-square ${width} min-w-full ${additionalClasses}`}
+      className={`row-span-2 aspect-square ${minWidth} ${additionalClasses || ""}`}
       src={img}
     />
   );

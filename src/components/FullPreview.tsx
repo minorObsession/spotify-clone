@@ -7,6 +7,7 @@ import { useStateStore } from "../state/store";
 import FullPreviewOverview from "./FullPreviewOverview";
 import { DetailedPlaylistType } from "../state/playlists";
 import FullPreviewTracks from "./FullPreviewTracks";
+import PlaylistPreviewHeader from "./PlaylistPreviewHeader";
 
 // ! BUILDING THE PREVIRE PAGE
 function FullPreview() {
@@ -33,6 +34,7 @@ function FullPreview() {
         &larr;
       </button>
       <FullPreviewOverview data={data} />
+      <PlaylistPreviewHeader />
       <FullPreviewTracks tracks={tracksArr} />
     </div>
   );
