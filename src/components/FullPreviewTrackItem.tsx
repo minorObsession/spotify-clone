@@ -1,4 +1,4 @@
-import { HTMLAttributes, memo, MouseEventHandler, useRef } from "react";
+import { memo } from "react";
 import { flexibleMillisecondsConverter } from "../helpers/helperFunctions";
 import { SlOptions } from "react-icons/sl";
 import Thumbnail from "./Thumbnail";
@@ -11,7 +11,6 @@ interface TrackProps {
 
 function FullPreviewTrackItem({ track, index }: TrackProps) {
   const { screenWidth: screenWidthRem } = useScreenWidthRem();
-  const selectedTrackId = useRef<string | null>(null);
 
   const artists: [] = track.artists.map(
     (artist: Record<string, any>) => artist.name,
@@ -34,15 +33,11 @@ function FullPreviewTrackItem({ track, index }: TrackProps) {
     });
   const thumbnailUrl = track.album.images[0].url;
 
-  //   const handleTrackSelect = (
-  //     e: DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>,
-  //   ) => {
-  //     // ! match with track object to find id
-  //     const selectedTrack = e.target.textContent;
-  // selectedTrackId.current =
-
-  //     // ! make api call with ID
-  //   };
+  const handleTrackSelect = (e) => {
+    // ! match with track object to find id
+    // ! set z state to --> e.target.textContent
+    // ! make api call with ID
+  };
 
   return (
     <div className="playlist-row text:xs hover:bg-amber-400 lg:text-lg">

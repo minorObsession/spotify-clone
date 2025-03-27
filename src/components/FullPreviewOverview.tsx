@@ -11,13 +11,6 @@ function FullPreviewOverview({ data }: FullPreviewOverviewProps) {
   // console.log(data);
   const currentUserID = useStateStore((store) => store.user?.userID); // for getting the image
 
-  // // ! getting artist form each track
-  // data.tracks.items.forEach((item: any) => {
-  //   item.track?.artists.forEach((artist: any) => {
-  //     artistsSet.add(artist.name);
-  //   });
-  // });
-
   // avatar find
   const currUserOwnsPlaylist = Boolean(
     currentUserID && data.ownerId === currentUserID,
@@ -33,16 +26,6 @@ function FullPreviewOverview({ data }: FullPreviewOverviewProps) {
       }, 0),
     );
   };
-  // const getPlaylistLenght = () => {
-  //   const rawTracks = (data as unknown as { tracks: any }).tracks;
-  //   const tracksArr = Array.isArray(rawTracks) ? rawTracks : rawTracks.items;
-  //   return flexibleMillisecondsConverter(
-  //     tracksArr.reduce((acc: number, track: any) => {
-  //       acc += track.track.duration_ms;
-  //       return acc;
-  //     }, 0),
-  //   );
-  // };
 
   return (
     // {/* // ! image and title */}
@@ -51,7 +34,7 @@ function FullPreviewOverview({ data }: FullPreviewOverviewProps) {
       <div className="aspect-square flex-[0_1_20%]">
         <Thumbnail
           img={data.imageUrl}
-          width="w-full"
+          miwidth="w-full"
           additionalClasses="w-full h-full object-contain"
         />
       </div>

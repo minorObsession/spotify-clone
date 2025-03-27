@@ -1,4 +1,4 @@
-import FullPreviewTrack from "./FullPreviewTrackItem";
+import FullPreviewTrackItem from "./FullPreviewTrackItem";
 
 interface FullPreviewTracksProps {
   tracks: any[];
@@ -9,7 +9,11 @@ function FullPreviewTracks({ tracks }: FullPreviewTracksProps) {
     <section className="h-full bg-amber-300">
       <article>
         {tracks.map((track, i) => (
-          <FullPreviewTrack key={track.name} index={i} track={track.track} />
+          <FullPreviewTrackItem
+            key={track.name}
+            index={i}
+            track={track.track}
+          />
         ))}
       </article>
     </section>

@@ -1,5 +1,6 @@
 import { AuthSlice, createAuthSlice } from "./Auth.z";
 import { createPlaylistSlice, PlaylistSlice } from "./playlists";
+import { createTrackSlice } from "./track";
 
 import { createUserSlice, UserSlice } from "./user";
 import { create } from "zustand";
@@ -13,6 +14,7 @@ export const useStateStore = create<StateStore>()(
     ...createAuthSlice(...args),
     ...createUserSlice(...args),
     ...createPlaylistSlice(...args),
+    ...createTrackSlice(...args),
     // ...createRecommendationsSlice(...args),
   })),
 );

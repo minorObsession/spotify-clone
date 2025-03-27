@@ -5,7 +5,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { useStateStore } from "./state/store";
 import FullPreview, {
   loader as playlistLoader,
-} from "./components/FullPreview";
+} from "./components/FullPreviewPlaylist";
 import PageNotFound from "./components/PageNotFound";
 
 // TODO:
@@ -31,6 +31,12 @@ function App() {
             return null;
           },
           children: [
+            {
+              // ! also could be album or show (audiobook or podcast)
+              path: "playlist/:id",
+              element: <FullPreview />,
+              loader: playlistLoader,
+            },
             {
               // ! also could be album or show (audiobook or podcast)
               path: "playlist/:id",
