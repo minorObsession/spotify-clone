@@ -1,7 +1,7 @@
 // ! ONLY FOR DESKTOP VIEW
 
-import { useStateStore } from "../state/store";
-import UserPlaylist from "./UserPlaylist";
+import { useStateStore } from "../../state/store";
+import UserPlaylist from "../../components/UserPlaylist";
 
 function Sidebar() {
   const playlists = useStateStore((store) => store.playlists);

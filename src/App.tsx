@@ -5,11 +5,11 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { useStateStore } from "./state/store";
 import FullPreviewPlaylist, {
   loader as playlistLoader,
-} from "./components/FullPreviewPlaylist";
+} from "./features/playlists/FullPreviewPlaylist";
 
 import FullPreviewTrack, {
   loader as trackLoader,
-} from "./components/FullPreviewTrack";
+} from "./features/tracks/FullPreviewTrack";
 
 import PageNotFound from "./components/PageNotFound";
 

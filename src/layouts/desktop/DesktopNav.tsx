@@ -2,7 +2,7 @@ import { SlSocialSpotify } from "react-icons/sl";
 import { SlHome } from "react-icons/sl";
 
 import { SlMagnifier } from "react-icons/sl";
-import UserAvatar from "./UserAvatar";
+import UserAvatar from "../../components/UserAvatar";
 // import { useNavigate } from "react-router";
 
 function DesktopNav() {

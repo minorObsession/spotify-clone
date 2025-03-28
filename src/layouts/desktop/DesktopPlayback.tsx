@@ -1,7 +1,7 @@
 import { SlControlPlay } from "react-icons/sl";
-import ProgressBar from "./ProgressBar";
+import ProgressBar from "../../components/ProgressBar";
 import { HiOutlineQueueList } from "react-icons/hi2";
-import CurrentlyPlayng from "./CurrentlyPlayng";
+import CurrentlyPlayng from "../../features/playback/CurrentlyPlayng";
 
 function DesktopPlayback() {
   return (

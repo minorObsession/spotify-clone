@@ -3,11 +3,11 @@ import {
   useLoaderData,
   useNavigate,
 } from "react-router-dom";
-import { useStateStore } from "../state/store";
-import FullPreviewOverview from "./FullPreviewOverview";
-import { DetailedPlaylistType } from "../state/playlists";
-import FullPreviewTracks from "./FullPreviewTracks";
-import PlaylistPreviewHeader from "./PlaylistPreviewHeader";
+import { useStateStore } from "../../state/store";
+import { DetailedPlaylistType } from "./playlists";
+import FullPreviewTracks from "../../components/FullPreviewTracks";
+import PlaylistPreviewHeader from "../../components/PlaylistPreviewHeader";
+import FullPreviewOverview from "../../components/FullPreviewOverview";
 
 function FullPreviewPlaylist() {
   // ! from url decide the type - playlist, show or album

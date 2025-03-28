@@ -1,4 +1,4 @@
-import { useScreenWidthRem } from "../hooks/useScreenWidthRem";
+import { useScreenWidthRem } from "../../hooks/useScreenWidthRem";
 
 function MobileHeaderTabs() {
   const { isLargeScreen } = useScreenWidthRem();

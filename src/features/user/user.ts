@@ -1,7 +1,7 @@
-import { getFromLocalStorage } from "../auth/authHelpers";
-import { AccessTokenType } from "./Auth.z";
-import { StateStore } from "./store";
 import { StateCreator } from "zustand";
+import { getFromLocalStorage } from "../../auth/authHelpers";
+import { StateStore } from "../../state/store";
+import { AccessTokenType } from "../auth/Auth";
 
 export interface UserType {
   username: string;

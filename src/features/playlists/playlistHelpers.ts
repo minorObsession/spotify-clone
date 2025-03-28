@@ -1,5 +1,5 @@
-import { DetailedPlaylistType } from "../state/playlists";
-import { flexibleMillisecondsConverter } from "./helperFunctions";
+import { DetailedPlaylistType } from "./playlists";
+import { flexibleMillisecondsConverter } from "../../helpers/helperFunctions";
 
 export const getPlaylistLenght = (data: DetailedPlaylistType) => {
   const rawTracks = (data as DetailedPlaylistType as { tracks: any }).tracks;

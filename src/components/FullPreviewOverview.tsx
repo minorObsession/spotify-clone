@@ -1,9 +1,9 @@
-import { getPlaylistLenght } from "../helpers/playlistHelpers";
-import { DetailedPlaylistType } from "../state/playlists";
+import { getPlaylistLenght } from "../features/playlists/playlistHelpers";
 import { useStateStore } from "../state/store";
-import { TrackType } from "../state/track";
+import { TrackType } from "../features/tracks/track";
 import Thumbnail from "./Thumbnail";
 import UserAvatar from "./UserAvatar";
+import { DetailedPlaylistType } from "../features/playlists/playlists";
 
 interface FullPreviewOverviewProps {
   data: DetailedPlaylistType | TrackType;

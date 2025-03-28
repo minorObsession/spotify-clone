@@ -1,10 +1,12 @@
-import { AuthSlice, createAuthSlice } from "./Auth.z";
-import { createPlaylistSlice, PlaylistSlice } from "./playlists";
-import { createTrackSlice, TrackSlice } from "./track";
-
-import { createUserSlice, UserSlice } from "./user";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
+import { AuthSlice, createAuthSlice } from "../features/auth/Auth";
+import { createUserSlice, UserSlice } from "../features/user/user";
+import {
+  createPlaylistSlice,
+  PlaylistSlice,
+} from "../features/playlists/playlists";
+import { createTrackSlice, TrackSlice } from "../features/tracks/track";
 
 export type StateStore = AuthSlice & UserSlice & PlaylistSlice & TrackSlice;
 // RecommendationsSlice;

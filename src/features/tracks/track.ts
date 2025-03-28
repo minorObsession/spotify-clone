@@ -1,8 +1,8 @@
-import { getFromLocalStorage } from "../auth/authHelpers";
-import { flexibleMillisecondsConverter } from "../helpers/helperFunctions";
-import { AccessTokenType } from "./Auth.z";
-import { StateStore } from "./store";
+import { getFromLocalStorage } from "../../auth/authHelpers";
+import { flexibleMillisecondsConverter } from "../../helpers/helperFunctions";
+import { StateStore } from "../../state/store";
 import { StateCreator } from "zustand";
+import { AccessTokenType } from "../auth/Auth";
 
 export interface TrackType {
   name: string;

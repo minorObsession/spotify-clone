@@ -1,14 +1,14 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 
-import Sidebar from "./components/Sidebar";
+import Sidebar from "./layouts/desktop/Sidebar";
 import { useScreenWidthRem } from "./hooks/useScreenWidthRem";
-import MobileNav from "./components/MobileNav";
-import DesktopPlayback from "./components/DesktopPlayback";
-import MobilePlayback from "./components/MobilePlayback";
+import MobileNav from "./layouts/mobile/MobileNav";
+import DesktopPlayback from "./layouts/desktop/DesktopPlayback";
+import MobilePlayback from "./layouts/mobile/MobilePlayback";
 
-import DesktopNav from "./components/DesktopNav";
-import MobileHeader from "./components/MobileHeader";
+import DesktopNav from "./layouts/desktop/DesktopNav";
+import MobileHeader from "./layouts/mobile/MobileHeader";
 
 import RecentlyPlayedMobile from "./components/RecentlyPlayedMobile";
 import RecentlyPlayedDesktop from "./components/RecentlyPlayedDesktop";

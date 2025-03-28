@@ -3,9 +3,9 @@ import {
   useLoaderData,
   useNavigate,
 } from "react-router-dom";
-import { useStateStore } from "../state/store";
-import { TrackType } from "../state/track";
-import FullPreviewOverview from "./FullPreviewOverview";
+import { useStateStore } from "../../state/store";
+import { TrackType } from "./track";
+import FullPreviewOverview from "../../components/FullPreviewOverview";
 
 function FullPreviewTrack() {
   // ! from url decide the type - playlist, show or album

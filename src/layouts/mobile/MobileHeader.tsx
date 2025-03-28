@@ -1,5 +1,5 @@
-import { useScreenWidthRem } from "../hooks/useScreenWidthRem";
-import UserAvatar from "./UserAvatar";
+import { useScreenWidthRem } from "../../hooks/useScreenWidthRem";
+import UserAvatar from "../../components/UserAvatar";
 
 // ! ONLY FOR MOBILE VIEW
 function MobileHeader() {

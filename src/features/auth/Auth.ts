@@ -4,8 +4,8 @@ import {
   base64encode,
   generateRandomString,
   sha256,
-} from "../auth/authHelpers";
-import { StateStore } from "./store";
+} from "../../auth/authHelpers";
+import { StateStore } from "../../state/store";
 
 // --- Configuration ---
 const AUTH_CONFIG = {
