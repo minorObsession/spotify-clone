@@ -1,20 +1,26 @@
 import { getFromLocalStorage } from "../auth/authHelpers";
+import { flexibleMillisecondsConverter } from "../helpers/helperFunctions";
 import { AccessTokenType } from "./Auth.z";
 import { StateStore } from "./store";
 import { StateCreator } from "zustand";
 
 export interface TrackType {
-  title: string;
-  photoUrl: string;
+  name: string;
+  trackId: string;
+  imageUrl: string;
   multipleArtists: boolean;
-  artist: string[];
-  artistsMonthlyListeners: number;
+  artists: string[];
+  type: string;
+  trackDuration: string;
+  releaseDate: string;
+  albumName: string;
+  albumId: string;
 }
 
 export interface TrackSlice {
   // ! get partial types
-  user: TrackType | null;
-  getTrack: (id) => Promise<TrackType>;
+  track: TrackType | null;
+  getTrack: (id: string) => Promise<TrackType | undefined>;
 }
 
 export const createTrackSlice: StateCreator<
@@ -23,21 +29,12 @@ export const createTrackSlice: StateCreator<
   [],
   TrackSlice
 > = (set) => ({
-  user: null,
-  getTrack: async (id: string): Promise<TrackType> => {
+  track: null,
+  getTrack: async (id: string): Promise<TrackType | undefined> => {
     try {
       const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
       if (!accessToken)
         throw new Error("Access token expired or doesn't exist");
-
-      // ! check LS for user
-      // * potential problem if switched to different user - need a better validation
-      // const storedUser = getFromLocalStorage<TrackType>("user");
-
-      // if (storedUser) {
-      //   set({ user: storedUser });
-      //   return storedUser;
-      // }
 
       // ! if not in LS, then fetch track
       console.log("🛜 getTrack will call api...");
@@ -53,29 +50,41 @@ export const createTrackSlice: StateCreator<
 
       const data = await res.json();
       console.log(data);
-      // const userObject: TrackType = {
-      //   // title: string;
-      //   // photoUrl: string;
-      //   // multipleArtists: boolean;
-      //   // artist: string[];
-      //   // artistsMonthlyListeners: number;
-      // };
 
-      // set({ user: userObject });
+      const trackObject: TrackType = {
+        name: data.name,
+        type: data.type,
+        trackId: data.id,
+        imageUrl: data.album.images[0].url,
+        multipleArtists: data.artists.length > 1,
+        artists: data.artists.map((artist: any) => artist.name),
+        trackDuration: flexibleMillisecondsConverter(data.duration_ms),
+        releaseDate: data.album.release_date,
+        albumName: data.album.name,
+        albumId: data.album.id,
+      };
+
+      set({ track: trackObject });
 
       // ! store track in LS ??? maybe session storage
-      // localStorage.setItem("user", JSON.stringify(userObject));
+      // localStorage.setItem("track", JSON.stringify(userObject));
 
       // ! DON'T FORGET RETURN
-      // return userObject;
+      return trackObject;
     } catch (err) {
       console.error("🛑 ❌", err);
       return {
-        title: "",
-        photoUrl: "",
+        name: "",
+        trackId: "",
+        imageUrl: "",
         multipleArtists: false,
-        artist: [],
-        artistsMonthlyListeners: 0,
+        artists: [],
+        type: "",
+        trackDuration: "",
+        releaseDate: "",
+        albumName: "",
+        albumId: "",
+        // artistsMonthlyListeners: 0,
       };
     }
   },

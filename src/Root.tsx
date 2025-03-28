@@ -17,7 +17,7 @@ function Root() {
       if (isAuthenticated) {
         // ! to start the auto refresh timer
         autoRefreshToken();
-        navigate("home/playlist/05k9nFUxjBAk4NBmLKtGTH");
+        navigate("home");
       } else await initAuth();
     };
     verifyAuth();

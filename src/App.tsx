@@ -3,9 +3,14 @@ import Root from "./Root";
 import Home from "./Home";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { useStateStore } from "./state/store";
-import FullPreview, {
+import FullPreviewPlaylist, {
   loader as playlistLoader,
 } from "./components/FullPreviewPlaylist";
+
+import FullPreviewTrack, {
+  loader as trackLoader,
+} from "./components/FullPreviewTrack";
+
 import PageNotFound from "./components/PageNotFound";
 
 // TODO:
@@ -34,14 +39,14 @@ function App() {
             {
               // ! also could be album or show (audiobook or podcast)
               path: "playlist/:id",
-              element: <FullPreview />,
+              element: <FullPreviewPlaylist />,
               loader: playlistLoader,
             },
             {
               // ! also could be album or show (audiobook or podcast)
-              path: "playlist/:id",
-              element: <FullPreview />,
-              loader: playlistLoader,
+              path: "track/:id",
+              element: <FullPreviewTrack />,
+              loader: trackLoader,
             },
           ],
         },

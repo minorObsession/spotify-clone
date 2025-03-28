@@ -1,8 +1,11 @@
 // src/auth/ProtectedRoute.tsx
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../auth/AuthContext";
-
+// import { useAuth } from "../auth/AuthContext";
+// ! MISSING THE ISauthenticated variable
+// ! MISSING THE ISauthenticated variable
+// ! MISSING THE ISauthenticated variable
+// ! MISSING THE ISauthenticated variable
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }

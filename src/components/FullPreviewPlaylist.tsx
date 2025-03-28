@@ -9,7 +9,7 @@ import { DetailedPlaylistType } from "../state/playlists";
 import FullPreviewTracks from "./FullPreviewTracks";
 import PlaylistPreviewHeader from "./PlaylistPreviewHeader";
 
-function FullPreview() {
+function FullPreviewPlaylist() {
   // ! from url decide the type - playlist, show or album
   // ! type it
   const data = useLoaderData() as DetailedPlaylistType;
@@ -56,4 +56,4 @@ export async function loader({
   }
 }
 
-export default FullPreview;
+export default FullPreviewPlaylist;

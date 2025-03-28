@@ -3,6 +3,7 @@ import { flexibleMillisecondsConverter } from "../helpers/helperFunctions";
 import { SlOptions } from "react-icons/sl";
 import Thumbnail from "./Thumbnail";
 import { useScreenWidthRem } from "../hooks/useScreenWidthRem";
+import { useNavigate } from "react-router";
 
 interface TrackProps {
   track: Record<string, any>;
@@ -11,6 +12,7 @@ interface TrackProps {
 
 function FullPreviewTrackItem({ track, index }: TrackProps) {
   const { screenWidth: screenWidthRem } = useScreenWidthRem();
+  const navigate = useNavigate();
 
   const artists: [] = track.artists.map(
     (artist: Record<string, any>) => artist.name,
@@ -34,9 +36,8 @@ function FullPreviewTrackItem({ track, index }: TrackProps) {
   const thumbnailUrl = track.album.images[0].url;
 
   const handleTrackSelect = (e) => {
-    // ! match with track object to find id
-    // ! set z state to --> e.target.textContent
-    // ! make api call with ID
+    console.log(e);
+    navigate(`/home/track/${e.target.id}`);
   };
 
   return (
@@ -53,8 +54,9 @@ function FullPreviewTrackItem({ track, index }: TrackProps) {
         {/* // ! TRACK name */}
         <span
           onClick={handleTrackSelect}
+          id={track.id}
           className="w-fit truncate underline-offset-1 hover:cursor-pointer hover:underline"
-          key={track.name}
+          key={track.id}
         >
           {track.name}
         </span>
