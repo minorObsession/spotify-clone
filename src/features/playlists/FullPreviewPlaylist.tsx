@@ -5,7 +5,7 @@ import {
 } from "react-router-dom";
 import { useStateStore } from "../../state/store";
 import { DetailedPlaylistType } from "./playlists";
-import FullPreviewTracks from "../../components/FullPreviewTracks";
+import FullPreviewTracks from "../tracks/FullPreviewTracks";
 import PlaylistPreviewHeader from "../../components/PlaylistPreviewHeader";
 import FullPreviewOverview from "../../components/FullPreviewOverview";
 

@@ -4,33 +4,23 @@ import { TrackType } from "../features/tracks/track";
 import Thumbnail from "./Thumbnail";
 import UserAvatar from "./UserAvatar";
 import { DetailedPlaylistType } from "../features/playlists/playlists";
+import {
+  getDataType,
+  isDataTrack,
+  isDataPlaylist,
+} from "../features/tracks/tracksHelpers";
 
 interface FullPreviewOverviewProps {
   data: DetailedPlaylistType | TrackType;
 }
 
 function FullPreviewOverview({ data }: FullPreviewOverviewProps) {
-  // ✅ Type guard for Playlist
-  const isPlaylist = (
-    data: DetailedPlaylistType | TrackType,
-  ): data is DetailedPlaylistType => {
-    return "tracks" in data; // Playlists have a `tracks` property, tracks don't
-  };
-  // ✅ Type guard for Track
-  const isTrack = (
-    data: DetailedPlaylistType | TrackType,
-  ): data is TrackType => {
-    return "trackId" in data;
-  };
-  const getDataType = (data: DetailedPlaylistType | TrackType) => {
-    if (isPlaylist(data)) return "playlist";
-    if (isTrack(data)) return "track";
-    return "unknown";
-  };
+  const isPlaylist = isDataPlaylist(data);
+  const isTrack = isDataTrack(data);
 
   const currentUserID = useStateStore((store) => store.user?.userID);
   const currUserOwnsPlaylist = Boolean(
-    isPlaylist(data) && data.ownerId === currentUserID,
+    isPlaylist && data.ownerId === currentUserID,
   );
 
   if (getDataType(data) === "unknown") return null;
@@ -59,11 +49,10 @@ function FullPreviewOverview({ data }: FullPreviewOverviewProps) {
 
           {/* // ! NAME of Playlist/Artist  */}
           <span className="underline-offset-1 hover:cursor-pointer hover:underline">
-            {(isPlaylist(data) && data.ownerName) ||
-              (isTrack(data) && data.artists[0])}
+            {(isPlaylist && data.ownerName) || (isTrack && data.artists[0])}
           </span>
           {/* // ! ALBUM + RELEASE date - (only for tracks** )  */}
-          {isTrack(data) && (
+          {isTrack && (
             <>
               <span className="underline-offset-1 hover:cursor-pointer hover:underline">
                 {data.albumName}
@@ -76,8 +65,8 @@ function FullPreviewOverview({ data }: FullPreviewOverviewProps) {
           )}
           {/* // ! LENGTH of Playlist/Track */}
           <span className="underline-offset-1 hover:cursor-pointer hover:underline">
-            {(isPlaylist(data) && getPlaylistLenght(data)) ||
-              (isTrack(data) && data.trackDuration)}
+            {(isPlaylist && getPlaylistLenght(data)) ||
+              (isTrack && data.trackDuration)}
           </span>
         </div>
       </div>
