@@ -10,8 +10,8 @@ import MobilePlayback from "./layouts/mobile/MobilePlayback";
 import DesktopNav from "./layouts/desktop/DesktopNav";
 import MobileHeader from "./layouts/mobile/MobileHeader";
 
-import RecentlyPlayedMobile from "./components/RecentlyPlayedMobile";
-import RecentlyPlayedDesktop from "./components/RecentlyPlayedDesktop";
+import RecentlyPlayedMobile from "./layouts/mobile/RecentlyPlayedMobile";
+import RecentlyPlayedDesktop from "./layouts/desktop/RecentlyPlayedDesktop";
 import { useStateStore } from "./state/store";
 import SuggestionsRow from "./components/SuggestionsRow";
 

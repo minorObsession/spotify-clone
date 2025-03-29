@@ -10,14 +10,6 @@ export interface UserPlaylistType {
   ownerName: string;
 }
 
-// data.tracks.items (length)
-// ! items.forEach (item) ->
-// 1) item.track.duration_ms... add up total duration;
-// 2) item.track.name.artists ->  (arr).forEach (artist)-> artist.name (to display name)
-// data.images[0]
-// data.owner.display_name
-// data.owner.id - to look for avatar image
-
 export interface DetailedPlaylistType {
   id: string;
   name: string;
@@ -103,10 +95,8 @@ export const createPlaylistSlice: StateCreator<
     try {
       // ! access token LS check
       const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
-      if (!accessToken) {
-        // * maybe call requestToken here...
+      if (!accessToken)
         throw new Error("Access token expired or doesn't exist");
-      }
 
       // ! check LS for playlist
       const storedPlaylist = getFromLocalStorage<DetailedPlaylistType>(

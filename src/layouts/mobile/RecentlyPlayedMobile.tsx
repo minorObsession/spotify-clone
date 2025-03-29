@@ -1,4 +1,4 @@
-import RecentTab from "./RecentTab";
+import RecentTab from "../../components/RecentTab";
 
 function RecentlyPlayedMobile() {
   // const limitNumOfTabs = (array: any[], numTabs = 8): any[] =>

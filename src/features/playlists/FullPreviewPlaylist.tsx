@@ -6,7 +6,7 @@ import {
 import { useStateStore } from "../../state/store";
 import { DetailedPlaylistType } from "./playlists";
 import FullPreviewTracks from "../tracks/FullPreviewTracks";
-import PlaylistPreviewHeader from "../../components/PlaylistPreviewHeader";
+import PlaylistPreviewHeader from "./PlaylistPreviewHeader";
 import FullPreviewOverview from "../../components/FullPreviewOverview";
 
 function FullPreviewPlaylist() {
@@ -17,6 +17,7 @@ function FullPreviewPlaylist() {
 
   const rawTracks = (data as unknown as { tracks: any }).tracks;
   const tracksArr = Array.isArray(rawTracks) ? rawTracks : rawTracks.items;
+  console.log(tracksArr);
 
   return (
     <div className="flex h-full flex-col gap-3 overflow-y-scroll bg-amber-800 p-3 md:p-4">

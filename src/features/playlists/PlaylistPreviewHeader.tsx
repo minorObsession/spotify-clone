@@ -1,4 +1,4 @@
-import { useScreenWidthRem } from "../hooks/useScreenWidthRem";
+import { useScreenWidthRem } from "../../hooks/useScreenWidthRem";
 import { MdAccessTime } from "react-icons/md";
 
 function PlaylistPreviewHeader() {

@@ -1,28 +1,26 @@
 import { memo, useState } from "react";
 import { flexibleMillisecondsConverter } from "../../helpers/helperFunctions";
-import { SlOptions } from "react-icons/sl";
 import Thumbnail from "../../components/Thumbnail";
 import { useScreenWidthRem } from "../../hooks/useScreenWidthRem";
 import { useNavigate } from "react-router";
-import useOutsideClick from "../../hooks/useOutsideClick";
+import TrackOptions from "./TrackOptions";
 
 interface TrackProps {
+  // * PROBABLY THE BEST IDEA IS TO NOT USE ANY AND TO INSTEAD FILL TrackType with everything it needs right in zustaand fetch!!!!
   track: Record<string, any>;
   index: number;
 }
 
-// ! REFACTOR MENU STUFF IN SEPERATE COMPONENT
+// ! TO AVOID Record<string, any> - take only the actual data you need from playlist.ts for tracks!!!
+
 function FullPreviewTrackItem({ track, index }: TrackProps) {
   const navigate = useNavigate();
   const { screenWidth: screenWidthRem } = useScreenWidthRem();
 
-  const [isTrackHovered, setIsTrackHovered] = useState(false);
-  const [areOptionsHovered, setAreOptionsHovered] = useState(false);
-  const [areOptionsVisible, setAreOptionsVisible] = useState(false);
   const [isTrackBoxSelected, setIsTrackBoxSelected] = useState(false);
+  const [isTrackHovered, setIsTrackHovered] = useState(false);
 
-  const menuRef = useOutsideClick(setAreOptionsVisible, setIsTrackBoxSelected);
-
+  const trackName = track.name;
   const artists: [] = track.artists.map(
     (artist: Record<string, any>) => artist.name,
   );
@@ -48,16 +46,9 @@ function FullPreviewTrackItem({ track, index }: TrackProps) {
     });
   const thumbnailUrl = track.album.images[0].url;
 
-  const handleDisplayTrackOptions = () => {
-    setAreOptionsHovered(false);
-    setAreOptionsVisible(true);
-
-    // ! do stuff...
-  };
-
-  const handleTrackSelect = (e: React.MouseEvent) => {
+  const handleTrackSelect = (e: React.MouseEvent<HTMLElement>) => {
     console.log(e);
-    navigate(`/home/track/${e.target.id}`);
+    navigate(`/home/track/${e.currentTarget.id}`);
   };
 
   return (
@@ -83,7 +74,7 @@ function FullPreviewTrackItem({ track, index }: TrackProps) {
           className="w-fit truncate underline-offset-1 hover:cursor-pointer hover:underline"
           key={track.id}
         >
-          {track.name}
+          {trackName}
         </span>
         <span className="text-2xs w-fit truncate md:text-sm lg:text-sm">
           <span className="underline-offset-1 hover:cursor-pointer hover:underline">
@@ -105,44 +96,13 @@ function FullPreviewTrackItem({ track, index }: TrackProps) {
       <p className="text-right">{timeToDisplay}</p>
       {/* // ! only when hovered */}
 
-      {/* <TrackOptions/> */}
-      {/* // ! options div */}
-      <div
-        onMouseEnter={() => !areOptionsVisible && setAreOptionsHovered(true)}
-        onMouseLeave={() => setAreOptionsHovered(false)}
-        onClick={handleDisplayTrackOptions}
-        className="relative justify-self-end"
-      >
-        {/* // ! options hover */}
-        <span
-          className={`absolute -right-4 bottom-7 z-12 rounded-md bg-amber-200 p-1 text-xs text-nowrap shadow-md ${areOptionsHovered ? "inline" : "hidden"}`}
-        >
-          see more options for {track.name} by {artistsToDisplay}
-        </span>
-        {/* // ! options menu */}
-        <ul
-          ref={menuRef}
-          className={`absolute -right-4 bottom-7 z-10 rounded-md bg-amber-200 p-1 text-xs text-nowrap shadow-md ${areOptionsVisible ? "inline" : "hidden"}`}
-        >
-          <li>Add to playlist &rarr;</li>
-          <li>Save to your Liked Songs</li>
-          <li>Add to queue</li>
-          <li>Go to artist</li>
-          <li>Go to album</li>
-          <li>View credits</li>
-          <li>Share &rarr;</li>
-          <li>opt5</li>
-        </ul>
-
-        {/* // ! dots to display menu  */}
-        <span className="justify-self-start hover:cursor-pointer">
-          {(isTrackHovered && !areOptionsVisible) || isTrackBoxSelected ? (
-            <SlOptions />
-          ) : (
-            ""
-          )}
-        </span>
-      </div>
+      <TrackOptions
+        trackName={trackName}
+        isTrackBoxSelected={isTrackBoxSelected}
+        setIsTrackBoxSelected={setIsTrackBoxSelected}
+        artistsToDisplay={artistsToDisplay}
+        isTrackHovered={isTrackHovered}
+      />
     </div>
   );
 }

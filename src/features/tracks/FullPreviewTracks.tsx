@@ -9,6 +9,7 @@ function FullPreviewTracks({ tracks }: FullPreviewTracksProps) {
     <section className="h-full bg-amber-300">
       <article>
         {tracks.map((track, i) => (
+          // ! problem is the playlist uses trackItem which depend on track that is still null at this time
           <FullPreviewTrackItem
             key={track.name}
             index={i}
