@@ -1,12 +1,11 @@
-import { DetailedPlaylistType } from "./playlists";
 import { flexibleMillisecondsConverter } from "../../helpers/helperFunctions";
+import { TrackType } from "../tracks/track";
 
-export const getPlaylistLenght = (data: DetailedPlaylistType) => {
-  const rawTracks = (data as DetailedPlaylistType as { tracks: any }).tracks;
-  const tracksArr = Array.isArray(rawTracks) ? rawTracks : rawTracks.items;
+export const getPlaylistLenght = (data: TrackType[]) => {
+  console.log(data);
   return flexibleMillisecondsConverter(
-    tracksArr.reduce((acc: number, track: any) => {
-      acc += track.track.duration_ms;
+    data.reduce((acc: number, track: TrackType) => {
+      acc += +track.trackDuration;
       return acc;
     }, 0),
   );

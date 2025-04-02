@@ -1,7 +1,8 @@
 import FullPreviewTrackItem from "./FullPreviewTrackItem";
+import { TrackType } from "./track";
 
 interface FullPreviewTracksProps {
-  tracks: any[];
+  tracks: TrackType[];
 }
 
 function FullPreviewTracks({ tracks }: FullPreviewTracksProps) {
@@ -10,7 +11,7 @@ function FullPreviewTracks({ tracks }: FullPreviewTracksProps) {
       <article>
         {tracks.map((track, i) => (
           // ! problem is the playlist uses trackItem which depend on track that is still null at this time
-          <FullPreviewTrackItem key={i} index={i} track={track.track} />
+          <FullPreviewTrackItem key={track.trackId} index={i} track={track} />
         ))}
       </article>
     </section>

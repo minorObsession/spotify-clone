@@ -38,7 +38,6 @@ export const createAuthSlice: StateCreator<
   [],
   AuthSlice
 > = (set, get) => ({
-  // --- Initial State ---
   isAuthenticated: Boolean(
     localStorage.getItem("access_token") &&
       (() => {
@@ -57,7 +56,7 @@ export const createAuthSlice: StateCreator<
     : null,
   refreshToken: localStorage.getItem("refresh_token"),
 
-  // --- Public Action: Initialize Auth Flow ---s
+  // --- Public Action: Initialize Auth Flow ---
   initAuth: async () => {
     console.log("initAuth called");
     // ! 1. Check localStorage for existing tokens

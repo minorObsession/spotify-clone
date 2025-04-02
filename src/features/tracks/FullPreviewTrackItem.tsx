@@ -1,19 +1,20 @@
 import { memo, useState } from "react";
-import { flexibleMillisecondsConverter } from "../../helpers/helperFunctions";
 import Thumbnail from "../../components/Thumbnail";
 import { useScreenWidthRem } from "../../hooks/useScreenWidthRem";
 import { useNavigate } from "react-router";
 import TrackOptions from "./TrackOptions";
+import { TrackType } from "./track";
 
 interface TrackProps {
   // * PROBABLY THE BEST IDEA IS TO NOT USE ANY AND TO INSTEAD FILL TrackType with everything it needs right in zustaand fetch!!!!
-  track: Record<string, any>;
+  track: TrackType;
   index: number;
 }
 
 // ! TO AVOID Record<string, any> - take only the actual data you need from playlist.ts for tracks!!!
 
 function FullPreviewTrackItem({ track, index }: TrackProps) {
+  console.log(track);
   const navigate = useNavigate();
   const { screenWidth: screenWidthRem } = useScreenWidthRem();
 
@@ -21,27 +22,29 @@ function FullPreviewTrackItem({ track, index }: TrackProps) {
   const [isTrackHovered, setIsTrackHovered] = useState(false);
 
   const trackName = track.name;
-  const artistsToDisplay = track.artists
-    .map((artist: Record<string, any>) => artist.name)
-    .join(", ");
+  // console.log(track.artists);
+  // const artistsToDisplay = track.artists.keys;
+  // console.log(artistsToDisplay);
 
-  const album = track.album.name;
-  const playbackTime = track.duration_ms;
-  const timeToDisplay = flexibleMillisecondsConverter(playbackTime)
-    .split("min")
-    .map((el, i) => {
-      if (i === 0) return el + ":";
-      if (i === 1) {
-        const sec = el.replace("s", "").trim();
-        if (+sec - 10 < 0) {
-          const fixed = sec.padStart(2, "0");
-          return fixed;
-        }
-        return sec;
+  // console.log(artistsToDisplay);
+
+  const album = track.albumName;
+
+  const timeToDisplay = track.trackDuration.split("min").map((el, i) => {
+    if (i === 0) return el + ":";
+    if (i === 1) {
+      const sec = el.replace("s", "").trim();
+      if (+sec - 10 < 0) {
+        const fixed = sec.padStart(2, "0");
+        return fixed;
       }
-      return el;
-    });
-  const thumbnailUrl = track.album.images[0].url;
+      return sec;
+    }
+    return el;
+  });
+
+  // ! get album image into track array!!!
+  const thumbnailUrl = track.imageUrl;
 
   const handleTrackSelect = (e: React.MouseEvent<HTMLElement>) => {
     console.log(e);
@@ -71,25 +74,25 @@ function FullPreviewTrackItem({ track, index }: TrackProps) {
         {/* // ! TRACK name */}
         <span
           onClick={handleTrackSelect}
-          id={track.id}
+          id={track.trackId}
           className="w-fit truncate underline-offset-1 hover:cursor-pointer hover:underline"
-          key={track.id}
+          key={track.trackId}
         >
           {trackName}
         </span>
         <span className="text-2xs w-fit truncate md:text-sm lg:text-sm">
           {/* // ! loop artists, save id, print name */}
-          {track.artists.map((artistObj: Record<string, any>, i: number) => (
+          {/* {track.artists.map((artistName, i: number) => (
             <span
-              key={artistObj.id}
-              onClick={() => handleArtistSelect(artistObj.id)}
+              key={artistName.id}
+              onClick={() => handleArtistSelect(artistName.id)}
               className="underline-offset-1 hover:cursor-pointer hover:underline"
             >
               {i + 1 === track.artists.length
-                ? artistObj.name
-                : `${artistObj.name}, `}
+                ? artistName.name
+                : `${artistName.name}, `}
             </span>
-          ))}
+          ))} */}
         </span>
       </div>
 
@@ -110,7 +113,7 @@ function FullPreviewTrackItem({ track, index }: TrackProps) {
         trackName={trackName}
         isTrackBoxSelected={isTrackBoxSelected}
         setIsTrackBoxSelected={setIsTrackBoxSelected}
-        artistsToDisplay={artistsToDisplay}
+        // artistsToDisplay={artistsToDisplay}
         isTrackHovered={isTrackHovered}
       />
     </div>

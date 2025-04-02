@@ -2,6 +2,7 @@ import { StateCreator } from "zustand";
 import { StateStore } from "../../state/store";
 import { AccessTokenType } from "../auth/Auth";
 import { getFromLocalStorage } from "../auth/authHelpers";
+import { TrackType } from "../tracks/track";
 
 export interface UserPlaylistType {
   name: string;
@@ -16,7 +17,7 @@ export interface DetailedPlaylistType {
   type: string;
   ownerName: string;
   ownerId: string;
-  tracks: object[];
+  tracks: TrackType[];
   numTracks: number;
   totalDurationMs: number;
   imageUrl: string;
@@ -121,7 +122,7 @@ export const createPlaylistSlice: StateCreator<
       if (!res.ok) throw new Error("No playlist or bad request");
 
       const data = await res.json();
-      console.log(data);
+      // console.log(data);
 
       const totalDurationMs = data.tracks.items.reduce(
         (sum: number, item: any) => sum + (item.track?.duration_ms || 0),
@@ -131,7 +132,23 @@ export const createPlaylistSlice: StateCreator<
         name: data.name,
         id: data.id,
         type: data.type,
-        tracks: data.tracks.items,
+        tracks: data.tracks.items.map(
+          (track: any): TrackType => ({
+            name: track.track.name,
+            trackId: track.track.id,
+            imageUrl:
+              track.track.album.images.length > 0
+                ? track.track.album.images[0].url
+                : "",
+            multipleArtists: track.track.artists.length > 1,
+            artists: track.track.artists.map((artist: any) => artist.name),
+            type: track.track.type,
+            trackDuration: track.track.duration_ms.toString(),
+            releaseDate: track.track.album.release_date,
+            albumName: track.track.album.name,
+            albumId: track.track.album.id,
+          }),
+        ),
         numTracks: data.tracks.items.length,
         totalDurationMs,
         imageUrl: data.images.length > 0 ? data.images[0].url : null,

@@ -1,10 +1,11 @@
 import { useLoaderData } from "react-router-dom";
-import { useStateStore } from "../../state/store";
 
+import { useStateStore } from "../../state/store";
 import { ArtistType } from "./artist";
 import FullPreviewArtistOverview from "./FullPreviewArtistOverview";
 import { createLoader } from "../../state/helpers";
 import BackToHomeButton from "../../components/BackToHomeButton";
+import FullPreviewTracks from "../tracks/FullPreviewTracks";
 
 function FullPreviewArtist() {
   const data = useLoaderData() as ArtistType;
@@ -17,7 +18,7 @@ function FullPreviewArtist() {
 
       <FullPreviewArtistOverview data={data} />
       {/* <PlaylistPreviewHeader /> */}
-      {/* <FullPreviewTracks tracks={tracksArr} /> */}
+      <FullPreviewTracks tracks={data.topTracks} />
     </div>
   );
 }

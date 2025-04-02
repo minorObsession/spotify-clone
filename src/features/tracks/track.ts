@@ -9,7 +9,7 @@ export interface TrackType {
   trackId: string;
   imageUrl: string;
   multipleArtists: boolean;
-  artists: string[];
+  artists: Record<string, string>[];
   type: string;
   trackDuration: string;
   releaseDate: string;
@@ -31,6 +31,8 @@ export const createTrackSlice: StateCreator<
 > = (set) => ({
   track: null,
   getTrack: async (id: string): Promise<TrackType | undefined> => {
+    console.log("GET TRACK RUNNING ");
+
     try {
       const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
       if (!accessToken)
@@ -49,20 +51,27 @@ export const createTrackSlice: StateCreator<
       if (!res.ok) throw new Error("No track or bad request");
 
       const data = await res.json();
-      console.log(data);
+      // console.log(data.artists);
 
+      // const artists = makeArtistsObject(data.artists);
+      // console.log(artists);
       const trackObject: TrackType = {
         name: data.name,
         type: data.type,
         trackId: data.id,
         imageUrl: data.album.images[0].url,
         multipleArtists: data.artists.length > 1,
-        artists: data.artists.map((artist: any) => artist.name),
+        artists: data.artists.map((artist: any) => ({
+          name: artist.name,
+          artistId: artist.id,
+        })),
         trackDuration: flexibleMillisecondsConverter(data.duration_ms),
         releaseDate: data.album.release_date,
         albumName: data.album.name,
         albumId: data.album.id,
       };
+
+      console.log(trackObject);
 
       set({ track: trackObject });
 

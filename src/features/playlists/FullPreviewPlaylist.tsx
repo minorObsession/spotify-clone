@@ -4,15 +4,18 @@ import { useStateStore } from "../../state/store";
 import { DetailedPlaylistType } from "./playlists";
 import FullPreviewTracks from "../tracks/FullPreviewTracks";
 import PlaylistPreviewHeader from "./PlaylistPreviewHeader";
-import FullPreviewPlaylistOverview from "../../components/FullPreviewPlaylistOverview";
+
 import { createLoader } from "../../state/helpers";
 import BackToHomeButton from "../../components/BackToHomeButton";
+import FullPreviewPlaylistOverview from "./FullPreviewPlaylistOverview";
+import { TrackType } from "../tracks/track";
 
 function FullPreviewPlaylist() {
   const data = useLoaderData() as DetailedPlaylistType;
 
-  const rawTracks = (data as unknown as { tracks: any }).tracks;
-  const tracksArr = Array.isArray(rawTracks) ? rawTracks : rawTracks.items;
+  console.log(data);
+  const rawTracks = (data as unknown as { tracks: TrackType[] }).tracks;
+  // const tracksArr = Array.isArray(rawTracks) ? rawTracks : rawTracks.items;
 
   return (
     <div className={`fullPreviewContainer`}>
@@ -20,7 +23,7 @@ function FullPreviewPlaylist() {
 
       <FullPreviewPlaylistOverview data={data} />
       <PlaylistPreviewHeader />
-      <FullPreviewTracks tracks={tracksArr} />
+      <FullPreviewTracks tracks={rawTracks} />
     </div>
   );
 }

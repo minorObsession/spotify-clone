@@ -14,7 +14,7 @@ function Root() {
       if (isAuthenticated) {
         // ! to start the auto refresh timer
         autoRefreshToken();
-        navigate("/home/artist/64rxQRJsLgZwHHyWKB8fiF");
+        navigate("/home/");
       } else await initAuth();
     };
     verifyAuth();

@@ -16,6 +16,8 @@ import PageNotFound from "./components/PageNotFound";
 
 // TODO:
 
+// ! while in playlists/track screen, the auto refresh won't refresh token!!!!
+
 function App() {
   const router = createBrowserRouter([
     {

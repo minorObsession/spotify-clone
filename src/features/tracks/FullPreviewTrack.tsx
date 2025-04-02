@@ -1,9 +1,9 @@
 import { useLoaderData } from "react-router-dom";
 import { useStateStore } from "../../state/store";
 import { TrackType } from "./track";
-import FullPreviewOverview from "../../components/FullPreviewPlaylistOverview";
 import { createLoader } from "../../state/helpers";
 import BackToHomeButton from "../../components/BackToHomeButton";
+import FullPreviewTrackOverview from "./FullPreviewTrackOverview";
 
 function FullPreviewTrack() {
   const data = useLoaderData() as TrackType;
@@ -11,7 +11,7 @@ function FullPreviewTrack() {
   return (
     <div className={`fullPreviewContainer`}>
       <BackToHomeButton />
-      <FullPreviewOverview data={data} />
+      <FullPreviewTrackOverview data={data} />
       {/* <PlaylistPreviewHeader /> */}
       {/* <FullPreviewTracks tracks={tracksArr} /> */}
     </div>
