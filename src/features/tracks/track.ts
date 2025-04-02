@@ -1,4 +1,4 @@
-import { getFromLocalStorage } from "../../auth/authHelpers";
+import { getFromLocalStorage } from "../auth/authHelpers";
 import { flexibleMillisecondsConverter } from "../../helpers/helperFunctions";
 import { StateStore } from "../../state/store";
 import { StateCreator } from "zustand";

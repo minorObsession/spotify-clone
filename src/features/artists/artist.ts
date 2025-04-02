@@ -1,4 +1,4 @@
-import { getFromLocalStorage } from "../../auth/authHelpers";
+import { getFromLocalStorage } from "../auth/authHelpers";
 import { StateStore } from "../../state/store";
 import { StateCreator } from "zustand";
 import { AccessTokenType } from "../auth/Auth";

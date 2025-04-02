@@ -1,10 +1,6 @@
 // src/stores/authStore.ts
 import { StateCreator } from "zustand";
-import {
-  base64encode,
-  generateRandomString,
-  sha256,
-} from "../../auth/authHelpers";
+import { base64encode, generateRandomString, sha256 } from "./authHelpers";
 import { StateStore } from "../../state/store";
 
 // --- Configuration ---

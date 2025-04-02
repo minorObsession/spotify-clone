@@ -1,5 +1,5 @@
 import { StateCreator } from "zustand";
-import { getFromLocalStorage } from "../../auth/authHelpers";
+import { getFromLocalStorage } from "../auth/authHelpers";
 import { StateStore } from "../../state/store";
 import { AccessTokenType } from "../auth/Auth";
 
