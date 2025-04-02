@@ -1,15 +1,19 @@
-// import "./auth/auth";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
 import Root from "./Root";
 import Home from "./Home";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
 import { useStateStore } from "./state/store";
+
 import FullPreviewPlaylist, {
   loader as playlistLoader,
 } from "./features/playlists/FullPreviewPlaylist";
-
 import FullPreviewTrack, {
   loader as trackLoader,
 } from "./features/tracks/FullPreviewTrack";
+import FullPreviewArtist, {
+  loader as artistLoader,
+} from "./features/artists/FullPreviewArtist";
 
 import PageNotFound from "./components/PageNotFound";
 
@@ -47,6 +51,12 @@ function App() {
               path: "track/:id",
               element: <FullPreviewTrack />,
               loader: trackLoader,
+            },
+            {
+              // ! also could be album or show (audiobook or podcast)
+              path: "artist/:id",
+              element: <FullPreviewArtist />,
+              loader: artistLoader,
             },
           ],
         },

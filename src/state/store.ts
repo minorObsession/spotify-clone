@@ -7,8 +7,13 @@ import {
   PlaylistSlice,
 } from "../features/playlists/playlists";
 import { createTrackSlice, TrackSlice } from "../features/tracks/track";
+import { ArtistSlice, createArtistSlice } from "../features/artists/artist";
 
-export type StateStore = AuthSlice & UserSlice & PlaylistSlice & TrackSlice;
+export type StateStore = AuthSlice &
+  UserSlice &
+  PlaylistSlice &
+  TrackSlice &
+  ArtistSlice;
 // RecommendationsSlice;
 
 export const useStateStore = create<StateStore>()(
@@ -17,6 +22,7 @@ export const useStateStore = create<StateStore>()(
     ...createUserSlice(...args),
     ...createPlaylistSlice(...args),
     ...createTrackSlice(...args),
+    ...createArtistSlice(...args),
     // ...createRecommendationsSlice(...args),
   })),
 );

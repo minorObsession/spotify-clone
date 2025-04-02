@@ -7,7 +7,6 @@ function useOutsideClick(
 ) {
   // ! adjust type for ref as needed
   const menuRef = useRef<HTMLUListElement | null>(null);
-
   useEffect(
     function () {
       function handleClick(e: MouseEvent) {
@@ -30,7 +29,7 @@ function useOutsideClick(
           listenInCapturingPhase,
         );
     },
-    [actionFunction, listenInCapturingPhase],
+    [actionFunction, listenInCapturingPhase, optionalFunction],
   );
 
   return menuRef;

@@ -73,19 +73,6 @@ export const createTrackSlice: StateCreator<
       return trackObject;
     } catch (err) {
       console.error("🛑 ❌", err);
-      return {
-        name: "",
-        trackId: "",
-        imageUrl: "",
-        multipleArtists: false,
-        artists: [],
-        type: "",
-        trackDuration: "",
-        releaseDate: "",
-        albumName: "",
-        albumId: "",
-        // artistsMonthlyListeners: 0,
-      };
     }
   },
 });

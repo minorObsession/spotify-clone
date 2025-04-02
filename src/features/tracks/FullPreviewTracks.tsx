@@ -10,11 +10,7 @@ function FullPreviewTracks({ tracks }: FullPreviewTracksProps) {
       <article>
         {tracks.map((track, i) => (
           // ! problem is the playlist uses trackItem which depend on track that is still null at this time
-          <FullPreviewTrackItem
-            key={track.name}
-            index={i}
-            track={track.track}
-          />
+          <FullPreviewTrackItem key={i} index={i} track={track.track} />
         ))}
       </article>
     </section>

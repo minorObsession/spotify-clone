@@ -8,11 +8,10 @@ export function useScreenWidthRem() {
   useEffect(() => {
     const handleResize = () =>
       setScreenWidth(Math.ceil(window.innerWidth / 10));
-
     window.addEventListener("resize", handleResize);
 
     return () => window.removeEventListener("resize", handleResize);
-  }, [setScreenWidth]);
+  }, []);
 
   return {
     screenWidth,

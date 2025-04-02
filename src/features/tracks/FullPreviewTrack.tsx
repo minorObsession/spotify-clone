@@ -24,6 +24,7 @@ function FullPreviewTrack() {
     </div>
   );
 }
+// ! ABSTRACT CREATING LOADED FUNCTIONS!!!
 export async function loader({
   params,
 }: ActionFunctionArgs): Promise<TrackType> {

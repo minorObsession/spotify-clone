@@ -21,12 +21,9 @@ function FullPreviewTrackItem({ track, index }: TrackProps) {
   const [isTrackHovered, setIsTrackHovered] = useState(false);
 
   const trackName = track.name;
-  const artists: [] = track.artists.map(
-    (artist: Record<string, any>) => artist.name,
-  );
-  const artistsToDisplay = artists.map((artist, i) =>
-    i + 1 === artists.length ? artist : `${artist}, `,
-  );
+  const artistsToDisplay = track.artists
+    .map((artist: Record<string, any>) => artist.name)
+    .join(", ");
 
   const album = track.album.name;
   const playbackTime = track.duration_ms;
@@ -49,6 +46,10 @@ function FullPreviewTrackItem({ track, index }: TrackProps) {
   const handleTrackSelect = (e: React.MouseEvent<HTMLElement>) => {
     console.log(e);
     navigate(`/home/track/${e.currentTarget.id}`);
+  };
+
+  const handleArtistSelect = (id: string) => {
+    navigate(`/home/artist/${id}`);
   };
 
   return (
@@ -77,9 +78,18 @@ function FullPreviewTrackItem({ track, index }: TrackProps) {
           {trackName}
         </span>
         <span className="text-2xs w-fit truncate md:text-sm lg:text-sm">
-          <span className="underline-offset-1 hover:cursor-pointer hover:underline">
-            {artistsToDisplay}
-          </span>
+          {/* // ! loop artists, save id, print name */}
+          {track.artists.map((artistObj: Record<string, any>, i: number) => (
+            <span
+              key={artistObj.id}
+              onClick={() => handleArtistSelect(artistObj.id)}
+              className="underline-offset-1 hover:cursor-pointer hover:underline"
+            >
+              {i + 1 === track.artists.length
+                ? artistObj.name
+                : `${artistObj.name}, `}
+            </span>
+          ))}
         </span>
       </div>
 

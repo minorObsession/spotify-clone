@@ -17,7 +17,6 @@ function FullPreviewPlaylist() {
 
   const rawTracks = (data as unknown as { tracks: any }).tracks;
   const tracksArr = Array.isArray(rawTracks) ? rawTracks : rawTracks.items;
-  console.log(tracksArr);
 
   return (
     <div className="flex h-full flex-col gap-3 overflow-y-scroll bg-amber-800 p-3 md:p-4">
@@ -30,6 +29,9 @@ function FullPreviewPlaylist() {
     </div>
   );
 }
+
+// ! ABSTRACT CREATING LOADED FUNCTIONS!!!
+
 export async function loader({
   params,
 }: ActionFunctionArgs): Promise<DetailedPlaylistType> {

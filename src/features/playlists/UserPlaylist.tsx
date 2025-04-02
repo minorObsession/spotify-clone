@@ -1,10 +1,8 @@
 import { useNavigate } from "react-router";
-
 import Thumbnail from "../../components/Thumbnail";
 import { UserPlaylistType } from "./playlists";
 
 function UserPlaylist({ name, images, id, ownerName }: UserPlaylistType) {
-  // console.log(id);
   const navigate = useNavigate();
 
   return (
