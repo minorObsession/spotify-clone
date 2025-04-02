@@ -16,6 +16,8 @@ export function createLoader<T>(
         throw new Response(`${nameOfData} not found`, { status: 404 });
       }
 
+      // ! hovering data: const data: NonNullable<Awaited<T>>
+      // ! NEED TO UNDERSTAND WHAT THIS MEANS
       return data;
     } catch (error) {
       console.error(`🚨 ❌ Failed to load ${nameOfData}:`, error);

@@ -14,7 +14,8 @@ function FullPreviewArtistOverview({ data }: FullPreviewOverviewProps) {
       <div className="max-h-[40%]">
         <img
           src={data.imageUrl}
-          className="max-h-full w-full object-cover object-[center_35%]"
+          // ! or: object-[center_35%]
+          className="max-h-full w-full object-cover object-[center]"
         />
       </div>
 

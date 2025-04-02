@@ -122,11 +122,11 @@ export const createPlaylistSlice: StateCreator<
 
       const data = await res.json();
       console.log(data);
+
       const totalDurationMs = data.tracks.items.reduce(
         (sum: number, item: any) => sum + (item.track?.duration_ms || 0),
         0,
       );
-
       const playlist: DetailedPlaylistType = {
         name: data.name,
         id: data.id,
