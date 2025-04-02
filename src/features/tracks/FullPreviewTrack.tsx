@@ -1,11 +1,8 @@
-import {
-  ActionFunctionArgs,
-  useLoaderData,
-  useNavigate,
-} from "react-router-dom";
+import { useLoaderData, useNavigate } from "react-router-dom";
 import { useStateStore } from "../../state/store";
 import { TrackType } from "./track";
 import FullPreviewOverview from "../../components/FullPreviewOverview";
+import { createLoader } from "../../state/helpers";
 
 function FullPreviewTrack() {
   // ! from url decide the type - playlist, show or album
@@ -24,32 +21,8 @@ function FullPreviewTrack() {
     </div>
   );
 }
-// ! ABSTRACT CREATING LOADED FUNCTIONS!!!
-export async function loader({
-  params,
-}: ActionFunctionArgs): Promise<TrackType> {
-  // * from url decide the type - playlist, show or album and call corresponding function
 
-  // ! no playlist in LS - fetch it from API
-
-  const { getTrack } = useStateStore.getState();
-
-  if (!params.id || typeof params.id !== "string") {
-    console.error("🚨 ❌ Invalid track ID:", params.id);
-    throw new Response("Invalid track ID", { status: 400 });
-  }
-
-  try {
-    const track = await getTrack(params.id);
-    if (!track) {
-      throw new Response("track not found", { status: 404 });
-    }
-    console.log(track);
-    return track;
-  } catch (error) {
-    console.error("🚨 ❌ Failed to load track:", error);
-    throw new Response("Failed to fetch track", { status: 500 });
-  }
-}
+const { getTrack } = useStateStore.getState();
+export const trackLoader = createLoader<TrackType>("track", getTrack);
 
 export default FullPreviewTrack;

@@ -1,13 +1,10 @@
-import {
-  ActionFunctionArgs,
-  useLoaderData,
-  useNavigate,
-} from "react-router-dom";
+import { useLoaderData, useNavigate } from "react-router-dom";
 import { useStateStore } from "../../state/store";
 import { DetailedPlaylistType } from "./playlists";
 import FullPreviewTracks from "../tracks/FullPreviewTracks";
 import PlaylistPreviewHeader from "./PlaylistPreviewHeader";
 import FullPreviewOverview from "../../components/FullPreviewOverview";
+import { createLoader } from "../../state/helpers";
 
 function FullPreviewPlaylist() {
   // ! from url decide the type - playlist, show or album
@@ -32,31 +29,10 @@ function FullPreviewPlaylist() {
 
 // ! ABSTRACT CREATING LOADED FUNCTIONS!!!
 
-export async function loader({
-  params,
-}: ActionFunctionArgs): Promise<DetailedPlaylistType> {
-  // * from url decide the type - playlist, show or album and call corresponding function
-
-  // ! no playlist in LS - fetch it from API
-
-  const { getPlaylistOrShow } = useStateStore.getState();
-
-  if (!params.id || typeof params.id !== "string") {
-    console.error("🚨 ❌ Invalid playlist/show ID:", params.id);
-    throw new Response("Invalid playlist/show ID", { status: 400 });
-  }
-
-  try {
-    const playlist = await getPlaylistOrShow(params.id);
-    if (!playlist) {
-      throw new Response("Playlist/show not found", { status: 404 });
-    }
-
-    return playlist;
-  } catch (error) {
-    console.error("🚨 ❌ Failed to load playlist/show:", error);
-    throw new Response("Failed to fetch playlist/show", { status: 500 });
-  }
-}
+const { getPlaylist } = useStateStore.getState();
+export const playlistLoader = createLoader<DetailedPlaylistType>(
+  "track",
+  getPlaylist,
+);
 
 export default FullPreviewPlaylist;

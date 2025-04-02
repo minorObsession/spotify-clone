@@ -1,17 +1,12 @@
-import {
-  ActionFunctionArgs,
-  useLoaderData,
-  useNavigate,
-} from "react-router-dom";
+import { useLoaderData, useNavigate } from "react-router-dom";
 import { useStateStore } from "../../state/store";
 
 import { ArtistType } from "./artist";
 import PlaylistPreviewHeader from "../playlists/PlaylistPreviewHeader";
 import FullPreviewArtistOverview from "./FullPreviewArtistOverview";
+import { createLoader } from "../../state/helpers";
 
 function FullPreviewArtist() {
-  // ! from url decide the type - playlist, show or album
-  // ! type it
   const data = useLoaderData() as ArtistType;
   const navigate = useNavigate();
 
@@ -29,32 +24,8 @@ function FullPreviewArtist() {
   );
 }
 
-// ! ABSTRACT CREATING LOADED FUNCTIONS!!!
-export async function loader({
-  params,
-}: ActionFunctionArgs): Promise<ArtistType> {
-  // * from url decide the type - playlist, show or album and call corresponding function
-
-  // ! no playlist in LS - fetch it from API
-
-  const { getArtist } = useStateStore.getState();
-
-  if (!params.id || typeof params.id !== "string") {
-    console.error("🚨 ❌ Invalid artist ID:", params.id);
-    throw new Response("Invalid artist ID", { status: 400 });
-  }
-
-  try {
-    const playlist = await getArtist(params.id);
-    if (!playlist) {
-      throw new Response("artist not found", { status: 404 });
-    }
-
-    return playlist;
-  } catch (error) {
-    console.error("🚨 ❌ Failed to load artist:", error);
-    throw new Response("Failed to fetch artist", { status: 500 });
-  }
-}
-
 export default FullPreviewArtist;
+
+const { getArtist } = useStateStore.getState();
+
+export const artistLoader = createLoader<ArtistType>("artist", getArtist);

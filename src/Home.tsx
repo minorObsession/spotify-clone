@@ -18,6 +18,7 @@ import SuggestionsRow from "./components/SuggestionsRow";
 function Home() {
   const isAuthenticated = useStateStore((store) => store.isAuthenticated);
   const { isLargeScreen } = useScreenWidthRem();
+
   const location = useLocation();
 
   const isHomepage = location.pathname === "/home";
@@ -72,3 +73,12 @@ function Home() {
 }
 
 export default Home;
+
+const { getUser, getUserPlaylists } = useStateStore.getState();
+
+export const initialStateLoader = async () => {
+  await getUser();
+  await getUserPlaylists();
+  // await getRecTracks();
+  return null;
+};

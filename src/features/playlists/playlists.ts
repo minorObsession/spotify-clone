@@ -25,7 +25,7 @@ export interface PlaylistSlice {
   playlists: UserPlaylistType[];
   playlist: DetailedPlaylistType | object;
   getUserPlaylists: () => Promise<UserPlaylistType[]>;
-  getPlaylistOrShow: (
+  getPlaylist: (
     id: string,
     type?: "playlists" | "shows" | "albums",
   ) => Promise<DetailedPlaylistType>;
@@ -91,7 +91,7 @@ export const createPlaylistSlice: StateCreator<
     }
   },
 
-  getPlaylistOrShow: async (id, type = "playlists") => {
+  getPlaylist: async (id, type = "playlists") => {
     try {
       // ! access token LS check
       const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
@@ -109,7 +109,7 @@ export const createPlaylistSlice: StateCreator<
       }
 
       // ! if not in LS, then fetch playlist
-      console.log("🛜 getPlaylistOrShow will call api...");
+      console.log("🛜 getPlaylist will call api...");
       const res = await fetch(`https://api.spotify.com/v1/${type}/${id}`, {
         method: "GET",
         headers: {

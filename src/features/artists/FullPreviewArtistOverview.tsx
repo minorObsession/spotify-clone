@@ -4,7 +4,7 @@ interface FullPreviewOverviewProps {
   data: ArtistType;
 }
 
-// ! WAS HERE!!! BUILDING ARTIST PAGE
+// ! idea for image - loop thru pixels and determine how similar they are.. if so, then move to another object-pos where pixels are more diverse
 
 // CONSIDER REFACTORING FIRST - LOADERS, PREVIEWS,OVERVIEWS ETC...
 function FullPreviewArtistOverview({ data }: FullPreviewOverviewProps) {
@@ -12,7 +12,10 @@ function FullPreviewArtistOverview({ data }: FullPreviewOverviewProps) {
     <>
       {/* // ! artist background image  */}
       <div className="max-h-[40%]">
-        <img src={data.imageUrl} className="max-h-full w-full object-cover" />
+        <img
+          src={data.imageUrl}
+          className="max-h-full w-full object-cover object-[center_35%]"
+        />
       </div>
 
       {/* // ! Playlist/Track Info Div */}

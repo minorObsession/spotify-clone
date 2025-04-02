@@ -1,18 +1,16 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import Root from "./Root";
-import Home from "./Home";
-
+import Home, { initialStateLoader } from "./Home";
 import { useStateStore } from "./state/store";
-
 import FullPreviewPlaylist, {
-  loader as playlistLoader,
+  playlistLoader,
 } from "./features/playlists/FullPreviewPlaylist";
 import FullPreviewTrack, {
-  loader as trackLoader,
+  trackLoader,
 } from "./features/tracks/FullPreviewTrack";
 import FullPreviewArtist, {
-  loader as artistLoader,
+  artistLoader,
 } from "./features/artists/FullPreviewArtist";
 
 import PageNotFound from "./components/PageNotFound";
@@ -21,9 +19,6 @@ import PageNotFound from "./components/PageNotFound";
 // ! add react query for some fetching!
 
 function App() {
-  const getUser = useStateStore((store) => store.getUser);
-  const getUserPlaylists = useStateStore((store) => store.getUserPlaylists);
-
   const router = createBrowserRouter([
     {
       path: "/",
@@ -32,13 +27,7 @@ function App() {
         {
           path: "home",
           element: <Home />,
-          // * this loader is kind of a "initStore" or "initApp" - maybe move it somewhere
-          loader: async () => {
-            await getUser();
-            await getUserPlaylists();
-            // await getRecTracks();
-            return null;
-          },
+          loader: initialStateLoader,
           children: [
             {
               // ! also could be album or show (audiobook or podcast)
