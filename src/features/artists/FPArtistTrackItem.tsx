@@ -64,7 +64,7 @@ function FPArtistTrackItem({ track, index }: TrackProps) {
       />
       {/* // * DURATION */}
 
-      <p className="text-right">{trackDurationFormatted}</p>
+      <span className="font-mono tabular-nums">{trackDurationFormatted}</span>
 
       <TrackOptions
         options={menuOptions}

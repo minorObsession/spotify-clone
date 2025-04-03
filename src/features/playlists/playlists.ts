@@ -63,8 +63,9 @@ export const createPlaylistSlice: StateCreator<
       const storedPlaylists =
         getFromLocalStorage<UserPlaylistType[]>("user_playlists");
 
-      const storedPlaylistsWithTrackIds =
-        getFromLocalStorage<PlaylistNamesWithTrackIdsType[]>("user_playlists");
+      const storedPlaylistsWithTrackIds = getFromLocalStorage<
+        PlaylistNamesWithTrackIdsType[]
+      >("playlist_names_with_track_ids");
 
       if (storedPlaylists && storedPlaylistsWithTrackIds) {
         set({ playlists: storedPlaylists });

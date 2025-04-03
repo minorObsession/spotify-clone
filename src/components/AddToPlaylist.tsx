@@ -1,8 +1,8 @@
-import { FaRegCircleCheck } from "react-icons/fa6";
-import { LuCirclePlus } from "react-icons/lu";
+import { FaCircleCheck } from "react-icons/fa6";
 import useHoverTrackItem from "../hooks/useHoverTrackItem";
 import Tooltip from "./Tooltip";
 import { BiPlusCircle } from "react-icons/bi";
+import { isTrackInLibrary } from "../features/playlists/playlistHelpers";
 
 interface AddToPlaylistProps {
   trackId: string;
@@ -21,13 +21,9 @@ function AddToPlaylist({
     console.log("adding..:", id);
   };
 
-  // ! WORKING ON BOOLEAN LOGIC HERE!!!
-  // ! WORKING ON BOOLEAN LOGIC HERE!!!
-  // ! WORKING ON BOOLEAN LOGIC HERE!!!
-  // ! WORKING ON BOOLEAN LOGIC HERE!!!
-
   // ! look for this ID in all playlists - make function that does this
-  const isInPlaylist = true;
+
+  const isTheTrackInLibrary = isTrackInLibrary(trackId);
 
   return (
     // ! container
@@ -35,17 +31,17 @@ function AddToPlaylist({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={() => handleAddToPlaylist(trackId)}
-      className="relative flex justify-self-end pr-3"
+      className="relative flex justify-self-end pr-3 md:pr-4 lg:pr-5"
     >
       {/* //!  Tooltip */}
       <Tooltip
-        message={`${isInPlaylist ? "Add to Playlist" : "Add to Liked Songs"}`}
+        message={`${isTheTrackInLibrary ? "Add to Playlist" : "Add to Liked Songs"}`}
         isVisible={isHovered}
       />
 
-      {isInPlaylist ? (
+      {isTheTrackInLibrary ? (
         <button className="cursor-pointer">
-          <FaRegCircleCheck fill="green" />
+          <FaCircleCheck fill="green" />
         </button>
       ) : // ! if not in playlsit
       isTrackBoxSelected || isTrackHovered ? (
