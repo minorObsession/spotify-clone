@@ -1,6 +1,8 @@
 import { useState } from "react";
 import useOutsideClick from "../../hooks/useOutsideClick";
 import { SlOptions } from "react-icons/sl";
+import useHoverTrackItem from "../../hooks/useHoverTrackItem";
+import Tooltip from "../../components/Tooltip";
 
 interface TrackOptionsProps {
   options: string[];
@@ -19,28 +21,30 @@ function TrackOptions({
   trackName,
   options,
 }: TrackOptionsProps) {
-  const [areOptionsHovered, setAreOptionsHovered] = useState(false);
+  const { isHovered, handleMouseEnter, handleMouseLeave } = useHoverTrackItem();
+
   const [areOptionsVisible, setAreOptionsVisible] = useState(false);
   const menuRef = useOutsideClick(setAreOptionsVisible, setIsTrackBoxSelected);
 
+  // Use the hover hook
+
   const handleDisplayTrackOptions = () => {
-    setAreOptionsHovered(false);
     setAreOptionsVisible(true);
   };
 
   return (
+    // ! container
     <div
-      onMouseEnter={() => !areOptionsVisible && setAreOptionsHovered(true)}
-      onMouseLeave={() => setAreOptionsHovered(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       onClick={handleDisplayTrackOptions}
       className="relative justify-self-end"
     >
-      {/* // ! options hover */}
-      <span
-        className={`absolute -right-4 bottom-7 z-12 rounded-md bg-amber-200 p-1 text-xs text-nowrap shadow-md ${areOptionsHovered ? "inline" : "hidden"}`}
-      >
-        see more options for {trackName} by {artistsToDisplay}
-      </span>
+      {/* //!  Tooltip */}
+      <Tooltip
+        message={`See more options for ${trackName} by ${artistsToDisplay}`}
+        isVisible={isHovered && !areOptionsVisible}
+      />
       {/* // ! options menu */}
       <ul
         ref={menuRef}
@@ -50,14 +54,11 @@ function TrackOptions({
           <li>{option}</li>
         ))}
       </ul>
-
-      {/* // ! dots to display menu  */}
+      {/* Dots Icon */}
       <span className="justify-self-start hover:cursor-pointer">
         {(isTrackHovered && !areOptionsVisible) || isTrackBoxSelected ? (
           <SlOptions />
-        ) : (
-          ""
-        )}
+        ) : null}
       </span>
     </div>
   );

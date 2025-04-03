@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import TrackOptions from "./TrackOptions";
 import { TrackType } from "./track";
 import { useTrackItem } from "../../hooks/useTrackItem";
+import AddToPlaylist from "../../components/AddToPlaylist";
 
 interface TrackProps {
   track: TrackType;
@@ -31,7 +32,7 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
   const handleArtistSelect = (id: string) => {
     navigate(`/home/artist/${id}`);
   };
-
+  const trackId = track.trackId;
   const album = track.albumName;
 
   return (
@@ -44,7 +45,7 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
       <div className="playlist-item truncate p-1">
         {/* // ! number + thumbnail   */}
         <div className="row-span-2 flex items-center gap-2 lg:gap-3">
-          <span>{index + 1}</span>
+          <span className="w-4">{index + 1}</span>
           <Thumbnail
             additionalClasses="w-7 md:w-7.5 lg:w-8.5"
             img={thumbnailUrl}
@@ -53,9 +54,9 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
         {/* // ! TRACK name */}
         <span
           onClick={handleTrackSelect}
-          id={track.trackId}
+          id={trackId}
           className="w-fit truncate underline-offset-1 hover:cursor-pointer hover:underline"
-          key={track.trackId}
+          key={trackId}
         >
           {trackName}
         </span>
@@ -81,6 +82,12 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
 
       {screenWidthRem > 102 && <p className="truncate">date</p>}
 
+      {/* // ! only when hovered */}
+      <AddToPlaylist
+        trackId={trackId}
+        isTrackHovered={isTrackHovered}
+        isTrackBoxSelected={isTrackBoxSelected}
+      />
       {/* // ! DURATION */}
 
       <p className="text-right">{trackDurationFormatted}</p>
