@@ -16,10 +16,10 @@ export const isTrackInLibrary = (trackId: string): boolean =>
   useStateStore
     .getState()
     .playlistNamesWithTrackIds.some((playlist) =>
-      playlist.trackIDs.includes(trackId),
+      playlist.trackIds.includes(trackId),
     );
 
-console.log(isTrackInLibrary("0X8f3qbbZAmWy0LFtUkznl"));
+console.log(isTrackInLibrary("32JI8GciZ1vtZDA6ZA1p5r"));
 
 // open a playlist
 

@@ -8,6 +8,7 @@ import { flexibleMillisecondsConverter } from "../../helpers/helperFunctions";
 export interface UserPlaylistType {
   name: string;
   id: string;
+  // * extract only 1 image!
   images: any[];
   ownerName: string;
 }
@@ -23,9 +24,14 @@ export interface DetailedPlaylistType {
   totalDurationMs: number;
   imageUrl: string;
 }
+
+interface PlaylistNamesWithTrackIdsType {
+  name: string;
+  trackIds: string[];
+}
 export interface PlaylistSlice {
   playlists: UserPlaylistType[];
-  playlistNamesWithTrackIds: Record<string, string[]>[];
+  playlistNamesWithTrackIds: PlaylistNamesWithTrackIdsType[];
   playlist: DetailedPlaylistType | object;
   getUserPlaylists: () => Promise<UserPlaylistType[]>;
   getPlaylist: (
@@ -40,8 +46,9 @@ export const createPlaylistSlice: StateCreator<
   [],
   PlaylistSlice
 > = (set, get) => ({
-  playlists: [],
-  playlistNamesWithTrackIds: [],
+  playlists: JSON.parse(localStorage.getItem("user_playlists")!) || [],
+  playlistNamesWithTrackIds:
+    JSON.parse(localStorage.getItem("playlist_names_with_track_ids")!) || [],
   playlist: {},
   getUserPlaylists: async () => {
     try {
@@ -53,16 +60,21 @@ export const createPlaylistSlice: StateCreator<
       }
 
       // ! check local storage for playlists
-      const storedPlaylists = false;
-      // getFromLocalStorage<UserPlaylistType[]>("user_playlists");
+      const storedPlaylists =
+        getFromLocalStorage<UserPlaylistType[]>("user_playlists");
 
-      if (storedPlaylists) {
+      const storedPlaylistsWithTrackIds =
+        getFromLocalStorage<PlaylistNamesWithTrackIdsType[]>("user_playlists");
+
+      if (storedPlaylists && storedPlaylistsWithTrackIds) {
         set({ playlists: storedPlaylists });
+        set({ playlistNamesWithTrackIds: storedPlaylistsWithTrackIds });
         return storedPlaylists;
       }
 
       // ! if not in LS, then fetch
       console.log("🛜 getUserPlaylists will call api...");
+
       const res = await fetch(`https://api.spotify.com/v1/me/playlists`, {
         method: "GET",
         headers: {
@@ -75,7 +87,7 @@ export const createPlaylistSlice: StateCreator<
       const { items } = await res.json();
       // const tracksTempArray: Record<string, string[]>[] = [];
 
-      const playlistNamesWithTrackIds: Record<string, string[]>[] =
+      const playlistNamesWithTrackIds: PlaylistNamesWithTrackIdsType[] =
         await Promise.all(
           items.map(async (playlist: any) => {
             const trackIdsForCurrentP = (
@@ -91,6 +103,8 @@ export const createPlaylistSlice: StateCreator<
 
       console.log(playlistNamesWithTrackIds);
 
+      set({ playlistNamesWithTrackIds });
+
       const formattedPlaylists: UserPlaylistType[] = items.map(
         (playlist: any) => ({
           name: playlist.name,
@@ -100,8 +114,15 @@ export const createPlaylistSlice: StateCreator<
         }),
       );
 
-      // ! store playlists in LS
-      localStorage.setItem("user_playlists", JSON.stringify(items));
+      // ! store playlists and trackIds in LS
+      localStorage.setItem(
+        "user_playlists",
+        JSON.stringify(formattedPlaylists),
+      );
+      localStorage.setItem(
+        "playlist_names_with_track_ids",
+        JSON.stringify(playlistNamesWithTrackIds),
+      );
 
       set({ playlists: formattedPlaylists });
 
