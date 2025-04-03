@@ -12,7 +12,6 @@ interface TrackProps {
 }
 
 function FPArtistTrackItem({ track, index }: TrackProps) {
-  console.log(track);
   const {
     screenWidthRem,
     isTrackBoxSelected,

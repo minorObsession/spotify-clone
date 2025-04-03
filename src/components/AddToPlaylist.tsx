@@ -2,6 +2,7 @@ import { FaRegCircleCheck } from "react-icons/fa6";
 import { LuCirclePlus } from "react-icons/lu";
 import useHoverTrackItem from "../hooks/useHoverTrackItem";
 import Tooltip from "./Tooltip";
+import { BiPlusCircle } from "react-icons/bi";
 
 interface AddToPlaylistProps {
   trackId: string;
@@ -19,6 +20,7 @@ function AddToPlaylist({
   const handleAddToPlaylist = (id: any) => {
     console.log("adding..:", id);
   };
+
   // ! WORKING ON BOOLEAN LOGIC HERE!!!
   // ! WORKING ON BOOLEAN LOGIC HERE!!!
   // ! WORKING ON BOOLEAN LOGIC HERE!!!
@@ -26,32 +28,31 @@ function AddToPlaylist({
 
   // ! look for this ID in all playlists - make function that does this
   const isInPlaylist = true;
+
   return (
     // ! container
     <div
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={() => handleAddToPlaylist(trackId)}
-      className="relative justify-self-end pr-3"
+      className="relative flex justify-self-end pr-3"
     >
       {/* //!  Tooltip */}
       <Tooltip
         message={`${isInPlaylist ? "Add to Playlist" : "Add to Liked Songs"}`}
         isVisible={isHovered}
       />
-      <span className="">
-        {isTrackHovered || isTrackBoxSelected ? (
-          <button className="cursor-pointer">
-            {isInPlaylist ? (
-              <FaRegCircleCheck fill="green" />
-            ) : (
-              // ! if not in playlist, only show icon when hovered
-              isTrackBoxSelected && <LuCirclePlus />
-            )}
-          </button>
-        ) : null}
-      </span>
-      {/* <LuCirclePlus /> */}
+
+      {isInPlaylist ? (
+        <button className="cursor-pointer">
+          <FaRegCircleCheck fill="green" />
+        </button>
+      ) : // ! if not in playlsit
+      isTrackBoxSelected || isTrackHovered ? (
+        <button className="cursor-pointer">
+          <BiPlusCircle />
+        </button>
+      ) : null}
     </div>
   );
 }

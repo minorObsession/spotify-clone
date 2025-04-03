@@ -16,3 +16,4 @@ export const getDataType = (data: DetailedPlaylistType | TrackType) => {
   if (isDataTrack(data)) return "track";
   return "unknown";
 };
+

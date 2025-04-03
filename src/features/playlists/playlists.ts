@@ -25,6 +25,7 @@ export interface DetailedPlaylistType {
 }
 export interface PlaylistSlice {
   playlists: UserPlaylistType[];
+  playlistNamesWithTrackIds: Record<string, string[]>[];
   playlist: DetailedPlaylistType | object;
   getUserPlaylists: () => Promise<UserPlaylistType[]>;
   getPlaylist: (
@@ -38,8 +39,9 @@ export const createPlaylistSlice: StateCreator<
   [["zustand/devtools", never]],
   [],
   PlaylistSlice
-> = (set) => ({
+> = (set, get) => ({
   playlists: [],
+  playlistNamesWithTrackIds: [],
   playlist: {},
   getUserPlaylists: async () => {
     try {
@@ -51,8 +53,8 @@ export const createPlaylistSlice: StateCreator<
       }
 
       // ! check local storage for playlists
-      const storedPlaylists =
-        getFromLocalStorage<UserPlaylistType[]>("user_playlists");
+      const storedPlaylists = false;
+      // getFromLocalStorage<UserPlaylistType[]>("user_playlists");
 
       if (storedPlaylists) {
         set({ playlists: storedPlaylists });
@@ -71,6 +73,23 @@ export const createPlaylistSlice: StateCreator<
       if (!res.ok) throw new Error("No playlists or bad request");
 
       const { items } = await res.json();
+      // const tracksTempArray: Record<string, string[]>[] = [];
+
+      const playlistNamesWithTrackIds: Record<string, string[]>[] =
+        await Promise.all(
+          items.map(async (playlist: any) => {
+            const trackIdsForCurrentP = (
+              await get().getPlaylist(playlist.id)
+            ).tracks.map((track) => track.trackId);
+
+            return {
+              name: playlist.name,
+              trackIds: trackIdsForCurrentP,
+            };
+          }),
+        );
+
+      console.log(playlistNamesWithTrackIds);
 
       const formattedPlaylists: UserPlaylistType[] = items.map(
         (playlist: any) => ({
