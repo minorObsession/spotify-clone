@@ -3,7 +3,6 @@ import { StateStore } from "../../state/store";
 import { StateCreator } from "zustand";
 import { AccessTokenType } from "../auth/Auth";
 import { TrackType } from "../tracks/track";
-import { flexibleMillisecondsConverter } from "../../helpers/helperFunctions";
 
 export interface ArtistType {
   artistName: string;
@@ -72,15 +71,12 @@ export const createArtistSlice: StateCreator<
           name: "",
           trackId: "",
           imageUrl: "",
-          trackDuration: "",
+          trackDuration: 0,
         };
         topTrackObject.name = track.name;
         topTrackObject.trackId = track.id;
         topTrackObject.imageUrl = track.album.images[0].url;
-        topTrackObject.trackDuration = flexibleMillisecondsConverter(
-          track.duration_ms,
-        );
-
+        topTrackObject.trackDuration = track.duration_ms;
         arrayToReturn.push(topTrackObject);
       });
 

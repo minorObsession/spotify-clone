@@ -47,32 +47,34 @@ function FPArtistTrackItem({ track, index }: TrackProps) {
         <span
           onClick={handleTrackSelect}
           id={trackId}
-          className="w-fit truncate underline-offset-1 hover:cursor-pointer hover:underline"
+          className="truncate underline-offset-1 hover:cursor-pointer hover:underline"
           key={trackId}
         >
           {trackName}
         </span>
       </div>
 
-      {/* // * VIEWS */}
+      {/* // * # plays */}
       {screenWidthRem > 64 && <p className="truncate">{"viewsss"}</p>}
-      {/* // ! only when hovered */}
-      <AddToPlaylist
-        trackId={trackId}
-        isTrackHovered={isTrackHovered}
-        isTrackBoxSelected={isTrackBoxSelected}
-      />
-      {/* // * DURATION */}
-
-      <span className="font-mono tabular-nums">{trackDurationFormatted}</span>
-
-      <TrackOptions
-        options={menuOptions}
-        trackName={trackName}
-        isTrackBoxSelected={isTrackBoxSelected}
-        setIsTrackBoxSelected={setIsTrackBoxSelected}
-        isTrackHovered={isTrackHovered}
-      />
+      {/* // ! */}
+      <div className="track-utilities">
+        <AddToPlaylist
+          trackId={trackId}
+          isTrackHovered={isTrackHovered}
+          isTrackBoxSelected={isTrackBoxSelected}
+        />
+        {/* // * DURATION */}
+        <span className="text-2xs font-mono tabular-nums">
+          {trackDurationFormatted}
+        </span>
+        <TrackOptions
+          options={menuOptions}
+          trackName={trackName}
+          isTrackBoxSelected={isTrackBoxSelected}
+          setIsTrackBoxSelected={setIsTrackBoxSelected}
+          isTrackHovered={isTrackHovered}
+        />
+      </div>
     </article>
   );
 }

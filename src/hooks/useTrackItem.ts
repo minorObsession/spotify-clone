@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { useScreenWidthRem } from "./useScreenWidthRem";
 import { TrackType } from "../features/tracks/track";
 import { TopTrackType } from "../features/artists/artist";
+import { flexibleMillisecondsConverter } from "../helpers/helperFunctions";
 
 export function useTrackItem(track: TrackType | TopTrackType) {
   const navigate = useNavigate();
@@ -11,7 +12,10 @@ export function useTrackItem(track: TrackType | TopTrackType) {
   const [isTrackHovered, setIsTrackHovered] = useState(false);
 
   const trackName = track.name;
-  const trackDurationFormatted = track.trackDuration
+  console.log(track.trackDuration);
+  const trackDurationFormatted = flexibleMillisecondsConverter(
+    track.trackDuration,
+  )
     .split("min")
     .map((el, i) => {
       if (i === 0) return el + ":";
@@ -21,6 +25,7 @@ export function useTrackItem(track: TrackType | TopTrackType) {
       }
       return el;
     });
+  console.log(trackDurationFormatted);
 
   const thumbnailUrl = track.imageUrl;
 

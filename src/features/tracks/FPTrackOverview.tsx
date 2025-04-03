@@ -1,5 +1,6 @@
 import { TrackType } from "./track";
 import FullPreviewThumbnail from "../../components/FPOverviewThumbnail";
+import { flexibleMillisecondsConverter } from "../../helpers/helperFunctions";
 
 interface FullPreviewTrackOverviewProps {
   data: TrackType;
@@ -43,7 +44,7 @@ function FullPreviewTrackOverview({ data }: FullPreviewTrackOverviewProps) {
           </>
           {/* // ! LENGTH of Track */}
           <span className="underline-offset-1 hover:cursor-pointer hover:underline">
-            {data.trackDuration}
+            {flexibleMillisecondsConverter(data.trackDuration)}
           </span>
         </div>
       </div>

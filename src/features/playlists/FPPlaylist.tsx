@@ -13,7 +13,7 @@ import FPPlaylistOverview from "./FPPlaylistOverview";
 function FullPreviewPlaylist() {
   const data = useLoaderData() as DetailedPlaylistType;
 
-  console.log(data);
+  // console.log(data);
   // const rawTracks = (data as unknown as { tracks: TrackType[] }).tracks;
   // // const tracksArr = Array.isArray(rawTracks) ? rawTracks : rawTracks.items;
 

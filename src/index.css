@@ -62,7 +62,7 @@
   }
 
   .playlist-item {
-    @apply grid grid-cols-[auto_1fr] items-center gap-x-2 truncate p-0.5 md:gap-x-3;
+    @apply grid max-w-[95%] grid-cols-[auto_1fr] items-center gap-x-2 truncate p-0.5 text-sm md:gap-x-3;
   }
 
   .playlist-title {
@@ -74,12 +74,15 @@
   }
 
   .playlist-row {
-    @apply grid grid-cols-[3fr_1fr_2rem_2rem] items-center justify-between border border-b-1 px-2 sm:grid-cols-[3fr_1fr_1fr_3rem_3rem] lg:grid-cols-[3fr_1.5fr_1fr_1fr_0.4fr_0.4fr] lg:px-3 xl:grid-cols-[3fr_1.5fr_1fr_1fr_0.3fr_0.3fr];
-    /* @apply grid grid-cols-[3fr_1fr_2rem_2rem] items-center justify-between border border-b-1 px-2 sm:grid-cols-[3fr_1fr_1fr_3rem_3rem] lg:grid-cols-[3fr_1.5fr_1fr_1fr_0.25fr_0.25fr] lg:px-3; */
+    @apply grid grid-cols-[3fr_1.2fr] grid-rows-1 items-center justify-between border border-b-1 px-1 sm:grid-cols-[3fr_2.5fr_1.5fr] md:px-2 lg:grid-cols-[3fr_2fr_1fr_1fr] lg:px-3;
+  }
+
+  .track-utilities {
+    @apply grid grid-cols-3 items-center justify-between gap-2 lg:gap-6;
   }
 
   .top-track-row {
-    @apply container grid grid-cols-[3fr_1fr_0.2fr_0.2fr] items-center justify-between border border-b-1 px-2 sm:grid-cols-[3fr_1fr_1fr_0.2fr_0.2fr] lg:px-3;
+    @apply container grid grid-cols-[3.3fr_1.1fr] items-center justify-between border border-b-1 px-2 sm:grid-cols-[3.3fr_1.1fr_0.9fr] lg:px-3;
   }
 
   .fullPreviewContainer {

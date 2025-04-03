@@ -3,7 +3,6 @@ import { StateStore } from "../../state/store";
 import { AccessTokenType } from "../auth/Auth";
 import { getFromLocalStorage } from "../auth/authHelpers";
 import { TrackType } from "../tracks/track";
-import { flexibleMillisecondsConverter } from "../../helpers/helperFunctions";
 
 export interface UserPlaylistType {
   name: string;
@@ -188,9 +187,8 @@ export const createPlaylistSlice: StateCreator<
               artistId: artist.id,
             })),
             type: track.track.type,
-            trackDuration: flexibleMillisecondsConverter(
-              track.track.duration_ms,
-            ),
+            trackDuration: track.track.duration_ms,
+
             releaseDate: track.track.album.release_date,
             albumName: track.track.album.name,
             albumId: track.track.album.id,

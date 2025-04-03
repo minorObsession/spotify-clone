@@ -1,5 +1,4 @@
 import { getFromLocalStorage } from "../auth/authHelpers";
-import { flexibleMillisecondsConverter } from "../../helpers/helperFunctions";
 import { StateStore } from "../../state/store";
 import { StateCreator } from "zustand";
 import { AccessTokenType } from "../auth/Auth";
@@ -11,7 +10,7 @@ export interface TrackType {
   multipleArtists: boolean;
   artists: Record<string, string>[];
   type: string;
-  trackDuration: string;
+  trackDuration: number;
   releaseDate: string;
   albumName: string;
   albumId: string;
@@ -65,7 +64,7 @@ export const createTrackSlice: StateCreator<
           name: artist.name,
           artistId: artist.id,
         })),
-        trackDuration: flexibleMillisecondsConverter(data.duration_ms),
+        trackDuration: data.duration_ms,
         releaseDate: data.album.release_date,
         albumName: data.album.name,
         albumId: data.album.id,

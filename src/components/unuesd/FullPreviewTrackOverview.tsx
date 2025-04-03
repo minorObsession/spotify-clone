@@ -1,4 +1,5 @@
 import { TrackType } from "../../features/tracks/track";
+import { flexibleMillisecondsConverter } from "../../helpers/helperFunctions";
 import FullPreviewOverview from "./FullPreviewOverview MODULAR";
 
 interface FullPreviewTrackOverviewProps {
@@ -18,7 +19,7 @@ function FullPreviewTrackOverview({ data }: FullPreviewTrackOverviewProps) {
         {new Date(data.releaseDate).getFullYear()}
       </span>
       <span className="underline-offset-1 hover:cursor-pointer hover:underline">
-        {data.trackDuration}
+        {flexibleMillisecondsConverter(data.trackDuration)}
       </span>
     </>
   );

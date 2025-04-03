@@ -4,13 +4,11 @@ import UserAvatar from "../../components/UserAvatar";
 import { DetailedPlaylistType } from "./playlists";
 import FullPreviewThumbnail from "../../components/FPOverviewThumbnail";
 
-interface FullPreviewPlaylistOverviewProps {
+interface FPPlaylistOverviewProps {
   data: DetailedPlaylistType;
 }
 
-function FullPreviewPlaylistOverview({
-  data,
-}: FullPreviewPlaylistOverviewProps) {
+function FPPlaylistOverview({ data }: FPPlaylistOverviewProps) {
   const currentUserID = useStateStore((store) => store.user?.userID);
   const currUserOwnsPlaylist = Boolean(data.ownerId === currentUserID);
 
@@ -44,4 +42,4 @@ function FullPreviewPlaylistOverview({
   );
 }
 
-export default FullPreviewPlaylistOverview;
+export default FPPlaylistOverview;

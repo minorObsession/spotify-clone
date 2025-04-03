@@ -40,12 +40,12 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
       onMouseEnter={() => setIsTrackHovered(true)}
       onMouseLeave={() => setIsTrackHovered(false)}
       onClick={() => setIsTrackBoxSelected(true)}
-      className={`playlist-row text:xs ${!isTrackBoxSelected && "hover:bg-amber-400"} ${isTrackBoxSelected && "bg-amber-700"} lg:text-lg`}
+      className={`playlist-row text:xs ${!isTrackBoxSelected && "hover:bg-amber-400"} ${isTrackBoxSelected && "bg-amber-700"} lg:text-base`}
     >
-      <div className="playlist-item truncate p-1">
+      <div className="playlist-item p-1">
         {/* // ! number + thumbnail   */}
-        <div className="row-span-2 flex items-center gap-2 lg:gap-3">
-          <span className="w-4">{index + 1}</span>
+        <div className="row-span-2 flex items-center lg:gap-2">
+          <span className="w-3">{index + 1}</span>
           <Thumbnail
             additionalClasses="w-7 md:w-7.5 lg:w-8.5"
             img={thumbnailUrl}
@@ -55,12 +55,12 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
         <span
           onClick={handleTrackSelect}
           id={trackId}
-          className="w-fit truncate underline-offset-1 hover:cursor-pointer hover:underline"
+          className="truncate underline-offset-1 hover:cursor-pointer hover:underline"
           key={trackId}
         >
           {trackName}
         </span>
-        <span className="text-2xs w-fit truncate md:text-sm lg:text-sm">
+        <span className="text-2xs w-fit truncate md:text-sm">
           {/* // ! loop artists, save id, print name */}
           {track.artists.map((artist, i, array) => (
             <span
@@ -75,32 +75,34 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
       </div>
 
       {screenWidthRem > 64 && (
-        <p className="truncate underline-offset-1 hover:cursor-pointer hover:underline">
+        <span className="truncate text-sm underline-offset-1 hover:cursor-pointer hover:underline">
           {album}
-        </p>
+        </span>
       )}
 
-      {screenWidthRem > 102 && <p className="truncate">date</p>}
+      {screenWidthRem > 102 && <p className="truncate text-sm">date</p>}
 
+      {/* // ! THIS ONE IS CORRECT */}
       {/* // ! only when hovered */}
-      <AddToPlaylist
-        trackId={trackId}
-        isTrackHovered={isTrackHovered}
-        isTrackBoxSelected={isTrackBoxSelected}
-      />
-      {/* // ! DURATION */}
+      <div className="track-utilities">
+        <AddToPlaylist
+          trackId={trackId}
+          isTrackHovered={isTrackHovered}
+          isTrackBoxSelected={isTrackBoxSelected}
+        />
+        {/* // * DURATION */}
+        <span className="text-2xs font-mono tabular-nums">
+          {trackDurationFormatted}
+        </span>
 
-      <p className="text-right">{trackDurationFormatted}</p>
-      {/* // ! only when hovered */}
-
-      <TrackOptions
-        options={menuOptions}
-        trackName={trackName}
-        isTrackBoxSelected={isTrackBoxSelected}
-        setIsTrackBoxSelected={setIsTrackBoxSelected}
-        artistsToDisplay={track.artists.map((a) => a.name)}
-        isTrackHovered={isTrackHovered}
-      />
+        <TrackOptions
+          options={menuOptions}
+          trackName={trackName}
+          isTrackBoxSelected={isTrackBoxSelected}
+          setIsTrackBoxSelected={setIsTrackBoxSelected}
+          isTrackHovered={isTrackHovered}
+        />
+      </div>
     </article>
   );
 }

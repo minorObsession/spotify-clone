@@ -31,7 +31,7 @@ function AddToPlaylist({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={() => handleAddToPlaylist(trackId)}
-      className="relative flex justify-self-end pr-3 md:pr-4 lg:pr-5"
+      className="relative flex"
     >
       {/* //!  Tooltip */}
       <Tooltip
