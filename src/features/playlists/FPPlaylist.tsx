@@ -2,28 +2,28 @@ import { useLoaderData } from "react-router-dom";
 
 import { useStateStore } from "../../state/store";
 import { DetailedPlaylistType } from "./playlists";
-import FullPreviewTracks from "../tracks/FullPreviewTracks";
+import FPPlaylistTracks from "../tracks/FPPlaylistTracks";
 import PlaylistPreviewHeader from "./PlaylistPreviewHeader";
 
 import { createLoader } from "../../state/helpers";
 import BackToHomeButton from "../../components/BackToHomeButton";
-import FullPreviewPlaylistOverview from "./FullPreviewPlaylistOverview";
-import { TrackType } from "../tracks/track";
+import FPPlaylistOverview from "./FPPlaylistOverview";
+// import { TrackType } from "../tracks/track";
 
 function FullPreviewPlaylist() {
   const data = useLoaderData() as DetailedPlaylistType;
 
   console.log(data);
-  const rawTracks = (data as unknown as { tracks: TrackType[] }).tracks;
-  // const tracksArr = Array.isArray(rawTracks) ? rawTracks : rawTracks.items;
+  // const rawTracks = (data as unknown as { tracks: TrackType[] }).tracks;
+  // // const tracksArr = Array.isArray(rawTracks) ? rawTracks : rawTracks.items;
 
   return (
-    <div className={`fullPreviewContainer`}>
+    <div className={`fullPreviewContainer gap-3`}>
       <BackToHomeButton />
 
-      <FullPreviewPlaylistOverview data={data} />
+      <FPPlaylistOverview data={data} />
       <PlaylistPreviewHeader />
-      <FullPreviewTracks tracks={rawTracks} />
+      <FPPlaylistTracks tracks={data.tracks} />
     </div>
   );
 }

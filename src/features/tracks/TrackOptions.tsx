@@ -3,7 +3,8 @@ import useOutsideClick from "../../hooks/useOutsideClick";
 import { SlOptions } from "react-icons/sl";
 
 interface TrackOptionsProps {
-  artistsToDisplay: string[];
+  options: string[];
+  artistsToDisplay?: string[];
   isTrackBoxSelected: boolean;
   setIsTrackBoxSelected: React.Dispatch<React.SetStateAction<boolean>>;
   isTrackHovered: boolean;
@@ -16,6 +17,7 @@ function TrackOptions({
   isTrackBoxSelected,
   isTrackHovered,
   trackName,
+  options,
 }: TrackOptionsProps) {
   const [areOptionsHovered, setAreOptionsHovered] = useState(false);
   const [areOptionsVisible, setAreOptionsVisible] = useState(false);
@@ -44,14 +46,9 @@ function TrackOptions({
         ref={menuRef}
         className={`absolute -right-4 bottom-7 z-10 rounded-md bg-amber-200 p-1 text-xs text-nowrap shadow-md ${areOptionsVisible ? "inline" : "hidden"}`}
       >
-        <li>Add to playlist &rarr;</li>
-        <li>Save to your Liked Songs</li>
-        <li>Add to queue</li>
-        <li>Go to artist</li>
-        <li>Go to album</li>
-        <li>View credits</li>
-        <li>Share &rarr;</li>
-        <li>opt5</li>
+        {options.map((option) => (
+          <li>{option}</li>
+        ))}
       </ul>
 
       {/* // ! dots to display menu  */}

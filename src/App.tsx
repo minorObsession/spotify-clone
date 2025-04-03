@@ -4,13 +4,11 @@ import Root from "./Root";
 import Home, { initialStateLoader } from "./Home";
 import FullPreviewPlaylist, {
   playlistLoader,
-} from "./features/playlists/FullPreviewPlaylist";
+} from "./features/playlists/FPPlaylist";
 import FullPreviewTrack, {
   trackLoader,
-} from "./features/tracks/FullPreviewTrack";
-import FullPreviewArtist, {
-  artistLoader,
-} from "./features/artists/FullPreviewArtist";
+} from "./features/tracks/FPPlaylistTrack";
+import FullPreviewArtist, { artistLoader } from "./features/artists/FPArtist";
 
 import PageNotFound from "./components/PageNotFound";
 

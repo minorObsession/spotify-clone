@@ -1,10 +1,10 @@
 import Thumbnail from "./Thumbnail";
 
-interface FullPreviewThumbnailProps {
+interface FPOverviewThumbnailProps {
   imageUrl: string;
 }
 
-function FullPreviewThumbnail({ imageUrl }: FullPreviewThumbnailProps) {
+function FPOverviewThumbnail({ imageUrl }: FPOverviewThumbnailProps) {
   return (
     <div className="aspect-square flex-[0_1_20%]">
       <Thumbnail
@@ -16,4 +16,4 @@ function FullPreviewThumbnail({ imageUrl }: FullPreviewThumbnailProps) {
   );
 }
 
-export default FullPreviewThumbnail;
+export default FPOverviewThumbnail;

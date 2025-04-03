@@ -15,7 +15,7 @@ export interface ArtistType {
   topTracks: TopTrackType[];
 }
 
-type TopTrackType = Omit<
+export type TopTrackType = Omit<
   TrackType,
   | "albumName"
   | "multipleArtists"
@@ -76,10 +76,11 @@ export const createArtistSlice: StateCreator<
         };
         topTrackObject.name = track.name;
         topTrackObject.trackId = track.id;
-        topTrackObject.imageUrl = track.album.images[0];
+        topTrackObject.imageUrl = track.album.images[0].url;
         topTrackObject.trackDuration = flexibleMillisecondsConverter(
           track.duration_ms,
         );
+
         arrayToReturn.push(topTrackObject);
       });
 
@@ -121,9 +122,10 @@ export const createArtistSlice: StateCreator<
       if (!res.ok) throw new Error("No track or bad request");
 
       const data = await res.json();
-
+      console.log(data);
       // ! get top tracks
       const topTracks = await get().getTopTracks(id);
+
       if (!topTracks) throw new Error("No top tracks or bad request");
 
       const artistObject: ArtistType = {

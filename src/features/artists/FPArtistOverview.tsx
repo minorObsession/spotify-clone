@@ -1,12 +1,12 @@
 import { ArtistType } from "./artist";
 
-interface FullPreviewOverviewProps {
+interface FPArtistOverviewProps {
   data: ArtistType;
 }
 
 // // ! idea for image - loop thru pixels and determine how similar they are.. if so, then move to another object-pos where pixels are more diverse
 
-function FullPreviewArtistOverview({ data }: FullPreviewOverviewProps) {
+function FPArtistOverview({ data }: FPArtistOverviewProps) {
   return (
     // /* // ! artist background image  */
     <div className="relative max-h-[40%]">
@@ -27,4 +27,4 @@ function FullPreviewArtistOverview({ data }: FullPreviewOverviewProps) {
   );
 }
 
-export default FullPreviewArtistOverview;
+export default FPArtistOverview;

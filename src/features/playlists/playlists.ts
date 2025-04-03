@@ -3,6 +3,7 @@ import { StateStore } from "../../state/store";
 import { AccessTokenType } from "../auth/Auth";
 import { getFromLocalStorage } from "../auth/authHelpers";
 import { TrackType } from "../tracks/track";
+import { flexibleMillisecondsConverter } from "../../helpers/helperFunctions";
 
 export interface UserPlaylistType {
   name: string;
@@ -141,9 +142,14 @@ export const createPlaylistSlice: StateCreator<
                 ? track.track.album.images[0].url
                 : "",
             multipleArtists: track.track.artists.length > 1,
-            artists: track.track.artists.map((artist: any) => artist.name),
+            artists: track.track.artists.map((artist: any) => ({
+              name: artist.name,
+              artistId: artist.id,
+            })),
             type: track.track.type,
-            trackDuration: track.track.duration_ms.toString(),
+            trackDuration: flexibleMillisecondsConverter(
+              track.track.duration_ms,
+            ),
             releaseDate: track.track.album.release_date,
             albumName: track.track.album.name,
             albumId: track.track.album.id,

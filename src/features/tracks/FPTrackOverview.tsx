@@ -1,5 +1,5 @@
 import { TrackType } from "./track";
-import FullPreviewThumbnail from "../../components/FullPreviewThumbnail";
+import FullPreviewThumbnail from "../../components/FPOverviewThumbnail";
 
 interface FullPreviewTrackOverviewProps {
   data: TrackType;
@@ -10,6 +10,7 @@ function FullPreviewTrackOverview({ data }: FullPreviewTrackOverviewProps) {
 
   return (
     // {/* // ! image and title */}
+
     <article className="flex gap-3 border-b-2 py-4">
       {/* // ! Image */}
       <FullPreviewThumbnail imageUrl={data.imageUrl} />

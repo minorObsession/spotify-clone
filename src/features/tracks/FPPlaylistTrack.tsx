@@ -3,17 +3,17 @@ import { useStateStore } from "../../state/store";
 import { TrackType } from "./track";
 import { createLoader } from "../../state/helpers";
 import BackToHomeButton from "../../components/BackToHomeButton";
-import FullPreviewTrackOverview from "./FullPreviewTrackOverview";
+import FPTrackOverview from "./FPTrackOverview";
 
-function FullPreviewTrack() {
+function FPPlaylistTrack() {
   const data = useLoaderData() as TrackType;
 
   return (
     <div className={`fullPreviewContainer`}>
       <BackToHomeButton />
-      <FullPreviewTrackOverview data={data} />
+      <FPTrackOverview data={data} />
       {/* <PlaylistPreviewHeader /> */}
-      {/* <FullPreviewTracks tracks={tracksArr} /> */}
+      {/* <FPPlaylistTracks tracks={tracksArr} /> */}
     </div>
   );
 }
@@ -21,4 +21,4 @@ function FullPreviewTrack() {
 const { getTrack } = useStateStore.getState();
 export const trackLoader = createLoader<TrackType>("track", getTrack);
 
-export default FullPreviewTrack;
+export default FPPlaylistTrack;

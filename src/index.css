@@ -74,11 +74,15 @@
   }
 
   .playlist-row {
-    @apply container grid grid-cols-[3fr_1fr_0.2fr] items-center justify-between border border-b-1 px-2 sm:grid-cols-[3fr_1fr_1fr_0.2fr] lg:grid-cols-[3fr_1.5fr_1fr_1fr_0.2fr] lg:px-3;
+    @apply grid grid-cols-[3fr_1fr_0.2fr] items-center justify-between border border-b-1 px-2 sm:grid-cols-[3fr_1fr_1fr_0.2fr] lg:grid-cols-[3fr_1.5fr_1fr_1fr_0.2fr] lg:px-3;
+  }
+
+  .top-track-row {
+    @apply container grid grid-cols-[3fr_1fr_0.2fr] items-center justify-between border border-b-1 px-2 sm:grid-cols-[3fr_1fr_1fr_0.2fr] lg:px-3;
   }
 
   .fullPreviewContainer {
-    @apply flex h-full flex-col gap-3 overflow-y-scroll bg-amber-800 p-3 md:p-4;
+    @apply flex h-full flex-col overflow-y-scroll bg-amber-800 p-3 md:p-4;
   }
 }
 

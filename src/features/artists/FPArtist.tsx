@@ -2,28 +2,26 @@ import { useLoaderData } from "react-router-dom";
 
 import { useStateStore } from "../../state/store";
 import { ArtistType } from "./artist";
-import FullPreviewArtistOverview from "./FullPreviewArtistOverview";
+import FPArtistOverview from "./FPArtistOverview";
 import { createLoader } from "../../state/helpers";
 import BackToHomeButton from "../../components/BackToHomeButton";
-import FullPreviewTracks from "../tracks/FullPreviewTracks";
+import FPArtistTracks from "./FPArtistTracks";
 
-function FullPreviewArtist() {
+function FPArtist() {
   const data = useLoaderData() as ArtistType;
-  //
-  console.log(data);
 
   return (
     <div className={`fullPreviewContainer`}>
       <BackToHomeButton />
 
-      <FullPreviewArtistOverview data={data} />
+      <FPArtistOverview data={data} />
       {/* <PlaylistPreviewHeader /> */}
-      <FullPreviewTracks tracks={data.topTracks} />
+      <FPArtistTracks tracks={data.topTracks} />
     </div>
   );
 }
 
-export default FullPreviewArtist;
+export default FPArtist;
 
 const { getArtist } = useStateStore.getState();
 

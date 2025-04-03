@@ -2,7 +2,7 @@ import { getPlaylistLenght } from "./playlistHelpers";
 import { useStateStore } from "../../state/store";
 import UserAvatar from "../../components/UserAvatar";
 import { DetailedPlaylistType } from "./playlists";
-import FullPreviewThumbnail from "../../components/FullPreviewThumbnail";
+import FullPreviewThumbnail from "../../components/FPOverviewThumbnail";
 
 interface FullPreviewPlaylistOverviewProps {
   data: DetailedPlaylistType;

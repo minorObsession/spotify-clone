@@ -71,8 +71,6 @@ export const createTrackSlice: StateCreator<
         albumId: data.album.id,
       };
 
-      console.log(trackObject);
-
       set({ track: trackObject });
 
       // ! store track in LS ??? maybe session storage
