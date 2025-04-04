@@ -7,7 +7,8 @@ import { StateStore } from "../../state/store";
 const AUTH_CONFIG = {
   clientId: "91915dd042e1406aa1ca2fef874d5e1b",
   redirectUri: "http://127.0.0.1:5173/home",
-  scope: "user-read-private user-read-email",
+  scope:
+    "user-read-private user-read-email user-library-read user-library-modify user-follow-modify user-follow-read user-top-read",
   authUrl: "https://accounts.spotify.com/authorize",
   tokenUrl: "https://accounts.spotify.com/api/token",
 };
@@ -173,7 +174,7 @@ export const createAuthSlice: StateCreator<
 
   // --- Internal Action: Auto–Refresh Token ---
   autoRefreshToken: async () => {
-    const safetyNetMinutes = 5; // refresh 5 minutes before expiry
+    const safetyNetMinutes = 20; // refresh 20 minutes before expiry
     // Setup an interval to check token expiry every minute
     const refreshInterval = setInterval(async () => {
       const { accessToken, refreshToken } = get();

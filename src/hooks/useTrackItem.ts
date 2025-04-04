@@ -12,7 +12,6 @@ export function useTrackItem(track: TrackType | TopTrackType) {
   const [isTrackHovered, setIsTrackHovered] = useState(false);
 
   const trackName = track.name;
-  console.log(track.trackDuration);
   const trackDurationFormatted = flexibleMillisecondsConverter(
     track.trackDuration,
   )
@@ -25,7 +24,6 @@ export function useTrackItem(track: TrackType | TopTrackType) {
       }
       return el;
     });
-  console.log(trackDurationFormatted);
 
   const thumbnailUrl = track.imageUrl;
 

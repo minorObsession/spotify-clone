@@ -1,7 +1,8 @@
-import { getFromLocalStorage } from "../auth/authHelpers";
-import { StateStore } from "../../state/store";
 import { StateCreator } from "zustand";
-import { AccessTokenType } from "../auth/Auth";
+// import { getFromLocalStorage } from "../auth/authHelpers";
+// import { AccessTokenType } from "../auth/Auth";
+import { StateStore } from "../../state/store";
+import { fetchFromSpotify } from "../../state/helpers";
 
 export interface TrackType {
   name: string;
@@ -19,7 +20,7 @@ export interface TrackType {
 export interface TrackSlice {
   // ! get partial types
   track: TrackType | null;
-  getTrack: (id: string) => Promise<TrackType | undefined>;
+  getTrack: (id: string) => Promise<TrackType | null>;
 }
 
 export const createTrackSlice: StateCreator<
@@ -29,32 +30,11 @@ export const createTrackSlice: StateCreator<
   TrackSlice
 > = (set) => ({
   track: null,
-  getTrack: async (id: string): Promise<TrackType | undefined> => {
-    console.log("GET TRACK RUNNING ");
-
-    try {
-      const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
-      if (!accessToken)
-        throw new Error("Access token expired or doesn't exist");
-
-      // ! if not in LS, then fetch track
-      console.log("🛜 getTrack will call api...");
-      const res = await fetch(`https://api.spotify.com/v1/tracks/${id}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken.token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!res.ok) throw new Error("No track or bad request");
-
-      const data = await res.json();
-      // console.log(data.artists);
-
-      // const artists = makeArtistsObject(data.artists);
-      // console.log(artists);
-      const trackObject: TrackType = {
+  getTrack: async (id: string) => {
+    return await fetchFromSpotify<any, TrackType>({
+      endpoint: `tracks/${id}`,
+      cacheName: `track_${id}`,
+      transformFn: (data) => ({
         name: data.name,
         type: data.type,
         trackId: data.id,
@@ -68,17 +48,13 @@ export const createTrackSlice: StateCreator<
         releaseDate: data.album.release_date,
         albumName: data.album.name,
         albumId: data.album.id,
-      };
-
-      set({ track: trackObject });
-
-      // ! store track in LS ??? maybe session storage
-      // localStorage.setItem("track", JSON.stringify(userObject));
-
-      // ! DON'T FORGET RETURN
-      return trackObject;
-    } catch (err) {
-      console.error("🛑 ❌", err);
-    }
+      }),
+      onCacheFound: (data) => {
+        set({ track: data });
+      },
+      onDataReceived: (data) => {
+        set({ track: data });
+      },
+    });
   },
 });

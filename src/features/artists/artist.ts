@@ -1,8 +1,7 @@
-import { getFromLocalStorage } from "../auth/authHelpers";
 import { StateStore } from "../../state/store";
 import { StateCreator } from "zustand";
-import { AccessTokenType } from "../auth/Auth";
 import { TrackType } from "../tracks/track";
+import { fetchFromSpotify } from "../../state/helpers";
 
 export interface ArtistType {
   artistName: string;
@@ -27,8 +26,9 @@ export type TopTrackType = Omit<
 export interface ArtistSlice {
   // ! get partial types
   artist: ArtistType | null;
-  getArtist: (id: string) => Promise<ArtistType | undefined>;
-  getTopTracks: (id: string) => Promise<TopTrackType[] | undefined>;
+
+  getArtist: (id: string) => Promise<ArtistType | null>;
+  getTopTracks: (id: string) => Promise<TopTrackType[] | null>;
 }
 
 export const createArtistSlice: StateCreator<
@@ -38,111 +38,46 @@ export const createArtistSlice: StateCreator<
   ArtistSlice
 > = (set, get) => ({
   artist: null,
-  getTopTracks: async (id: string): Promise<TopTrackType[] | undefined> => {
-    try {
-      const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
-      if (!accessToken)
-        throw new Error("Access token expired or doesn't exist");
 
-      // ! if not in LS, then fetch artist
-      console.log("🛜 getTopTracks will call api...");
-      const res = await fetch(
-        `https://api.spotify.com/v1/artists/${id}/top-tracks`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken.token}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      if (!res.ok) throw new Error("No top tracks or bad request");
-
-      const data = await res.json();
-      console.log(data);
-
-      const arrayToReturn: TopTrackType[] = [];
-
-      let topTrackObject: TopTrackType;
-
-      data.tracks.map((track: any) => {
-        topTrackObject = {
-          name: "",
-          trackId: "",
-          imageUrl: "",
-          trackDuration: 0,
-        };
-        topTrackObject.name = track.name;
-        topTrackObject.trackId = track.id;
-        topTrackObject.imageUrl = track.album.images[0].url;
-        topTrackObject.trackDuration = track.duration_ms;
-        arrayToReturn.push(topTrackObject);
-      });
-
-      // ! store artist in LS ??? maybe session storage
-      // localStorage.setItem(`artist_${id}`, JSON.stringify(topTracksObject));
-
-      // ! DON'T FORGET RETURN
-      console.log("BEFORE RETURNING", arrayToReturn);
-      return arrayToReturn;
-      // return data.tracks;
-    } catch (err) {
-      console.error("🛑 ❌", err);
-      return [];
-    }
+  getTopTracks: async (artistId: string) => {
+    return await fetchFromSpotify<any, TopTrackType[]>({
+      endpoint: `artists/${artistId}/top-tracks`,
+      cacheName: `top_tracks_for_${artistId}`,
+      transformFn: (data) =>
+        data.tracks.map((track: any) => ({
+          name: track.name,
+          trackId: track.id,
+          imageUrl: track.album.images[0].url,
+          trackDuration: track.duration_ms,
+        })),
+    });
   },
-  getArtist: async (id: string): Promise<ArtistType | undefined> => {
-    try {
-      const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
-      if (!accessToken)
-        throw new Error("Access token expired or doesn't exist");
+  getArtist: async (artistId: string) => {
+    return await fetchFromSpotify<any, ArtistType>({
+      endpoint: `artists/${artistId}`,
+      cacheName: `artist_${artistId}`,
+      transformFn: async (data) => {
+        const topTracks = await get().getTopTracks(artistId);
 
-      const artistFromLS = getFromLocalStorage<ArtistType>(`artist_${id}`);
+        if (!topTracks || topTracks === null)
+          throw new Error("topTracks could not be fetched");
 
-      if (artistFromLS) {
-        set({ artist: artistFromLS });
-        return artistFromLS;
-      }
-
-      // ! if not in LS, then fetch artist
-      console.log("🛜 getArtist will call api...");
-      const res = await fetch(`https://api.spotify.com/v1/artists/${id}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken.token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!res.ok) throw new Error("No track or bad request");
-
-      const data = await res.json();
-      console.log(data);
-      // ! get top tracks
-      const topTracks = await get().getTopTracks(id);
-
-      if (!topTracks) throw new Error("No top tracks or bad request");
-
-      const artistObject: ArtistType = {
-        artistName: data.name,
-        genres: data.genres,
-        artistID: data.id,
-        type: data.type,
-        numFollowers: data.followers.total,
-        imageUrl: data.images[0].url,
-        topTracks,
-      };
-
-      set({ artist: artistObject });
-
-      // ! store artist in LS ??? maybe session storage
-      localStorage.setItem(`artist_${id}`, JSON.stringify(artistObject));
-
-      // ! DON'T FORGET RETURN
-      return artistObject;
-    } catch (err) {
-      console.error("🛑 ❌", err);
-    }
+        return {
+          artistName: data.name,
+          genres: data.genres,
+          artistID: data.id,
+          type: data.type,
+          numFollowers: data.followers.total,
+          imageUrl: data.images[0].url,
+          topTracks,
+        };
+      },
+      onCacheFound: (data) => {
+        set({ artist: data });
+      },
+      onDataReceived: (data) => {
+        set({ artist: data });
+      },
+    });
   },
 });

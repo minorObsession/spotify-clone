@@ -3,6 +3,7 @@ import { StateStore } from "../../state/store";
 import { AccessTokenType } from "../auth/Auth";
 import { getFromLocalStorage } from "../auth/authHelpers";
 import { TrackType } from "../tracks/track";
+import { fetchFromSpotify } from "../../state/helpers";
 
 export interface UserPlaylistType {
   name: string;
@@ -32,7 +33,7 @@ export interface PlaylistSlice {
   playlists: UserPlaylistType[];
   playlistNamesWithTrackIds: PlaylistNamesWithTrackIdsType[];
   playlist: DetailedPlaylistType | object;
-  getUserPlaylists: () => Promise<UserPlaylistType[]>;
+  getUserPlaylists: () => Promise<UserPlaylistType[] | null>;
   getPlaylist: (
     id: string,
     type?: "playlists" | "shows" | "albums",
@@ -49,6 +50,7 @@ export const createPlaylistSlice: StateCreator<
   playlistNamesWithTrackIds:
     JSON.parse(localStorage.getItem("playlist_names_with_track_ids")!) || [],
   playlist: {},
+  // ! STILL LEFT TO REFACTOR getUserPlaylists
   getUserPlaylists: async () => {
     try {
       // ! access token
@@ -132,44 +134,11 @@ export const createPlaylistSlice: StateCreator<
       return []; // ensures the function always returns UserPlaylistType[]
     }
   },
-
-  getPlaylist: async (id, type = "playlists") => {
-    try {
-      // ! access token LS check
-      const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
-      if (!accessToken)
-        throw new Error("Access token expired or doesn't exist");
-
-      // ! check LS for playlist
-      const storedPlaylist = getFromLocalStorage<DetailedPlaylistType>(
-        `playlist_${id}`,
-      );
-
-      if (storedPlaylist) {
-        set({ playlist: storedPlaylist });
-        return storedPlaylist;
-      }
-
-      // ! if not in LS, then fetch playlist
-      console.log("🛜 getPlaylist will call api...");
-      const res = await fetch(`https://api.spotify.com/v1/${type}/${id}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken.token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!res.ok) throw new Error("No playlist or bad request");
-
-      const data = await res.json();
-      // console.log(data);
-
-      const totalDurationMs = data.tracks.items.reduce(
-        (sum: number, item: any) => sum + (item.track?.duration_ms || 0),
-        0,
-      );
-      const playlist: DetailedPlaylistType = {
+  getPlaylist: async (id) => {
+    const result = await fetchFromSpotify<any, DetailedPlaylistType>({
+      endpoint: `playlists/${id}`,
+      cacheName: `playlist${id}`,
+      transformFn: (data) => ({
         name: data.name,
         id: data.id,
         type: data.type,
@@ -195,21 +164,20 @@ export const createPlaylistSlice: StateCreator<
           }),
         ),
         numTracks: data.tracks.items.length,
-        totalDurationMs,
+        totalDurationMs: data.tracks.items.reduce(
+          (sum: number, item: any) => sum + (item.track?.duration_ms || 0),
+          0,
+        ),
         imageUrl: data.images.length > 0 ? data.images[0].url : null,
         ownerName: data.owner.display_name,
         ownerId: data.owner.id,
-      };
+      }),
+      onCacheFound: (data) => set({ playlist: data }),
+      onDataReceived: (data) => set({ playlist: data }),
+    });
 
-      set({ playlist });
-
-      // ! store this playlist in LS
-      localStorage.setItem(`playlist_${id}`, JSON.stringify(playlist));
-
-      return playlist;
-    } catch (err) {
-      console.error("🛑 ❌", err);
-      throw new Error("Failed to fetch playlist/show");
-    }
+    // ! WHERE WILL THE ERROR BE CAUGHT????
+    if (!result) throw new Error("sss");
+    return result;
   },
 });

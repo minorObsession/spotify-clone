@@ -1,7 +1,6 @@
 import { StateCreator } from "zustand";
-import { getFromLocalStorage } from "../auth/authHelpers";
 import { StateStore } from "../../state/store";
-import { AccessTokenType } from "../auth/Auth";
+import { fetchFromSpotify } from "../../state/helpers";
 
 export interface UserType {
   username: string;
@@ -12,7 +11,9 @@ export interface UserType {
 export interface UserSlice {
   // ! get partial types
   user: UserType | null;
-  getUser: () => Promise<UserType>;
+  usersSavedTracks: any | null;
+  getUser: () => Promise<UserType | null>;
+  getUserSavedTracks(): Promise<any>;
 }
 
 export const createUserSlice: StateCreator<
@@ -22,57 +23,44 @@ export const createUserSlice: StateCreator<
   UserSlice
 > = (set) => ({
   user: null,
-  getUser: async (): Promise<UserType> => {
-    try {
-      const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
-      if (!accessToken)
-        throw new Error("Access token expired or doesn't exist");
-
-      // ! check LS for user
-      // * potential problem if switched to different user - need a better validation
-      const storedUser = getFromLocalStorage<UserType>("user");
-
-      if (storedUser) {
-        set({ user: storedUser });
-        return storedUser;
-      }
-
-      // ! if not in LS, then fetch user
-      console.log("🛜 getUser will call api...");
-      const res = await fetch("https://api.spotify.com/v1/me", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken.token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!res.ok) throw new Error("No user or bad request");
-
-      const data = await res.json();
-
-      const userObject: UserType = {
+  usersSavedTracks: null,
+  getUser: async () => {
+    return await fetchFromSpotify<any, UserType>({
+      endpoint: "me",
+      cacheName: "user",
+      transformFn: (data) => ({
         username: data.display_name,
         photo: data.images?.[0]?.url || "",
         userID: data.id,
         email: data.email,
-      };
+      }),
+      onCacheFound: (data) => {
+        set({ user: data });
+      },
+      onDataReceived: (data) => {
+        set({ user: data });
+      },
+    });
+  },
+  // ! TODO: to--do: transform data
 
-      set({ user: userObject });
-
-      // ! store user in LS
-
-      localStorage.setItem("user", JSON.stringify(userObject));
-
-      return userObject;
-    } catch (err) {
-      console.error("🛑 ❌", err);
-      return {
-        username: "",
-        photo: "",
-        userID: "",
-        email: "",
-      };
-    }
+  getUserSavedTracks: async () => {
+    return await fetchFromSpotify<any, any>({
+      endpoint: "me/tracks",
+      cacheName: "users_saved_tracks",
+      transformFn: (data) => ({
+        data,
+        // username: data.display_name,
+        // photo: data.images?.[0]?.url || "",
+        // userID: data.id,
+        // email: data.email,
+      }),
+      onCacheFound: (data) => {
+        set({ usersSavedTracks: data });
+      },
+      onDataReceived: (data) => {
+        set({ usersSavedTracks: data });
+      },
+    });
   },
 });

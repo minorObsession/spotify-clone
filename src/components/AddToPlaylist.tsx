@@ -19,6 +19,7 @@ function AddToPlaylist({
 
   const handleAddToPlaylist = (id: any) => {
     console.log("adding..:", id);
+    // *
   };
 
   // ! look for this ID in all playlists - make function that does this

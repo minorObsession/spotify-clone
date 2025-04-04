@@ -14,7 +14,7 @@ function Root() {
       if (isAuthenticated) {
         // ! to start the auto refresh timer
         autoRefreshToken();
-        navigate("/home/");
+        navigate("/home");
       } else await initAuth();
     };
     verifyAuth();
