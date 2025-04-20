@@ -126,8 +126,7 @@ export const createPlaylistSlice: StateCreator<
 
       set({ playlists: formattedPlaylists });
 
-      console.log("will get saved tracks");
-      await get().getUserSavedTracks();
+      await get().getUserSavedTracks(0);
 
       return formattedPlaylists;
     } catch (err) {
@@ -136,9 +135,7 @@ export const createPlaylistSlice: StateCreator<
     }
   },
   getPlaylist: async (id) => {
-    console.log("calling gt playlit");
     if (id === "liked_songs") {
-      console.log("liked songs.... returnign");
       return get().usersSavedTracks as DetailedPlaylistType;
     }
 

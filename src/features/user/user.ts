@@ -15,7 +15,7 @@ export interface UserSlice {
   user: UserType | null;
   usersSavedTracks: DetailedPlaylistType | null;
   getUser: () => Promise<UserType | null>;
-  getUserSavedTracks(): Promise<DetailedPlaylistType | null>;
+  getUserSavedTracks(offset: number): Promise<DetailedPlaylistType | null>;
 }
 
 export const createUserSlice: StateCreator<
@@ -46,20 +46,14 @@ export const createUserSlice: StateCreator<
     });
   },
   //  todo to--do: transform data
-  getUserSavedTracks: async () => {
-    return await fetchFromSpotify<any, DetailedPlaylistType>({
+  getUserSavedTracks: async (offset = 0) => {
+    console.log("calling getUserSavedTracks");
+    const result = await fetchFromSpotify<any, DetailedPlaylistType>({
       endpoint: "me/tracks",
       cacheName: "users_saved_tracks",
-      transformFn: (data) => ({
-        // data,
-        name: "Liked Songs",
-        id: "liked_songs",
-        type: "playlist",
-        ownerName: get().user!.username,
-        ownerId: get().user!.userID,
-        imageUrl:
-          "https://cdn.prod.website-files.com/5e36e6f21212670638c0d63c/5e39d85cee05be53d238681a_likedSongs.png",
-        tracks: data.items.map(
+      offset: `?offset=${offset}&limit=50`,
+      transformFn: (data) => {
+        const newTracks = data.items.map(
           (item: any): TrackType => ({
             name: item.track.name,
             trackId: item.track.id,
@@ -78,14 +72,35 @@ export const createUserSlice: StateCreator<
             albumName: item.track.album.name,
             albumId: item.track.album.id,
           }),
-        ),
-        totalDurationMs: 1000000,
-        numTracks: data.total,
-        onCacheFound: (data: DetailedPlaylistType) =>
-          set({ usersSavedTracks: data }),
-        onDataReceived: (data: DetailedPlaylistType) =>
-          set({ usersSavedTracks: data }),
-      }),
+        );
+
+        const currentSaved = get().usersSavedTracks;
+
+        const mergedTracks =
+          offset > 0 && currentSaved
+            ? [...currentSaved.tracks, ...newTracks]
+            : newTracks;
+
+        const tracksToStore = {
+          name: "Liked Songs",
+          id: "liked_songs",
+          type: "playlist",
+          ownerName: get().user!.username,
+          ownerId: get().user!.userID,
+          imageUrl:
+            "https://cdn.prod.website-files.com/5e36e6f21212670638c0d63c/5e39d85cee05be53d238681a_likedSongs.png",
+          tracks: mergedTracks,
+          totalDurationMs: 1000000, // can update if needed
+          numTracks: data.total,
+        };
+
+        // set updated tracks
+        set({ usersSavedTracks: tracksToStore });
+
+        return tracksToStore;
+      },
     });
+
+    return result;
   },
 });
