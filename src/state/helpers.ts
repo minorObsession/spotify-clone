@@ -43,7 +43,7 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
   onCacheFound?: (data: ReturnType) => void;
   onDataReceived?: (data: ReturnType) => void;
 }): Promise<ReturnType | null> => {
-  console.log(endpoint);
+  // console.log(endpoint);
   try {
     const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
     if (!accessToken) {

@@ -9,8 +9,9 @@ export interface UserPlaylistType {
   name: string;
   id: string;
   // * extract only 1 image!
-  images: any[];
+  images: any[] | string;
   ownerName: string;
+  // customClickHandler?: () => void;
 }
 
 export interface DetailedPlaylistType {
@@ -103,8 +104,6 @@ export const createPlaylistSlice: StateCreator<
           }),
         );
 
-      console.log(playlistNamesWithTrackIds);
-
       set({ playlistNamesWithTrackIds });
 
       const formattedPlaylists: UserPlaylistType[] = items.map(
@@ -128,6 +127,9 @@ export const createPlaylistSlice: StateCreator<
 
       set({ playlists: formattedPlaylists });
 
+      console.log("will get saved tracks");
+      await get().getUserSavedTracks();
+
       return formattedPlaylists;
     } catch (err) {
       console.error("🛑 ❌", err);
@@ -135,6 +137,12 @@ export const createPlaylistSlice: StateCreator<
     }
   },
   getPlaylist: async (id) => {
+    console.log("calling gt playlit");
+    if (id === "liked_songs") {
+      console.log("liked songs.... returnign");
+      return get().usersSavedTracks as DetailedPlaylistType;
+    }
+
     const result = await fetchFromSpotify<any, DetailedPlaylistType>({
       endpoint: `playlists/${id}`,
       cacheName: `playlist${id}`,
@@ -177,7 +185,7 @@ export const createPlaylistSlice: StateCreator<
     });
 
     // ! WHERE WILL THE ERROR BE CAUGHT????
-    if (!result) throw new Error("sss");
+    if (!result) throw new Error("Couldn't not fetch playlist");
     return result;
   },
 });

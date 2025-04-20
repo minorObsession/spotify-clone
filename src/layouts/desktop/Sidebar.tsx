@@ -5,8 +5,7 @@ import { useStateStore } from "../../state/store";
 
 function Sidebar() {
   const playlists = useStateStore((store) => store.playlists);
-
-  const getUserSavedTracks = useStateStore((store) => store.getUserSavedTracks);
+  const usersSavedTracks = useStateStore((store) => store.usersSavedTracks);
 
   if (!playlists) return null;
 
@@ -14,9 +13,14 @@ function Sidebar() {
     <aside
       className={`grid-sidebar-l min-w-[20vw] overflow-y-auto bg-amber-600 p-2 py-5`}
     >
-      <button onClick={() => getUserSavedTracks()}>
-        get users' saved tracks
-      </button>
+      {usersSavedTracks && (
+        <UserPlaylist
+          name={usersSavedTracks.name}
+          id={usersSavedTracks.id}
+          ownerName={`${usersSavedTracks.numTracks} songs`}
+          images={usersSavedTracks.imageUrl}
+        />
+      )}
       {playlists?.map((playlist) => (
         <UserPlaylist
           id={playlist.id}

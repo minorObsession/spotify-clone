@@ -51,7 +51,7 @@ function TrackOptions({
         className={`absolute -right-4 bottom-7 z-10 rounded-md bg-amber-200 p-1 text-xs text-nowrap shadow-md ${areOptionsVisible ? "inline" : "hidden"}`}
       >
         {options.map((option) => (
-          <li>{option}</li>
+          <li key={option}>{option}</li>
         ))}
       </ul>
       {/* Dots Icon */}

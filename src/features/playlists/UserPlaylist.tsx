@@ -4,16 +4,18 @@ import { UserPlaylistType } from "./playlists";
 
 function UserPlaylist({ name, images, id, ownerName }: UserPlaylistType) {
   const navigate = useNavigate();
+  const handlePlaylistClick = () => navigate(`/home/playlist/${id}`);
 
   return (
-    <div
+    <article
       className="playlist-item cursor-pointer gap-x-2 text-sm hover:bg-amber-300 md:gap-x-3"
-      onClick={() => navigate(`/home/playlist/${id}`)}
+      onClick={handlePlaylistClick}
     >
-      <Thumbnail img={images[0].url} minWidth="w-12" />
+      {/* ! images could be just a string */}
+      <Thumbnail img={images[0].url || images} minWidth="w-12" />
       <p className="playlist-title">{name}</p>
       <p className="playlist-owner">{ownerName}</p>
-    </div>
+    </article>
   );
 }
 

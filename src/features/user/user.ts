@@ -1,6 +1,8 @@
 import { StateCreator } from "zustand";
 import { StateStore } from "../../state/store";
 import { fetchFromSpotify } from "../../state/helpers";
+import { DetailedPlaylistType } from "../playlists/playlists";
+import { TrackType } from "../tracks/track";
 
 export interface UserType {
   username: string;
@@ -11,9 +13,9 @@ export interface UserType {
 export interface UserSlice {
   // ! get partial types
   user: UserType | null;
-  usersSavedTracks: any | null;
+  usersSavedTracks: DetailedPlaylistType | null;
   getUser: () => Promise<UserType | null>;
-  getUserSavedTracks(): Promise<any>;
+  getUserSavedTracks(): Promise<DetailedPlaylistType | null>;
 }
 
 export const createUserSlice: StateCreator<
@@ -21,9 +23,10 @@ export const createUserSlice: StateCreator<
   [["zustand/devtools", never]],
   [],
   UserSlice
-> = (set) => ({
+> = (set, get) => ({
   user: null,
-  usersSavedTracks: null,
+  usersSavedTracks:
+    JSON.parse(localStorage.getItem("users_saved_tracks")!) || null,
   getUser: async () => {
     return await fetchFromSpotify<any, UserType>({
       endpoint: "me",
@@ -42,25 +45,47 @@ export const createUserSlice: StateCreator<
       },
     });
   },
-  // ! TODO: to--do: transform data
-
+  //  todo to--do: transform data
   getUserSavedTracks: async () => {
-    return await fetchFromSpotify<any, any>({
+    return await fetchFromSpotify<any, DetailedPlaylistType>({
       endpoint: "me/tracks",
       cacheName: "users_saved_tracks",
       transformFn: (data) => ({
-        data,
-        // username: data.display_name,
-        // photo: data.images?.[0]?.url || "",
-        // userID: data.id,
-        // email: data.email,
+        // data,
+        name: "Liked Songs",
+        id: "liked_songs",
+        type: "playlist",
+        ownerName: get().user!.username,
+        ownerId: get().user!.userID,
+        imageUrl:
+          "https://cdn.prod.website-files.com/5e36e6f21212670638c0d63c/5e39d85cee05be53d238681a_likedSongs.png",
+        tracks: data.items.map(
+          (item: any): TrackType => ({
+            name: item.track.name,
+            trackId: item.track.id,
+            imageUrl:
+              item.track.album.images.length > 0
+                ? item.track.album.images[0].url
+                : "",
+            multipleArtists: item.track.artists.length > 1,
+            artists: item.track.artists.map((artist: any) => ({
+              name: artist.name,
+              artistId: artist.id,
+            })),
+            type: item.track.type,
+            trackDuration: item.track.duration_ms,
+            releaseDate: item.track.album.release_date,
+            albumName: item.track.album.name,
+            albumId: item.track.album.id,
+          }),
+        ),
+        totalDurationMs: 1000000,
+        numTracks: data.total,
+        onCacheFound: (data: DetailedPlaylistType) =>
+          set({ usersSavedTracks: data }),
+        onDataReceived: (data: DetailedPlaylistType) =>
+          set({ usersSavedTracks: data }),
       }),
-      onCacheFound: (data) => {
-        set({ usersSavedTracks: data });
-      },
-      onDataReceived: (data) => {
-        set({ usersSavedTracks: data });
-      },
     });
   },
 });
