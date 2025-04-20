@@ -11,7 +11,6 @@ export interface UserPlaylistType {
   // * extract only 1 image!
   images: any[] | string;
   ownerName: string;
-  // customClickHandler?: () => void;
 }
 
 export interface DetailedPlaylistType {
