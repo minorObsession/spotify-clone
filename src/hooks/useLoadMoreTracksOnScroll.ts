@@ -1,27 +1,32 @@
 import { useEffect, useRef } from "react";
 
-export function useLoadMoreTracksOnScroll(
-  onTriggerLoadMore: () => void,
-  // tracks: TrackType[],
-) {
+export function useLoadMoreTracksOnScroll(onTriggerLoadMore: () => void) {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const didRunOnce = useRef(false);
 
   useEffect(() => {
     if (!sentinelRef.current) return;
 
     const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) onTriggerLoadMore();
+      (entries, observer) => {
+        const entry = entries[0];
+        if (entry.isIntersecting && didRunOnce.current) {
+          onTriggerLoadMore();
+          observer.unobserve(entry.target);
+        }
+
+        didRunOnce.current = true;
       },
       {
-        rootMargin: "200px", // optional: trigger slightly before
+        root: null,
+        rootMargin: "200px",
       },
     );
 
     observer.observe(sentinelRef.current);
 
     return () => observer.disconnect();
-  }, [onTriggerLoadMore, sentinelRef]);
+  }, [onTriggerLoadMore]);
 
-  if (sentinelRef.current) return sentinelRef;
+  return sentinelRef;
 }

@@ -45,12 +45,11 @@ export const createUserSlice: StateCreator<
       },
     });
   },
-  //  todo to--do: transform data
   getUserSavedTracks: async (offset = 0) => {
-    console.log("calling getUserSavedTracks");
+    console.log("calling getUserSavedTracks", offset);
     const result = await fetchFromSpotify<any, DetailedPlaylistType>({
       endpoint: "me/tracks",
-      cacheName: "users_saved_tracks",
+      cacheName: `users_saved_tracks_with_offset_of_${offset}`,
       offset: `?offset=${offset}&limit=50`,
       transformFn: (data) => {
         const newTracks = data.items.map(
@@ -75,7 +74,6 @@ export const createUserSlice: StateCreator<
         );
 
         const currentSaved = get().usersSavedTracks;
-
         const mergedTracks =
           offset > 0 && currentSaved
             ? [...currentSaved.tracks, ...newTracks]

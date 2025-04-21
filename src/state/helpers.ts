@@ -43,7 +43,6 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
   onCacheFound?: (data: ReturnType) => void;
   onDataReceived?: (data: ReturnType) => void;
 }): Promise<ReturnType | null> => {
-  // console.log(endpoint);
   try {
     const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
     if (!accessToken) {
@@ -53,8 +52,11 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
     // Check local storage for cached data if cacheName is provided a is true
     if (cacheName) {
       const cachedData = getFromLocalStorage<ReturnType>(cacheName);
-      if (cachedData && onCacheFound) {
-        onCacheFound(cachedData);
+      console.log("cachedData found", cachedData);
+
+      if (cachedData) {
+        if (onCacheFound) onCacheFound(cachedData);
+        // console.log("✅ Using cached data, skipping fetch.");
         return cachedData;
       }
     }

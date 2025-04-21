@@ -74,13 +74,12 @@ function Home() {
 
 export default Home;
 
-const { getUser, getUserPlaylists, getUserSavedTracks } =
-  useStateStore.getState();
+const { getUser, getUserPlaylists } = useStateStore.getState();
 
 export const initialStateLoader = async () => {
   await getUser();
   await getUserPlaylists();
-  await getUserSavedTracks(0);
-  console.log("called all init ");
+  // getUserSavedTracks(0);
+
   return null;
 };

@@ -5,23 +5,23 @@ import { DetailedPlaylistType } from "./playlists";
 import FullPreviewThumbnail from "../../components/FPOverviewThumbnail";
 
 interface FPPlaylistOverviewProps {
-  data: DetailedPlaylistType;
+  playlist: DetailedPlaylistType;
 }
 
-function FPPlaylistOverview({ data }: FPPlaylistOverviewProps) {
+function FPPlaylistOverview({ playlist }: FPPlaylistOverviewProps) {
   const currentUserID = useStateStore((store) => store.user?.userID);
-  const currUserOwnsPlaylist = Boolean(data.ownerId === currentUserID);
+  const currUserOwnsPlaylist = Boolean(playlist.ownerId === currentUserID);
 
   return (
     // {/* // ! image and title */}
     <article className="flex gap-3 border-b-2 py-4">
       {/* // ! Image */}
-      <FullPreviewThumbnail imageUrl={data.imageUrl} />
+      <FullPreviewThumbnail imageUrl={playlist.imageUrl} />
       {/* // ! Playlist Info Div */}
       <div className="grid items-center md:text-lg lg:text-xl">
-        <h5 className="">{data.type}</h5>
+        <h5 className="">{playlist.type}</h5>
         <h1 className="text-xl font-bold sm:text-3xl md:text-4xl lg:w-[12ch] lg:whitespace-pre-wrap">
-          {data.name}
+          {playlist.name}
         </h1>
         {/* // ! DYNAMICALLY IMPORT PHOTO based on ID */}
         <div className="flex items-center gap-1">
@@ -29,12 +29,12 @@ function FPPlaylistOverview({ data }: FPPlaylistOverviewProps) {
 
           {/* // ! NAME of Playlist/Artist  */}
           <span className="underline-offset-1 hover:cursor-pointer hover:underline">
-            {data.ownerName}
+            {playlist.ownerName}
           </span>
 
           {/* // ! LENGTH of Playlist */}
           <span className="underline-offset-1 hover:cursor-pointer hover:underline">
-            {getPlaylistLenght(data.tracks)}
+            {getPlaylistLenght(playlist.tracks)}
           </span>
         </div>
       </div>

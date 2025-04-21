@@ -3,20 +3,17 @@ import { TrackType } from "./track";
 
 interface FPPlaylistTracksProps {
   tracks: TrackType[];
-  sentinelRef: React.RefObject<HTMLDivElement>;
+  sentinelRef: React.RefObject<HTMLDivElement | null>;
 }
 
 function FPPlaylistTracks({ tracks, sentinelRef }: FPPlaylistTracksProps) {
   return (
     <section className="h-full bg-amber-300">
-      {/* <article> */}
       {tracks.map((track, i) => (
-        <FPPlaylistTrackItem key={track.trackId} index={i} track={track} />
+        <FPPlaylistTrackItem key={track.trackId || i} index={i} track={track} />
       ))}
-      {/* Sentinel placed after track 30 or the last one if fewer */}
       {/* // ! NEED BETTER CONDITION HERE */}
-      {tracks.length >= 30 && <div ref={sentinelRef} className="h-1" />}
-      {/* </article> */}
+      <div ref={sentinelRef} style={{ height: "10px", background: "red" }} />
     </section>
   );
 }

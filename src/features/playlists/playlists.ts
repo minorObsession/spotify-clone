@@ -36,6 +36,7 @@ export interface PlaylistSlice {
   getUserPlaylists: () => Promise<UserPlaylistType[] | null>;
   getPlaylist: (
     id: string,
+    offset?: number,
     type?: "playlists" | "shows" | "albums",
   ) => Promise<DetailedPlaylistType>;
 }
@@ -68,9 +69,15 @@ export const createPlaylistSlice: StateCreator<
         PlaylistNamesWithTrackIdsType[]
       >("playlist_names_with_track_ids");
 
+      const likedSongs =
+        getFromLocalStorage<DetailedPlaylistType>("users_saved_tracks");
+
       if (storedPlaylists && storedPlaylistsWithTrackIds) {
         set({ playlists: storedPlaylists });
         set({ playlistNamesWithTrackIds: storedPlaylistsWithTrackIds });
+        if (likedSongs) set({ usersSavedTracks: likedSongs });
+        else set({ usersSavedTracks: await get().getUserSavedTracks(0) });
+
         return storedPlaylists;
       }
 
@@ -134,14 +141,19 @@ export const createPlaylistSlice: StateCreator<
       return []; // ensures the function always returns UserPlaylistType[]
     }
   },
-  getPlaylist: async (id) => {
+  getPlaylist: async (id, offset = 0) => {
     if (id === "liked_songs") {
+      console.log(
+        "getP called... will set trascks to ",
+        get().usersSavedTracks,
+      );
       return get().usersSavedTracks as DetailedPlaylistType;
     }
 
     const result = await fetchFromSpotify<any, DetailedPlaylistType>({
       endpoint: `playlists/${id}`,
       cacheName: `playlist${id}`,
+      offset: `?offset=${offset}&limit=50`,
       transformFn: (data) => ({
         name: data.name,
         id: data.id,

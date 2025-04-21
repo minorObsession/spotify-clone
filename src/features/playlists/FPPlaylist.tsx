@@ -9,33 +9,63 @@ import { createLoader } from "../../state/helpers";
 import BackToHomeButton from "../../components/BackToHomeButton";
 import FPPlaylistOverview from "./FPPlaylistOverview";
 import { useLoadMoreTracksOnScroll } from "../../hooks/useLoadMoreTracksOnScroll";
+import { memo, useEffect, useRef, useState } from "react";
 
 function FullPreviewPlaylist() {
-  const data = useLoaderData() as DetailedPlaylistType;
+  const playlist = useLoaderData() as DetailedPlaylistType;
 
-  const { usersSavedTracks } = useStateStore();
+  const [tracks, setTracks] = useState(playlist.tracks);
+
+  const isFetching = useRef(false);
   const { getUserSavedTracks } = useStateStore();
+  // const { usersSavedTracks } = useStateStore();
 
-  // const extendedData = {...data, ...usersSavedTracks};
+  const hasMoreToLoad = tracks?.length < (playlist.numTracks || 0);
 
-  // * SENTINEL RELATED CODE
-  const handleLoadMore = () => {
-    if (data.id === "liked_songs") {
-      getUserSavedTracks(usersSavedTracks!.numTracks);
+  const handleLoadMore = async () => {
+    if (!hasMoreToLoad) return;
+    try {
+      isFetching.current = true;
+      console.log("will start hanldeloadmore...");
+      let loadedTracks;
+      if (playlist.id === "liked_songs")
+        loadedTracks = await getUserSavedTracks(tracks?.length);
+      else loadedTracks = await getPlaylist(playlist.id, tracks?.length);
+
+      console.log(loadedTracks);
+      if (loadedTracks) {
+        setTracks((prevTracks) => {
+          const allTracks = [...prevTracks, ...loadedTracks.tracks];
+
+          const uniqueTracksMap = new Map();
+          for (const track of allTracks) {
+            if (!uniqueTracksMap.has(track.trackId)) {
+              uniqueTracksMap.set(track.trackId, track);
+            }
+          }
+          return Array.from(uniqueTracksMap.values());
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      isFetching.current = false;
     }
   };
 
-  const sentinelRef = useLoadMoreTracksOnScroll(handleLoadMore);
+  useEffect(() => {
+    setTracks(playlist.tracks);
+  }, [playlist.tracks]);
 
-  // * MAYBE A USEEFFECT TO SYNC usersSavedTracks
+  const sentinelRef = useLoadMoreTracksOnScroll(handleLoadMore);
 
   return (
     <div className={`fullPreviewContainer gap-3`}>
       <BackToHomeButton />
 
-      <FPPlaylistOverview data={data} />
+      <FPPlaylistOverview playlist={playlist} />
       <PlaylistPreviewHeader />
-      <FPPlaylistTracks tracks={data.tracks} sentinelRef={sentinelRef} />
+      <FPPlaylistTracks tracks={tracks} sentinelRef={sentinelRef} />
     </div>
   );
 }
@@ -43,7 +73,14 @@ function FullPreviewPlaylist() {
 const { getPlaylist } = useStateStore.getState();
 export const playlistLoader = createLoader<DetailedPlaylistType>(
   "playlist",
-  getPlaylist,
+  async (id: string) => {
+    console.log("playlist loader running....");
+    const playlist = await getPlaylist(id);
+    console.log(playlist);
+
+    playlist.tracks = playlist.tracks.slice(0, 50);
+    return playlist;
+  },
 );
 
-export default FullPreviewPlaylist;
+export default memo(FullPreviewPlaylist);
