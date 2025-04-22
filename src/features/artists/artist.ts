@@ -4,7 +4,7 @@ import { TrackType } from "../tracks/track";
 import { fetchFromSpotify } from "../../state/helpers";
 
 export interface ArtistType {
-  artistName: string;
+  name: string;
   genres: string[];
   artistID: string;
   type: string;
@@ -63,7 +63,7 @@ export const createArtistSlice: StateCreator<
           throw new Error("topTracks could not be fetched");
 
         return {
-          artistName: data.name,
+          name: data.name,
           genres: data.genres,
           artistID: data.id,
           type: data.type,

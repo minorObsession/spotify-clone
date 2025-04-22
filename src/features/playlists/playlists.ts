@@ -101,7 +101,7 @@ export const createPlaylistSlice: StateCreator<
           items.map(async (playlist: any) => {
             const trackIdsForCurrentP = (
               await get().getPlaylist(playlist.id)
-            ).tracks.map((track) => track.trackId);
+            ).tracks.map((track: TrackType) => track.trackId);
 
             return {
               name: playlist.name,

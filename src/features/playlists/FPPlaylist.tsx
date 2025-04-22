@@ -6,10 +6,11 @@ import FPPlaylistTracks from "../tracks/FPPlaylistTracks";
 import PlaylistPreviewHeader from "./PlaylistPreviewHeader";
 
 import { createLoader } from "../../state/helpers";
-import BackToHomeButton from "../../components/BackToHomeButton";
 import FPPlaylistOverview from "./FPPlaylistOverview";
 import { useLoadMoreTracksOnScroll } from "../../hooks/useLoadMoreTracksOnScroll";
 import { memo, useEffect, useRef, useState } from "react";
+import FPControls from "../../components/FPControls";
+import { playlistOptions } from "../../config/menuOptions";
 
 function FullPreviewPlaylist() {
   const playlist = useLoaderData() as DetailedPlaylistType;
@@ -61,10 +62,10 @@ function FullPreviewPlaylist() {
 
   return (
     <div className={`fullPreviewContainer gap-3`}>
-      <BackToHomeButton />
-
       <FPPlaylistOverview playlist={playlist} />
+      <FPControls item={playlist} options={playlistOptions} />
       <PlaylistPreviewHeader />
+
       <FPPlaylistTracks tracks={tracks} sentinelRef={sentinelRef} />
     </div>
   );

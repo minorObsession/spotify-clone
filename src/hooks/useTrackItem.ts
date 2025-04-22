@@ -27,15 +27,6 @@ export function useTrackItem(track: TrackType | TopTrackType) {
 
   const thumbnailUrl = track.imageUrl;
 
-  const menuOptions = [
-    "Add to playlist",
-    "Save to your Liked Songs",
-    "Add to queue",
-    "Go to artist",
-    "Go to album",
-    "View credits",
-    "Share &rarr;",
-  ];
   const handleTrackSelect = (e: React.MouseEvent<HTMLElement>) => {
     navigate(`/home/track/${e.currentTarget.id}`);
   };
@@ -50,6 +41,5 @@ export function useTrackItem(track: TrackType | TopTrackType) {
     trackDurationFormatted,
     thumbnailUrl,
     handleTrackSelect,
-    menuOptions,
   };
 }

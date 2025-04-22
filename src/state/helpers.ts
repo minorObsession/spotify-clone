@@ -56,7 +56,6 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
 
       if (cachedData) {
         if (onCacheFound) onCacheFound(cachedData);
-        // console.log("✅ Using cached data, skipping fetch.");
         return cachedData;
       }
     }

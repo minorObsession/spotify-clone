@@ -3,10 +3,11 @@ import useOutsideClick from "../../hooks/useOutsideClick";
 import { SlOptions } from "react-icons/sl";
 import useHoverTrackItem from "../../hooks/useHoverTrackItem";
 import Tooltip from "../../components/Tooltip";
+import OptionsMenu from "../../components/OptionsMenu";
 
 interface TrackOptionsProps {
   options: string[];
-  artistsToDisplay?: string[];
+  artistsToDisplay: string[];
   isTrackBoxSelected: boolean;
   setIsTrackBoxSelected: React.Dispatch<React.SetStateAction<boolean>>;
   isTrackHovered: boolean;
@@ -24,7 +25,10 @@ function TrackOptions({
   const { isHovered, handleMouseEnter, handleMouseLeave } = useHoverTrackItem();
 
   const [areOptionsVisible, setAreOptionsVisible] = useState(false);
-  const menuRef = useOutsideClick(setAreOptionsVisible, setIsTrackBoxSelected);
+  const menuRef = useOutsideClick(
+    setAreOptionsVisible,
+    setIsTrackBoxSelected,
+  ) as React.RefObject<HTMLUListElement>;
 
   // Use the hover hook
 
@@ -45,15 +49,11 @@ function TrackOptions({
         message={`See more options for ${trackName} by ${artistsToDisplay}`}
         isVisible={isHovered && !areOptionsVisible}
       />
-      {/* // ! options menu */}
-      <ul
+      <OptionsMenu
         ref={menuRef}
-        className={`absolute -right-4 bottom-7 z-10 rounded-md bg-amber-200 p-1 text-xs text-nowrap shadow-md ${areOptionsVisible ? "inline" : "hidden"}`}
-      >
-        {options.map((option) => (
-          <li key={option}>{option}</li>
-        ))}
-      </ul>
+        areOptionsVisible={areOptionsVisible}
+        options={options}
+      />
       {/* Dots Icon */}
       <span className="justify-self-start hover:cursor-pointer">
         {(isTrackHovered && !areOptionsVisible) || isTrackBoxSelected ? (

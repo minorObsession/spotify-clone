@@ -5,6 +5,7 @@ import TrackOptions from "./TrackOptions";
 import { TrackType } from "./track";
 import { useTrackItem } from "../../hooks/useTrackItem";
 import AddToPlaylist from "../../components/AddToPlaylist";
+import { trackOptions } from "../../config/menuOptions";
 
 interface TrackProps {
   track: TrackType;
@@ -24,7 +25,6 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
     trackDurationFormatted,
     thumbnailUrl,
     handleTrackSelect,
-    menuOptions,
   } = useTrackItem(track);
 
   const navigate = useNavigate();
@@ -32,9 +32,10 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
   const handleArtistSelect = (id: string) => {
     navigate(`/home/artist/${id}`);
   };
+
   const trackId = track.trackId;
   const album = track.albumName;
-
+  const artistsToDisplay = track.artists.map((artist) => " " + artist.name);
   return (
     <article
       onMouseEnter={() => setIsTrackHovered(true)}
@@ -96,7 +97,8 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
         </span>
 
         <TrackOptions
-          options={menuOptions}
+          artistsToDisplay={artistsToDisplay}
+          options={trackOptions}
           trackName={trackName}
           isTrackBoxSelected={isTrackBoxSelected}
           setIsTrackBoxSelected={setIsTrackBoxSelected}

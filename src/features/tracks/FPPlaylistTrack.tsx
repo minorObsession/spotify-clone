@@ -2,16 +2,19 @@ import { useLoaderData } from "react-router-dom";
 import { useStateStore } from "../../state/store";
 import { TrackType } from "./track";
 import { createLoader } from "../../state/helpers";
-import BackToHomeButton from "../../components/BackToHomeButton";
+
 import FPTrackOverview from "./FPTrackOverview";
+import FPControls from "../../components/FPControls";
+import { trackOptions } from "../../config/menuOptions";
 
 function FPPlaylistTrack() {
   const data = useLoaderData() as TrackType;
 
   return (
-    <div className={`fullPreviewContainer`}>
-      <BackToHomeButton />
+    <div className={`fullPreviewContainer gap-4`}>
+      {/* <BackToHomeButton /> */}
       <FPTrackOverview data={data} />
+      <FPControls item={data} options={trackOptions} />
       {/* <PlaylistPreviewHeader /> */}
       {/* <FPPlaylistTracks tracks={tracksArr} /> */}
     </div>

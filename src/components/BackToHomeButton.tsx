@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router";
 
-function BackToHomeButton() {
+function BackButton() {
   const navigate = useNavigate();
 
   return (
-    <button className="self-start" onClick={() => navigate("/home")}>
+    <button className="self-start" onClick={() => navigate(-1)}>
       &larr;
     </button>
   );
 }
 
-export default BackToHomeButton;
+export default BackButton;
