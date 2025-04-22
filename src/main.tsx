@@ -2,11 +2,11 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
-// import { Provider } from "react-redux";
-// import { store } from "./state/store.ts";
+import { loadSpotifySDK } from "./features/playback/spotifyPlayer.ts";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
   </StrictMode>,
 );
+loadSpotifySDK();

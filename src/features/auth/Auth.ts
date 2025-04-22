@@ -8,7 +8,7 @@ const AUTH_CONFIG = {
   clientId: "91915dd042e1406aa1ca2fef874d5e1b",
   redirectUri: "http://127.0.0.1:5173/home",
   scope:
-    " app-remote-control user-read-playback-state user-modify-playback-state user-read-currently-playing user-read-playback-position user-read-email user-read-private user-library-read user-library-modify playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-follow-read user-follow-modify user-top-read user-read-recently-played ugc-image-upload",
+    " app-remote-control user-read-playback-state user-modify-playback-state user-read-currently-playing streaming user-read-playback-position user-read-email user-read-private user-library-read user-library-modify playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-follow-read user-follow-modify user-top-read user-read-recently-played ugc-image-upload",
   authUrl: "https://accounts.spotify.com/authorize",
   tokenUrl: "https://accounts.spotify.com/api/token",
 };
@@ -230,7 +230,7 @@ export const createAuthSlice: StateCreator<
           // get().logout();
         }
       }
-    }, 60000 * 15); // ! Check every 15 minutes
+    }, 60000 * 2); // ! Check every 15 minutes
   },
 
   // --- Public Action: Logout ---

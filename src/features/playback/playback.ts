@@ -2,24 +2,31 @@ import { StateCreator } from "zustand";
 import { StateStore } from "../../state/store";
 import { TrackType } from "../tracks/track";
 import { fetchFromSpotify } from "../../state/helpers";
+import { getSpotifyDeviceId } from "./spotifyPlayer";
 
 export interface PlaybackSlice {
   isPlaying: boolean;
-  currentTrackId: string | null;
+  currentid: string | null;
   currentTrackIndex: number;
   queue: TrackType[];
   isShuffled: boolean;
   originalQueue: TrackType[];
-  myDevices: string[];
+  myDevices: DeviceType[];
+  player: any;
+  deviceId: string | null;
 
+  getPlaybackState: () => Promise<void>;
   getDevices: () => void;
   startPausePlayback: () => void;
   stopPlayback: () => void;
   nextTrack: () => void;
   previousTrack: () => void;
   shuffle: () => void;
+
   setQueue: (tracks: TrackType[], startIndex?: number) => void;
-  playTrack: (track: TrackType) => void;
+  playTrack: (trackUri: string) => Promise<void>;
+  startNewPlayback(deviceId: string): Promise<void>;
+  ensureDeviceId: () => Promise<string>;
 }
 interface DeviceType {
   id: string;
@@ -38,38 +45,122 @@ export const createPlaybackSlice: StateCreator<
   PlaybackSlice
 > = (set, get) => ({
   isPlaying: false,
-  currentTrackId: null,
+  currentid: null,
   currentTrackIndex: -1,
   queue: [],
   isShuffled: false,
   originalQueue: [],
   myDevices: [],
+  player: window.spotifyPlayer,
+  deviceId: window.spotifyDeviceId,
 
-  // ! TRYING TO GET DEVICES HERE!!!!
-  // ! TRYING TO GET DEVICES HERE!!!!
-  // ! TRYING TO GET DEVICES HERE!!!!
-  // ! TRYING TO GET DEVICES HERE!!!!
-  // ! TRYING TO GET DEVICES HERE!!!!
-  // ! TRYING TO GET DEVICES HERE!!!!
+  // * API related stuff
+
+  ensureDeviceId: async () => {
+    const { deviceId } = get();
+    if (deviceId) {
+      return deviceId;
+    }
+
+    try {
+      const deviceId = await getSpotifyDeviceId();
+      if (deviceId) {
+        set({ deviceId });
+        return deviceId;
+      }
+
+      throw new Error("Could not get a valid device ID");
+    } catch (error) {
+      console.error("Failed to ensure device ID:", error);
+      throw error;
+    }
+  },
+
   getDevices: async () => {
-    return await fetchFromSpotify<any, any>({
+    return await fetchFromSpotify<any, DeviceType[]>({
       endpoint: "me/player/devices",
-      cacheName: "myDevices",
-      transformFn: (data: any) => console.log(data),
+      cacheName: "my_devices",
+      transformFn: (data: any) => data.devices,
       onCacheFound: (data) => set({ myDevices: data }),
       onDataReceived: (data) => set({ myDevices: data }),
     });
   },
 
+  startNewPlayback: async (specificDeviceId) => {
+    try {
+      // Ensure we have a device ID
+      const deviceId = specificDeviceId || (await get().ensureDeviceId());
+
+      if (!deviceId) {
+        throw new Error("No device ID available");
+      }
+
+      await fetchFromSpotify<any, any>({
+        endpoint: "me/player",
+        method: "PUT",
+        requestBody: JSON.stringify({
+          device_ids: [deviceId],
+          play: true,
+        }),
+      });
+
+      // Update state with the used device ID if it's not already set
+      if (!get().deviceId) {
+        set({ deviceId });
+      }
+    } catch (error) {
+      console.error("Failed to start playback:", error);
+      throw error;
+    }
+  },
+
+  playTrack: async (trackUri) => {
+    try {
+      console.log("playTrack..", trackUri);
+      // Ensure we have a device ID
+      const deviceId = await get().ensureDeviceId();
+
+      if (!deviceId) {
+        throw new Error("No device ID available");
+      }
+
+      await fetchFromSpotify<any, any>({
+        endpoint: "me/player/play",
+        method: "PUT",
+        deviceId: `?device_id=${deviceId}`,
+        requestBody: JSON.stringify({
+          uris: [trackUri],
+          position_ms: 0,
+        }),
+      });
+
+      // make promise that resolves in 2s
+    } catch (error) {
+      console.error("Failed to play track:", error);
+      throw error;
+    }
+  },
+
+  getPlaybackState: async () => {
+    return await fetchFromSpotify<any, any>({
+      endpoint: "me/player",
+      // cacheName: "playback_state",
+      transformFn: (data: any) => console.log(data),
+    });
+  },
+
+  // * zustand related stuff
+
   startPausePlayback: () => {
-    const { isPlaying, currentTrackId, currentTrackIndex, queue } = get();
+    const { isPlaying, currentid, queue } = get();
+    console.log(get().player);
 
     if (queue.length === 0) return;
 
-    if (currentTrackId === null && queue.length > 0) {
+    if (currentid === null && queue.length > 0) {
       set({
         isPlaying: true,
-        currentTrackId: queue[0].trackId,
+        currentid: queue[0].id,
         currentTrackIndex: 0,
       });
       return;
@@ -81,7 +172,7 @@ export const createPlaybackSlice: StateCreator<
   stopPlayback: () => {
     set({
       isPlaying: false,
-      currentTrackId: null,
+      currentid: null,
       currentTrackIndex: -1,
     });
   },
@@ -95,7 +186,7 @@ export const createPlaybackSlice: StateCreator<
     const nextTrack = queue[nextIndex];
 
     set({
-      currentTrackId: nextTrack.trackId,
+      currentid: nextTrack.id,
       currentTrackIndex: nextIndex,
     });
   },
@@ -110,13 +201,13 @@ export const createPlaybackSlice: StateCreator<
     const previousTrack = queue[previousIndex];
 
     set({
-      currentTrackId: previousTrack.trackId,
+      currentid: previousTrack.id,
       currentTrackIndex: previousIndex,
     });
   },
 
   shuffle: () => {
-    const { queue, currentTrackId, isShuffled, originalQueue } = get();
+    const { queue, currentid, isShuffled, originalQueue } = get();
 
     if (queue.length <= 1) return;
 
@@ -124,8 +215,8 @@ export const createPlaybackSlice: StateCreator<
       set({
         queue: [...originalQueue],
         isShuffled: false,
-        currentTrackIndex: currentTrackId
-          ? originalQueue.findIndex((track) => track.trackId === currentTrackId)
+        currentTrackIndex: currentid
+          ? originalQueue.findIndex((track) => track.id === currentid)
           : -1,
       });
     } else {
@@ -142,8 +233,8 @@ export const createPlaybackSlice: StateCreator<
         queue: shuffledQueue,
         originalQueue: [...queue],
         isShuffled: true,
-        currentTrackIndex: currentTrackId
-          ? shuffledQueue.findIndex((track) => track.trackId === currentTrackId)
+        currentTrackIndex: currentid
+          ? shuffledQueue.findIndex((track) => track.id === currentid)
           : -1,
       });
     }
@@ -157,7 +248,7 @@ export const createPlaybackSlice: StateCreator<
 
     set({
       isPlaying: true,
-      currentTrackId: startTrack.trackId,
+      currentid: startTrack.id,
       currentTrackIndex: validIndex,
       queue: tracks,
       isShuffled: false,
@@ -165,28 +256,28 @@ export const createPlaybackSlice: StateCreator<
     });
   },
 
-  playTrack: (track) => {
-    const { queue } = get();
+  // playTrack: (track) => {
+  //   const { queue } = get();
 
-    const trackIndex = queue.findIndex(
-      (t: TrackType) => t.trackId === track.trackId,
-    );
+  //   const trackIndex = queue.findIndex(
+  //     (t: TrackType) => t.id === track.id,
+  //   );
 
-    if (trackIndex !== -1) {
-      set({
-        isPlaying: true,
-        currentTrackId: track.trackId,
-        currentTrackIndex: trackIndex,
-      });
-    } else {
-      set({
-        isPlaying: true,
-        currentTrackId: track.trackId,
-        currentTrackIndex: 0,
-        queue: [track],
-        isShuffled: false,
-        originalQueue: [track],
-      });
-    }
-  },
+  //   if (trackIndex !== -1) {
+  //     set({
+  //       isPlaying: true,
+  //       currentid: track.id,
+  //       currentTrackIndex: trackIndex,
+  //     });
+  //   } else {
+  //     set({
+  //       isPlaying: true,
+  //       currentid: track.id,
+  //       currentTrackIndex: 0,
+  //       queue: [track],
+  //       isShuffled: false,
+  //       originalQueue: [track],
+  //     });
+  //   }
+  // },
 });

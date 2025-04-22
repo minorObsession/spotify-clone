@@ -33,7 +33,7 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
     navigate(`/home/artist/${id}`);
   };
 
-  const trackId = track.trackId;
+  const id = track.id;
   const album = track.albumName;
   const artistsToDisplay = track.artists.map((artist) => " " + artist.name);
   return (
@@ -55,9 +55,9 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
         {/* // ! TRACK name */}
         <span
           onClick={handleTrackSelect}
-          id={trackId}
+          id={id}
           className="truncate underline-offset-1 hover:cursor-pointer hover:underline"
-          key={trackId}
+          key={id}
         >
           {trackName}
         </span>
@@ -87,7 +87,7 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
       {/* // ! only when hovered */}
       <div className="track-utilities">
         <AddToPlaylist
-          trackId={trackId}
+          id={id}
           isTrackHovered={isTrackHovered}
           isTrackBoxSelected={isTrackBoxSelected}
         />

@@ -11,9 +11,9 @@ export const getPlaylistLenght = (data: TrackType[]) => {
   );
 };
 
-export const isTrackInLibrary = (trackId: string) =>
+export const isTrackInLibrary = (id: string) =>
   useStateStore
     .getState()
-    .playlistNamesWithTrackIds.some((playlist) =>
-      playlist.trackIds?.includes(trackId),
+    .playlistNamesWithids.some((playlist) =>
+      playlist.ids?.includes(id),
     );

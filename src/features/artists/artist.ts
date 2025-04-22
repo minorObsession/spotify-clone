@@ -6,7 +6,7 @@ import { fetchFromSpotify } from "../../state/helpers";
 export interface ArtistType {
   name: string;
   genres: string[];
-  artistID: string;
+  id: string;
   type: string;
   numFollowers: number;
   imageUrl: string;
@@ -17,7 +17,7 @@ export type TopTrackType = Omit<
   TrackType,
   | "albumName"
   | "multipleArtists"
-  | "albumId"
+  | "id"
   | "type"
   | "artists"
   | "topTracks"
@@ -39,25 +39,26 @@ export const createArtistSlice: StateCreator<
 > = (set, get) => ({
   artist: null,
 
-  getTopTracks: async (artistId: string) => {
+  getTopTracks: async (id: string) => {
     return await fetchFromSpotify<any, TopTrackType[]>({
-      endpoint: `artists/${artistId}/top-tracks`,
-      cacheName: `top_tracks_for_${artistId}`,
+      endpoint: `artists/${id}/top-tracks`,
+      cacheName: `top_tracks_for_${id}`,
       transformFn: (data) =>
         data.tracks.map((track: any) => ({
           name: track.name,
-          trackId: track.id,
+          id: track.id,
           imageUrl: track.album.images[0].url,
           trackDuration: track.duration_ms,
         })),
     });
   },
-  getArtist: async (artistId: string) => {
+
+  getArtist: async (id: string) => {
     return await fetchFromSpotify<any, ArtistType>({
-      endpoint: `artists/${artistId}`,
-      cacheName: `artist_${artistId}`,
+      endpoint: `artists/${id}`,
+      cacheName: `artist_${id}`,
       transformFn: async (data) => {
-        const topTracks = await get().getTopTracks(artistId);
+        const topTracks = await get().getTopTracks(id);
 
         if (!topTracks || topTracks === null)
           throw new Error("topTracks could not be fetched");
@@ -65,7 +66,7 @@ export const createArtistSlice: StateCreator<
         return {
           name: data.name,
           genres: data.genres,
-          artistID: data.id,
+          id: data.id,
           type: data.type,
           numFollowers: data.followers.total,
           imageUrl: data.images[0].url,

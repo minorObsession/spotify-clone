@@ -11,6 +11,7 @@ export interface UserPlaylistType {
   // * extract only 1 image!
   images: any[] | string;
   ownerName: string;
+  // uri: string;
 }
 
 export interface DetailedPlaylistType {
@@ -23,15 +24,16 @@ export interface DetailedPlaylistType {
   numTracks: number;
   totalDurationMs: number;
   imageUrl: string;
+  // uri: string;
 }
 
-interface PlaylistNamesWithTrackIdsType {
+interface PlaylistNamesWithidsType {
   name: string;
-  trackIds: string[];
+  ids: string[];
 }
 export interface PlaylistSlice {
   playlists: UserPlaylistType[];
-  playlistNamesWithTrackIds: PlaylistNamesWithTrackIdsType[];
+  playlistNamesWithids: PlaylistNamesWithidsType[];
   playlist: DetailedPlaylistType | object;
   getUserPlaylists: () => Promise<UserPlaylistType[] | null>;
   getPlaylist: (
@@ -48,7 +50,7 @@ export const createPlaylistSlice: StateCreator<
   PlaylistSlice
 > = (set, get) => ({
   playlists: JSON.parse(localStorage.getItem("user_playlists")!) || [],
-  playlistNamesWithTrackIds:
+  playlistNamesWithids:
     JSON.parse(localStorage.getItem("playlist_names_with_track_ids")!) || [],
   playlist: {},
   // ! STILL LEFT TO REFACTOR getUserPlaylists
@@ -65,16 +67,16 @@ export const createPlaylistSlice: StateCreator<
       const storedPlaylists =
         getFromLocalStorage<UserPlaylistType[]>("user_playlists");
 
-      const storedPlaylistsWithTrackIds = getFromLocalStorage<
-        PlaylistNamesWithTrackIdsType[]
+      const storedPlaylistsWithids = getFromLocalStorage<
+        PlaylistNamesWithidsType[]
       >("playlist_names_with_track_ids");
 
       const likedSongs =
         getFromLocalStorage<DetailedPlaylistType>("users_saved_tracks");
 
-      if (storedPlaylists && storedPlaylistsWithTrackIds) {
+      if (storedPlaylists && storedPlaylistsWithids) {
         set({ playlists: storedPlaylists });
-        set({ playlistNamesWithTrackIds: storedPlaylistsWithTrackIds });
+        set({ playlistNamesWithids: storedPlaylistsWithids });
         if (likedSongs) set({ usersSavedTracks: likedSongs });
         else set({ usersSavedTracks: await get().getUserSavedTracks(0) });
 
@@ -96,21 +98,21 @@ export const createPlaylistSlice: StateCreator<
       const { items } = await res.json();
       // const tracksTempArray: Record<string, string[]>[] = [];
 
-      const playlistNamesWithTrackIds: PlaylistNamesWithTrackIdsType[] =
+      const playlistNamesWithids: PlaylistNamesWithidsType[] =
         await Promise.all(
           items.map(async (playlist: any) => {
-            const trackIdsForCurrentP = (
+            const idsForCurrentP = (
               await get().getPlaylist(playlist.id)
-            ).tracks.map((track: TrackType) => track.trackId);
+            ).tracks.map((track: TrackType) => track.id);
 
             return {
               name: playlist.name,
-              trackIds: trackIdsForCurrentP,
+              ids: idsForCurrentP,
             };
           }),
         );
 
-      set({ playlistNamesWithTrackIds });
+      set({ playlistNamesWithids });
 
       const formattedPlaylists: UserPlaylistType[] = items.map(
         (playlist: any) => ({
@@ -118,17 +120,18 @@ export const createPlaylistSlice: StateCreator<
           id: playlist.id,
           images: playlist.images || [],
           ownerName: playlist.owner?.display_name || "",
+          // uri: playlist.uri,
         }),
       );
 
-      // ! store playlists and trackIds in LS
+      // ! store playlists and ids in LS
       localStorage.setItem(
         "user_playlists",
         JSON.stringify(formattedPlaylists),
       );
       localStorage.setItem(
         "playlist_names_with_track_ids",
-        JSON.stringify(playlistNamesWithTrackIds),
+        JSON.stringify(playlistNamesWithids),
       );
 
       set({ playlists: formattedPlaylists });
@@ -155,13 +158,15 @@ export const createPlaylistSlice: StateCreator<
       cacheName: `playlist${id}`,
       offset: `?offset=${offset}&limit=50`,
       transformFn: (data) => ({
+        // uri: data.uri,
         name: data.name,
         id: data.id,
         type: data.type,
         tracks: data.tracks.items.map(
           (track: any): TrackType => ({
+            // uri: track.track.uri,
             name: track.track.name,
-            trackId: track.track.id,
+            id: track.track.id,
             imageUrl:
               track.track.album.images.length > 0
                 ? track.track.album.images[0].url

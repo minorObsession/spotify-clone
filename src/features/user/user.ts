@@ -55,7 +55,7 @@ export const createUserSlice: StateCreator<
         const newTracks = data.items.map(
           (item: any): TrackType => ({
             name: item.track.name,
-            trackId: item.track.id,
+            id: item.track.id,
             imageUrl:
               item.track.album.images.length > 0
                 ? item.track.album.images[0].url

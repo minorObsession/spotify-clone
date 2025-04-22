@@ -24,7 +24,7 @@ function FPArtistTrackItem({ track, index }: TrackProps) {
     handleTrackSelect,
     menuOptions,
   } = useTrackItem(track);
-  const trackId = track.trackId;
+  const id = track.id;
 
   return (
     <article
@@ -46,9 +46,9 @@ function FPArtistTrackItem({ track, index }: TrackProps) {
         {/* // ! TRACK name */}
         <span
           onClick={handleTrackSelect}
-          id={trackId}
+          id={id}
           className="truncate underline-offset-1 hover:cursor-pointer hover:underline"
-          key={trackId}
+          key={id}
         >
           {trackName}
         </span>
@@ -59,7 +59,7 @@ function FPArtistTrackItem({ track, index }: TrackProps) {
       {/* // ! */}
       <div className="track-utilities">
         <AddToPlaylist
-          trackId={trackId}
+          id={id}
           isTrackHovered={isTrackHovered}
           isTrackBoxSelected={isTrackBoxSelected}
         />

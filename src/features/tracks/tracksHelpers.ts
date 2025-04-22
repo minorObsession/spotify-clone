@@ -6,14 +6,15 @@ export const isDataPlaylist = (
 ): data is DetailedPlaylistType => {
   return "tracks" in data;
 };
+
 export const isDataTrack = (
   data: DetailedPlaylistType | TrackType,
 ): data is TrackType => {
-  return "trackId" in data;
+  return "id" in data;
 };
+
 export const getDataType = (data: DetailedPlaylistType | TrackType) => {
   if (isDataPlaylist(data)) return "playlist";
   if (isDataTrack(data)) return "track";
   return "unknown";
 };
-

@@ -40,8 +40,8 @@ function FullPreviewPlaylist() {
 
           const uniqueTracksMap = new Map();
           for (const track of allTracks) {
-            if (!uniqueTracksMap.has(track.trackId)) {
-              uniqueTracksMap.set(track.trackId, track);
+            if (!uniqueTracksMap.has(track.id)) {
+              uniqueTracksMap.set(track.id, track);
             }
           }
           return Array.from(uniqueTracksMap.values());

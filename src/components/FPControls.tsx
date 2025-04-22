@@ -9,6 +9,7 @@ import useOutsideClick from "../hooks/useOutsideClick";
 import { useState } from "react";
 import Tooltip from "./Tooltip";
 import OptionsMenu from "./OptionsMenu";
+import { useStateStore } from "../state/store";
 
 interface FPControlsProps {
   item: TrackType | TopTrackType | DetailedPlaylistType | ArtistType;
@@ -18,8 +19,9 @@ interface FPControlsProps {
 
 function FPControls({ previewType, item, options }: FPControlsProps) {
   const [areOptionsVisible, setAreOptionsVisible] = useState(false);
-
+  const { playTrack } = useStateStore((state) => state);
   const { isHovered } = useHoverTrackItem();
+  const { deviceId } = useStateStore((state) => state);
 
   const menuRef = useOutsideClick(
     setAreOptionsVisible,
@@ -29,10 +31,18 @@ function FPControls({ previewType, item, options }: FPControlsProps) {
     setAreOptionsVisible(true);
   };
 
+  const handlePlayTrack = () => {
+    if (deviceId === null) throw new Error("🛑 No deviceId found");
+
+    playTrack(item.)
+    // playTrack(item.uri);
+  };
+
   return (
     // ! CONTROLS div
     <div className="flex items-center gap-5">
       <IoMdPlay
+        onClick={handlePlayTrack}
         size={54}
         fill="black"
         floodColor="red"

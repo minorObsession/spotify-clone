@@ -5,13 +5,13 @@ import { BiPlusCircle } from "react-icons/bi";
 import { isTrackInLibrary } from "../features/playlists/playlistHelpers";
 
 interface AddToPlaylistProps {
-  trackId: string;
+  id: string;
   isTrackHovered: boolean;
   isTrackBoxSelected: boolean;
 }
 
 function AddToPlaylist({
-  trackId,
+  id,
   isTrackHovered,
   isTrackBoxSelected,
 }: AddToPlaylistProps) {
@@ -24,14 +24,14 @@ function AddToPlaylist({
 
   // ! look for this ID in all playlists - make function that does this
 
-  const isTheTrackInLibrary = isTrackInLibrary(trackId);
+  const isTheTrackInLibrary = isTrackInLibrary(id);
 
   return (
     // ! container
     <div
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onClick={() => handleAddToPlaylist(trackId)}
+      onClick={() => handleAddToPlaylist(id)}
       className="relative flex"
     >
       {/* //!  Tooltip */}

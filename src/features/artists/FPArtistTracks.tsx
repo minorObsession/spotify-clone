@@ -10,7 +10,7 @@ function FPArtistTracks({ tracks }: FPArtistTracksProps) {
     <section className="h-full bg-amber-300">
       <article>
         {tracks.map((track, i) => (
-          <FPArtistsTrackItem key={track.trackId} index={i} track={track} />
+          <FPArtistsTrackItem key={track.id} index={i} track={track} />
         ))}
       </article>
     </section>

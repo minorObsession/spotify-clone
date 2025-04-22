@@ -6,7 +6,7 @@ import { fetchFromSpotify } from "../../state/helpers";
 
 export interface TrackType {
   name: string;
-  trackId: string;
+  id: string;
   imageUrl: string;
   multipleArtists: boolean;
   artists: Record<string, string>[];
@@ -15,6 +15,7 @@ export interface TrackType {
   releaseDate: string;
   albumName: string;
   albumId: string;
+  // uri: string;
 }
 
 export interface TrackSlice {
@@ -35,9 +36,10 @@ export const createTrackSlice: StateCreator<
       endpoint: `tracks/${id}`,
       cacheName: `track_${id}`,
       transformFn: (data) => ({
+        // uri: data.uri,
         name: data.name,
         type: data.type,
-        trackId: data.id,
+        id: data.id,
         imageUrl: data.album.images[0].url,
         multipleArtists: data.artists.length > 1,
         artists: data.artists.map((artist: any) => ({

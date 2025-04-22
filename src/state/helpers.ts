@@ -35,11 +35,18 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
   offset = "",
   onCacheFound,
   onDataReceived,
+  deviceId = "",
+  method = "GET",
+  requestBody, // optional request body for POST requests
 }: {
   endpoint: string;
   offset?: string;
-  cacheName: string;
-  transformFn: (data: ResponseType) => Promise<ReturnType> | ReturnType;
+  cacheName?: string;
+  method?: string;
+  deviceId?: string;
+  requestBody?: string;
+  additionalHeaders?: Record<string, string>;
+  transformFn?: (data: ResponseType) => Promise<ReturnType> | ReturnType;
   onCacheFound?: (data: ReturnType) => void;
   onDataReceived?: (data: ReturnType) => void;
 }): Promise<ReturnType | null> => {
@@ -52,8 +59,6 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
     // Check local storage for cached data if cacheName is provided a is true
     if (cacheName) {
       const cachedData = getFromLocalStorage<ReturnType>(cacheName);
-      console.log("cachedData found", cachedData);
-
       if (cachedData) {
         if (onCacheFound) onCacheFound(cachedData);
         return cachedData;
@@ -62,17 +67,25 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
 
     // Fetch data from Spotify API
     console.log(`🛜 Fetching from API: ${endpoint}`);
-    const res = await fetch(`https://api.spotify.com/v1/${endpoint}${offset}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken.token}`,
-        "Content-Type": "application/json",
+    const res = await fetch(
+      `https://api.spotify.com/v1/${endpoint}${offset}${deviceId}`,
+      {
+        method: method,
+        headers: {
+          Authorization: `Bearer ${accessToken.token}`,
+          "Content-Type": "application/json",
+        },
+        body: requestBody,
       },
-    });
+    );
+    console.log("res", res);
 
     if (!res.ok) {
       throw new Error(`API request failed: ${res.status} ${res.statusText}`);
     }
+
+    // if it's not a get request
+    if (!transformFn) return null;
 
     const data: ResponseType = await res.json();
 
