@@ -11,14 +11,15 @@ export interface PlaybackSlice {
   player: Spotify.Player | null;
   deviceId: string | null;
   playerState: Spotify.PlaybackState | null;
+  currVolume: number;
 
+  transferPlayback(deviceId: string): Promise<void>;
   setPlayer: (playerInstance: Spotify.Player) => void;
   getDevices: () => void;
-  getPlayerState: () => Promise<void>;
+  getPlayerState: () => void;
   togglePlayback: () => void;
-
+  getCurrentVolume: () => Promise<void>;
   setPlayerState: (newState: Spotify.PlaybackState) => void;
-  updateUIOnStateChange: (newState: any) => void;
   playTrack: (
     uri: string,
     dataType: "artist" | "album" | "playlist" | "track",
@@ -44,12 +45,22 @@ export const createPlaybackSlice: StateCreator<
   player: null,
   playerState: null,
   myDevices: [],
+  currVolume: 75,
   deviceId: window.spotifyDeviceId,
-  // ! define player type
 
+  transferPlayback: async (deviceId: string) => {
+    return await fetchFromSpotify({
+      endpoint: "me/player",
+      deviceId: "", // deviceId gets added below manually to query
+      method: "PUT",
+      requestBody: JSON.stringify({
+        device_ids: [deviceId],
+        play: false,
+      }),
+    });
+  },
   // * Player related stuff
   setPlayer: (playerInstance) => set({ player: playerInstance }),
-
   // state obj
   // { position, duration, track_window: { current_track } }
   setPlayerState: (newState) => set({ playerState: newState }),
@@ -72,6 +83,17 @@ export const createPlaybackSlice: StateCreator<
       console.error("Failed to ensure device ID:", error);
       throw error;
     }
+  },
+
+  getCurrentVolume: async () => {
+    const { player } = get();
+
+    if (!player) {
+      console.error("Player not initialized");
+      return;
+    }
+    const volume = await player.getVolume();
+    set({ currVolume: volume });
   },
 
   getDevices: async () => {
@@ -115,31 +137,30 @@ export const createPlaybackSlice: StateCreator<
     }
   },
 
-  updateUIOnStateChange: async (newState) => {
-    const { player } = get();
+  //   const { player } = get();
 
-    if (!player) {
-      console.error("Player not initialized");
-      return;
-    }
+  //   if (!player) {
+  //     console.error("Player not initialized");
+  //     return;
+  //   }
 
-    const state: Spotify.PlaybackState | null = await player.getCurrentState();
+  //   const state: Spotify.PlaybackState | null = await player.getCurrentState();
 
-    if (!state) {
-      console.error("Unable to fetch player state");
-      return;
-    }
+  //   if (!state) {
+  //     console.error("Unable to fetch player state");
+  //     return;
+  //   }
 
-    // ! check which changes and call the right method
+  //   // ! check which changes and call the right method
 
-    // if change == "curr-track", update
+  //   // if change == "curr-track", update
 
-    // get current player state
+  //   // get current player state
 
-    // Update the UI based on the new state
+  //   // Update the UI based on the new state
 
-    // ! to be called when changing songs
-  },
+  //   // ! to be called when changing songs
+  // },
 
   // ! to use player to start/stop playback
   getPlayerState: async () => {
@@ -167,12 +188,5 @@ export const createPlaybackSlice: StateCreator<
     }
 
     player.togglePlay();
-
-    // Update player state in local storage (progress)
-    const state = await player.getCurrentState();
-
-    const { playerState } = get();
-
-    set({ playerState: state });
   },
 });

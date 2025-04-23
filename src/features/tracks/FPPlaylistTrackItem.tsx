@@ -56,7 +56,7 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
         <span
           onClick={handleTrackSelect}
           id={id}
-          className="truncate underline-offset-1 hover:cursor-pointer hover:underline"
+          className="w-fittruncate underline-offset-1 hover:cursor-pointer hover:underline"
         >
           {trackName}
         </span>

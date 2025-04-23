@@ -4,6 +4,7 @@ import { useStateStore } from "../../state/store";
 
 function CurrentlyPlayng() {
   const { playerState } = useStateStore((state) => state);
+
   const artistsArr = playerState?.track_window?.current_track?.artists;
   const navigate = useNavigate();
   const trackName = playerState?.track_window?.current_track?.name || "";

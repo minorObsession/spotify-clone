@@ -47,7 +47,7 @@ function FPArtistTrackItem({ track, index }: TrackProps) {
         <span
           onClick={handleTrackSelect}
           id={id}
-          className="truncate underline-offset-1 hover:cursor-pointer hover:underline"
+          className="w-fit truncate underline-offset-1 hover:cursor-pointer hover:underline"
           key={id}
         >
           {trackName}

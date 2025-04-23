@@ -1,6 +1,7 @@
 // spotifySDK.ts
 import { AccessTokenType } from "../auth/Auth";
 import { getFromLocalStorage } from "../auth/authHelpers";
+import { store } from "../../state/store";
 
 declare global {
   interface Window {
@@ -58,46 +59,21 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     volume: 0.5,
   });
 
-  // * ready listener - transfer playback to this device
+  // * when player is ready, do init state setting
   player.addListener("ready", ({ device_id }: { device_id: string }) => {
     console.log("Ready with Device ID", device_id);
     window.spotifyPlayer = player;
     window.spotifyDeviceId = device_id;
     window.resolveSpotifyPlayer(device_id); // Resolve the promise with device ID
-
-    console.log("callig fetch to transfer playback");
-    // In the "ready" listener
-    fetch("https://api.spotify.com/v1/me/player", {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${accessToken.token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        device_ids: [device_id],
-        play: false, // or true if you want to auto-play
-      }),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Playback transfer failed");
-        console.log("Playback transferred to Web SDK");
-      })
-      .catch((err) => {
-        console.error("Failed to transfer playback:", err);
-      });
-
     // ✅ Notify Zustand after player is ready
-    import("../../state/store").then(({ store }) => {
-      store.getState().setPlayer(player);
-    });
-
+    store.getState().transferPlayback(device_id);
+    store.getState().setPlayer(player);
+    // ! listen for state changes
     player.addListener(
       "player_state_changed",
       (newState: Spotify.PlaybackState) => {
         // ✅ Notify Zustand after change has occured
-        import("../../state/store").then(({ store }) => {
-          store.getState().setPlayerState(newState);
-        });
+        store.getState().setPlayerState(newState);
       },
     );
   });
