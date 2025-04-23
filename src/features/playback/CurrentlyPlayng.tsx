@@ -1,11 +1,16 @@
+import { useNavigate } from "react-router";
 import Thumbnail from "../../components/Thumbnail";
 import { useStateStore } from "../../state/store";
 
 function CurrentlyPlayng() {
   const { playerState } = useStateStore((state) => state);
-  const artistsArr = playerState?.currentTrack?.artists;
-  const trackName = playerState?.currentTrack?.name;
-  //
+  const artistsArr = playerState?.track_window?.current_track?.artists;
+  const navigate = useNavigate();
+  const trackName = playerState?.track_window?.current_track?.name || "";
+
+  const handleArtistSelect = (artistId: string) => {
+    navigate(`/home/artist/${artistId}`);
+  };
 
   return (
     <div
@@ -21,8 +26,8 @@ function CurrentlyPlayng() {
         <p>
           {artistsArr.map((artist, i, array) => (
             <span
-              key={artist.artistId + i}
-              // onClick={() => handleArtistSelect(artist.artistId)}
+              key={artist.uri + i}
+              onClick={() => handleArtistSelect(artist.uri.split(":")[2])}
               className="playlist-owner underline-offset-1 hover:cursor-pointer hover:underline"
             >
               {i + 1 === array.length ? artist.name : `${artist.name}, `}

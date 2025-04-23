@@ -93,18 +93,10 @@ window.onSpotifyWebPlaybackSDKReady = () => {
 
     player.addListener(
       "player_state_changed",
-      ({ position, duration, track_window: { current_track } }) => {
-        console.log("Currently Playing", current_track);
-        console.log("Position in Song", position);
-        console.log("Duration of Song", duration);
-
+      (newState: Spotify.PlaybackState) => {
         // ✅ Notify Zustand after change has occured
         import("../../state/store").then(({ store }) => {
-          store.getState().updateUIOnStateChange({
-            position,
-            duration,
-            track_window: { current_track },
-          });
+          store.getState().setPlayerState(newState);
         });
       },
     );
