@@ -79,6 +79,7 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
         body: requestBody,
       },
     );
+    console.log(res);
 
     if (!res.ok) {
       throw new Error(`API request failed: ${res.status} ${res.statusText}`);

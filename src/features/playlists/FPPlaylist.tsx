@@ -33,7 +33,6 @@ function FullPreviewPlaylist() {
         loadedTracks = await getUserSavedTracks(tracks?.length);
       else loadedTracks = await getPlaylist(playlist.id, tracks?.length);
 
-      console.log(loadedTracks);
       if (loadedTracks) {
         setTracks((prevTracks) => {
           const allTracks = [...prevTracks, ...loadedTracks.tracks];

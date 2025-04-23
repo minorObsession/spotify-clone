@@ -18,7 +18,6 @@ export const getSpotifyDeviceId = async (): Promise<string> => {
   if (window.spotifyDeviceId) {
     return window.spotifyDeviceId;
   }
-
   // If not available, wait for the player ready promise to resolve
   try {
     const deviceId = await window.spotifyPlayerReady;
@@ -59,17 +58,56 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     volume: 0.5,
   });
 
+  // * ready listener - transfer playback to this device
   player.addListener("ready", ({ device_id }: { device_id: string }) => {
     console.log("Ready with Device ID", device_id);
     window.spotifyPlayer = player;
     window.spotifyDeviceId = device_id;
     window.resolveSpotifyPlayer(device_id); // Resolve the promise with device ID
 
-    // ensures we can't use the player before it's ready
+    console.log("callig fetch to transfer playback");
+    // In the "ready" listener
+    fetch("https://api.spotify.com/v1/me/player", {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken.token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        device_ids: [device_id],
+        play: false, // or true if you want to auto-play
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Playback transfer failed");
+        console.log("Playback transferred to Web SDK");
+      })
+      .catch((err) => {
+        console.error("Failed to transfer playback:", err);
+      });
+
     // ✅ Notify Zustand after player is ready
     import("../../state/store").then(({ store }) => {
       store.getState().setPlayer(player);
     });
+
+    player.addListener(
+      "player_state_changed",
+      ({ position, duration, track_window: { current_track } }) => {
+        console.log("Currently Playing", current_track);
+        console.log("Position in Song", position);
+        console.log("Duration of Song", duration);
+
+        // ✅ Notify Zustand after change has occured
+        import("../../state/store").then(({ store }) => {
+          store.getState().updateUIOnStateChange({
+            position,
+            duration,
+            track_window: { current_track },
+          });
+        });
+      },
+    );
   });
 
   player.addListener("not_ready", ({ device_id }: { device_id: string }) => {

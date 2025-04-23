@@ -52,6 +52,7 @@ export const createArtistSlice: StateCreator<
   },
 
   getArtist: async (id: string) => {
+    console.log("calling getArtist", id);
     return await fetchFromSpotify<any, ArtistType>({
       endpoint: `artists/${id}`,
       cacheName: `artist_${id}`,

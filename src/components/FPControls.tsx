@@ -36,6 +36,7 @@ function FPControls({ previewType, item, options }: FPControlsProps) {
 
     const uri = `spotify:${previewType}:${item.id}`;
     // ! improve this by using item.type (gotta refactor the types first)
+
     playTrack(uri, previewType);
   };
 

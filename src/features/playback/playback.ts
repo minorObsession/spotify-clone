@@ -7,36 +7,66 @@ import { makeRequestBody } from "./playbackHelpers";
 
 // todo / ideas
 // what are the different events of the player for?
-//
+// state changed - use it to display progress of track
+/* player.addListener('player_state_changed', ({
+  position,
+  duration,
+  track_window: { current_track }
+}) => {
+  console.log('Currently Playing', current_track);
+  console.log('Position in Song', position);
+  console.log('Duration of Song', duration);
+}); */
 
+export interface Album {
+  id: string;
+  uri: string;
+  name: string;
+  image: string;
+}
+export interface CurrentTrack {
+  id: string;
+  type: string;
+  name: string;
+  duration: number;
+  artists: Record<string, string>[];
+  album: Album;
+}
+
+export interface PlayerType {
+  isPlaying: boolean;
+  context: string | null;
+  playbackId: string | null;
+  currentTrack: CurrentTrack | null;
+  progressMs: number;
+  nextTracks: any[];
+  previousTracks: any[];
+}
 export interface PlaybackSlice {
   isPlaying: boolean;
-  currentid: string | null;
-  currentTrackIndex: number;
+  currentId: string | null;
+  // currentTrackIndex: number;
   queue: TrackType[];
   isShuffled: boolean;
   originalQueue: TrackType[];
   myDevices: DeviceType[];
   player: Spotify.Player | null;
   deviceId: string | null;
+  playerState: PlayerType | null;
 
-  // ! define player type
-  playerState: any;
-
-  getPlaybackState: () => Promise<void>;
+  getPlayerState: () => Promise<void>;
   getDevices: () => void;
   togglePlayback: () => void;
-  stopPlayback: () => void;
-  nextTrack: () => void;
-  previousTrack: () => void;
-  shuffle: () => void;
-
-  setQueue: (tracks: TrackType[], startIndex?: number) => void;
+  // stopPlayback: () => void;
+  // nextTrack: () => void;
+  // previousTrack: () => void;
+  // shuffle: () => void;
+  // setQueue: (tracks: TrackType[], startIndex?: number) => void;
+  updateUIOnStateChange: (newState: any) => void;
   playTrack: (
-    trackUri: string,
+    uri: string,
     dataType: "artist" | "album" | "playlist" | "track",
   ) => Promise<void>;
-  startNewPlayback(deviceId: string): Promise<void>;
   ensureDeviceId: () => Promise<string>;
   setPlayer: (playerInstance: Spotify.Player) => void;
 }
@@ -56,19 +86,21 @@ export const createPlaybackSlice: StateCreator<
   [],
   PlaybackSlice
 > = (set, get) => ({
+  player: null,
+  playerState: JSON.parse(localStorage.getItem("player_state") || "null"),
+
   // ! derive from player!!!!
   isPlaying: false,
-  currentid: null,
-  currentTrackIndex: -1,
+  currentId: null,
+  // currentTrackIndex: get().playerState?.currentTrack?.id || -1,
+
   queue: [],
   isShuffled: false,
   originalQueue: [],
   myDevices: [],
-  player: null,
-  deviceId: window.spotifyDeviceId,
 
+  deviceId: window.spotifyDeviceId,
   // ! define player type
-  playerState: null,
 
   // * Player related stuff
   setPlayer: (playerInstance) => set({ player: playerInstance }),
@@ -93,7 +125,6 @@ export const createPlaybackSlice: StateCreator<
     }
   },
 
-  // * API related stuff
   getDevices: async () => {
     return await fetchFromSpotify<any, DeviceType[]>({
       endpoint: "me/player/devices",
@@ -103,33 +134,7 @@ export const createPlaybackSlice: StateCreator<
       onDataReceived: (data) => set({ myDevices: data }),
     });
   },
-  startNewPlayback: async (specificDeviceId) => {
-    try {
-      // Ensure we have a device ID
-      const deviceId = specificDeviceId || (await get().ensureDeviceId());
 
-      if (!deviceId) {
-        throw new Error("No device ID available");
-      }
-
-      await fetchFromSpotify<any, any>({
-        endpoint: "me/player",
-        method: "PUT",
-        requestBody: JSON.stringify({
-          device_ids: [deviceId],
-          play: true,
-        }),
-      });
-
-      // Update state with the used device ID if it's not already set
-      if (!get().deviceId) {
-        set({ deviceId });
-      }
-    } catch (error) {
-      console.error("Failed to start playback:", error);
-      throw error;
-    }
-  },
   playTrack: async (uri, dataType) => {
     try {
       // Ensure we have a device ID
@@ -149,58 +154,100 @@ export const createPlaybackSlice: StateCreator<
 
       // Update playing state
       set({ isPlaying: true });
-      const { getPlaybackState } = get();
+      const { getPlayerState } = get();
       // call playback state
-      getPlaybackState();
+      getPlayerState();
 
+      // * todo: add track to Local storage so it can be retrieved at first load
       // UI: update player preview on bottom
     } catch (error) {
       console.error("Failed to play track:", error);
       throw error;
     }
   },
-
-  // ! to use player to start/stop playback
-  getPlaybackState: async () => {
-    // ! to be called only when changing songs
-    const { player, isPlaying } = get();
+  updateUIOnStateChange: (newState) => {
+    const { player } = get();
 
     if (!player) {
       console.error("Player not initialized");
       return;
     }
 
-    player.getCurrentState().then(async (state: any) => {
-      // fake 0.5s timeout so we get correct state
-      await new Promise(() => setTimeout((resolve: any) => resolve(), 500));
+    const state = await player.getCurrentState();
 
-      if (!state) {
-        console.error("User is not playing music through the Web Playback SDK");
-        return;
-      }
+    if (!state) {
+      console.error("Unable to fetch player state");
+      return;
+    }
 
-      const preparePlayerObject = {
-        context: state?.context?.uri || null,
-        isPlaying: state?.paused ? false : true,
-        currentDuration: state?.duration_ms,
-        currentTrack: state?.track_window?.current_track || null,
-        currentid: state?.track_window?.current_track?.id || null,
-        artists:
-          state?.track_window?.current_track?.artists.map(
-            (artist: any) => " " + artist?.name,
-          ) || "", // string
-        nextTracks: state?.track_window?.next_tracks, // array
-        previousTracks: state?.track_window?.previous_tracks, // array
-        // queue: state?.track_window?.tracks || [],
-      };
+    if (
+      newState.track_window.current_track.id !==
+      state.track_window.current_track.id
+    ) {
+      get().getPlayerState();
+    }
 
-      localStorage.setItem("playerState", JSON.stringify(state));
+    // get current player state
 
-      set({ playerState: preparePlayerObject });
-    });
+    // Update the UI based on the new state
+
+    // ! to be called when changing songs
   },
 
-  togglePlayback: () => {
+  // ! to use player to start/stop playback
+  getPlayerState: async () => {
+    // ! to be called only when changing songs
+    const { player } = get();
+
+    if (!player) {
+      console.error("Player not initialized");
+      return;
+    }
+
+    const state: any = await player.getCurrentState();
+
+    const preparePlayerObject: PlayerType = {
+      isPlaying: state?.paused ? false : true,
+      context: state?.context?.uri || null,
+      playbackId: state?.playback_id || null,
+      nextTracks: state?.track_window?.next_tracks, // array
+      previousTracks: state?.track_window?.previous_tracks, // array
+      progressMs: state.position || 0,
+      currentTrack: state
+        ? {
+            id: state?.track_window?.current_track.id,
+            type: state?.track_window?.current_track.type,
+            name: state?.track_window?.current_track.name,
+            duration: state?.track_window?.current_track.duration_ms,
+            artists:
+              state?.track_window?.current_track?.artists.map((artist: any) => {
+                return {
+                  artistId: artist.uri?.split(":")[2],
+                  name: artist.name,
+                };
+              }) || [],
+            album: {
+              id:
+                state?.track_window?.current_track.album?.uri?.split(":")[2] ||
+                "",
+              uri: state?.track_window?.current_track.album?.uri || "",
+              name: state?.track_window?.current_track.album?.name || "",
+              image:
+                state?.track_window?.current_track.album?.images?.[0]?.url ||
+                "",
+            },
+          }
+        : null,
+    };
+
+    localStorage.setItem("playerState", JSON.stringify(state));
+
+    localStorage.setItem("player_state", JSON.stringify(preparePlayerObject));
+
+    set({ playerState: preparePlayerObject });
+  },
+
+  togglePlayback: async () => {
     const { player, isPlaying } = get();
 
     if (!player) {
@@ -209,7 +256,20 @@ export const createPlaybackSlice: StateCreator<
     }
 
     player.togglePlay();
+
+    // Update player state in local storage (progress)
+    const state: any = await player.getCurrentState();
+    const { playerState } = get();
+
     set({ isPlaying: !isPlaying });
+
+    const modifiedState = {
+      ...playerState,
+      paused: !isPlaying,
+      progressMs: state.position,
+    };
+
+    localStorage.setItem("player_state", JSON.stringify(modifiedState));
 
     // const { isPlaying, currentid, queue } = get();
     // console.log(get().player);
@@ -223,94 +283,96 @@ export const createPlaybackSlice: StateCreator<
     //   return;
     // }
   },
+  // getVolume: ()=>{}
+  // setVolume: ()=>{}
 
-  stopPlayback: () => {
-    set({
-      isPlaying: false,
-      currentid: null,
-      currentTrackIndex: -1,
-    });
-  },
+  // stopPlayback: () => {
+  //   set({
+  //     isPlaying: false,
+  //     currentid: null,
+  //     currentTrackIndex: -1,
+  //   });
+  // },
 
   // * queue related stuff
-  nextTrack: () => {
-    const { queue, currentTrackIndex } = get();
+  // nextTrack: () => {
+  //   const { queue, currentTrackIndex } = get();
 
-    if (queue.length === 0) return;
+  //   if (queue.length === 0) return;
 
-    const nextIndex = (currentTrackIndex + 1) % queue.length;
-    const nextTrack = queue[nextIndex];
+  //   const nextIndex = (currentTrackIndex + 1) % queue.length;
+  //   const nextTrack = queue[nextIndex];
 
-    set({
-      currentid: nextTrack.id,
-      currentTrackIndex: nextIndex,
-    });
-  },
+  //   set({
+  //     currentid: nextTrack.id,
+  //     currentTrackIndex: nextIndex,
+  //   });
+  // },
 
-  previousTrack: () => {
-    const { queue, currentTrackIndex } = get();
+  // previousTrack: () => {
+  //   const { queue, currentTrackIndex } = get();
 
-    if (queue.length === 0) return;
+  //   if (queue.length === 0) return;
 
-    const previousIndex =
-      currentTrackIndex <= 0 ? queue.length - 1 : currentTrackIndex - 1;
-    const previousTrack = queue[previousIndex];
+  //   const previousIndex =
+  //     currentTrackIndex <= 0 ? queue.length - 1 : currentTrackIndex - 1;
+  //   const previousTrack = queue[previousIndex];
 
-    set({
-      currentid: previousTrack.id,
-      currentTrackIndex: previousIndex,
-    });
-  },
+  //   set({
+  //     currentid: previousTrack.id,
+  //     currentTrackIndex: previousIndex,
+  //   });
+  // },
 
-  shuffle: () => {
-    const { queue, currentid, isShuffled, originalQueue } = get();
+  // shuffle: () => {
+  //   const { queue, currentid, isShuffled, originalQueue } = get();
 
-    if (queue.length <= 1) return;
+  //   if (queue.length <= 1) return;
 
-    if (isShuffled) {
-      set({
-        queue: [...originalQueue],
-        isShuffled: false,
-        currentTrackIndex: currentid
-          ? originalQueue.findIndex((track) => track.id === currentid)
-          : -1,
-      });
-    } else {
-      const shuffledQueue = [...queue];
-      for (let i = shuffledQueue.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffledQueue[i], shuffledQueue[j]] = [
-          shuffledQueue[j],
-          shuffledQueue[i],
-        ];
-      }
+  //   if (isShuffled) {
+  //     set({
+  //       queue: [...originalQueue],
+  //       isShuffled: false,
+  //       currentTrackIndex: currentid
+  //         ? originalQueue.findIndex((track) => track.id === currentid)
+  //         : -1,
+  //     });
+  //   } else {
+  //     const shuffledQueue = [...queue];
+  //     for (let i = shuffledQueue.length - 1; i > 0; i--) {
+  //       const j = Math.floor(Math.random() * (i + 1));
+  //       [shuffledQueue[i], shuffledQueue[j]] = [
+  //         shuffledQueue[j],
+  //         shuffledQueue[i],
+  //       ];
+  //     }
 
-      set({
-        queue: shuffledQueue,
-        originalQueue: [...queue],
-        isShuffled: true,
-        currentTrackIndex: currentid
-          ? shuffledQueue.findIndex((track) => track.id === currentid)
-          : -1,
-      });
-    }
-  },
+  //     set({
+  //       queue: shuffledQueue,
+  //       originalQueue: [...queue],
+  //       isShuffled: true,
+  //       currentTrackIndex: currentid
+  //         ? shuffledQueue.findIndex((track) => track.id === currentid)
+  //         : -1,
+  //     });
+  //   }
+  // },
 
-  setQueue: (tracks, startIndex = 0) => {
-    if (!tracks || tracks.length === 0) return;
+  // setQueue: (tracks, startIndex = 0) => {
+  //   if (!tracks || tracks.length === 0) return;
 
-    const validIndex = Math.max(0, Math.min(startIndex, tracks.length - 1));
-    const startTrack = tracks[validIndex];
+  //   const validIndex = Math.max(0, Math.min(startIndex, tracks.length - 1));
+  //   const startTrack = tracks[validIndex];
 
-    set({
-      isPlaying: true,
-      currentid: startTrack.id,
-      currentTrackIndex: validIndex,
-      queue: tracks,
-      isShuffled: false,
-      originalQueue: [...tracks],
-    });
-  },
+  //   set({
+  //     isPlaying: true,
+  //     currentid: startTrack.id,
+  //     currentTrackIndex: validIndex,
+  //     queue: tracks,
+  //     isShuffled: false,
+  //     originalQueue: [...tracks],
+  //   });
+  // },
 
   // playTrack: (track) => {
   //   const { queue } = get();

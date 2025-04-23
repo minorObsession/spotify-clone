@@ -43,7 +43,7 @@ export const createTrackSlice: StateCreator<
         multipleArtists: data.artists.length > 1,
         artists: data.artists.map((artist: any) => ({
           name: artist.name,
-          artistId: artist.id,
+          id: artist.id,
         })),
         trackDuration: data.duration_ms,
         releaseDate: data.album.release_date,

@@ -57,7 +57,6 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
           onClick={handleTrackSelect}
           id={id}
           className="truncate underline-offset-1 hover:cursor-pointer hover:underline"
-          key={id}
         >
           {trackName}
         </span>
@@ -65,7 +64,7 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
           {/* // ! loop artists, save id, print name */}
           {track.artists.map((artist, i, array) => (
             <span
-              key={artist.artistId}
+              key={artist.artistId + i}
               onClick={() => handleArtistSelect(artist.artistId)}
               className="underline-offset-1 hover:cursor-pointer hover:underline"
             >
