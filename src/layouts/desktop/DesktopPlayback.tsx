@@ -1,14 +1,9 @@
-import { FaPlayCircle } from "react-icons/fa";
-import { FaPauseCircle } from "react-icons/fa";
-
 import ProgressBar from "../../components/ProgressBar";
 import { HiOutlineQueueList } from "react-icons/hi2";
 import CurrentlyPlayng from "../../features/playback/CurrentlyPlayng";
-import { useStateStore } from "../../state/store";
+import PlayButton from "../../components/PlayButton";
 
 function DesktopPlayback() {
-  const { togglePlayback, isPlaying } = useStateStore((state) => state);
-
   return (
     <footer className="grid-playback-l z-10 col-span-2 flex h-[clamp(10lvh_15lvh_10rem)] w-screen items-center justify-between gap-10 bg-amber-200 px-3">
       {/* // ! currently playing item (reuse grid from sidebar) */}
@@ -21,9 +16,7 @@ function DesktopPlayback() {
           {/* <SlControlPlay /> */}
           {/* <SlControlPlay /> */}
           {/* // * play/pause */}
-          <div onClick={togglePlayback}>
-            {isPlaying ? <FaPauseCircle /> : <FaPlayCircle />}
-          </div>
+          <PlayButton />
           {/* <SlControlPlay /> */}
           {/* <SlControlPlay /> */}
         </div>

@@ -5,6 +5,10 @@ import { fetchFromSpotify } from "../../state/helpers";
 import { getSpotifyDeviceId } from "./spotifyPlayer";
 import { makeRequestBody } from "./playbackHelpers";
 
+// todo / ideas
+// what are the different events of the player for?
+//
+
 export interface PlaybackSlice {
   isPlaying: boolean;
   currentid: string | null;
@@ -15,6 +19,9 @@ export interface PlaybackSlice {
   myDevices: DeviceType[];
   player: Spotify.Player | null;
   deviceId: string | null;
+
+  // ! define player type
+  playerState: any;
 
   getPlaybackState: () => Promise<void>;
   getDevices: () => void;
@@ -49,6 +56,7 @@ export const createPlaybackSlice: StateCreator<
   [],
   PlaybackSlice
 > = (set, get) => ({
+  // ! derive from player!!!!
   isPlaying: false,
   currentid: null,
   currentTrackIndex: -1,
@@ -58,6 +66,9 @@ export const createPlaybackSlice: StateCreator<
   myDevices: [],
   player: null,
   deviceId: window.spotifyDeviceId,
+
+  // ! define player type
+  playerState: null,
 
   // * Player related stuff
   setPlayer: (playerInstance) => set({ player: playerInstance }),
@@ -154,16 +165,38 @@ export const createPlaybackSlice: StateCreator<
     // ! to be called only when changing songs
     const { player, isPlaying } = get();
 
-    player.getCurrentState().then((state: any) => {
+    if (!player) {
+      console.error("Player not initialized");
+      return;
+    }
+
+    player.getCurrentState().then(async (state: any) => {
+      // fake 0.5s timeout so we get correct state
+      await new Promise(() => setTimeout((resolve: any) => resolve(), 500));
+
       if (!state) {
         console.error("User is not playing music through the Web Playback SDK");
         return;
       }
-      console.log(state);
-      let current_track = state.track_window.current_track;
-      let next_track = state.track_window.next_tracks[0];
-      console.log("Currently Playing", current_track);
-      console.log("Playing Next", next_track);
+
+      const preparePlayerObject = {
+        context: state?.context?.uri || null,
+        isPlaying: state?.paused ? false : true,
+        currentDuration: state?.duration_ms,
+        currentTrack: state?.track_window?.current_track || null,
+        currentid: state?.track_window?.current_track?.id || null,
+        artists:
+          state?.track_window?.current_track?.artists.map(
+            (artist: any) => " " + artist?.name,
+          ) || "", // string
+        nextTracks: state?.track_window?.next_tracks, // array
+        previousTracks: state?.track_window?.previous_tracks, // array
+        // queue: state?.track_window?.tracks || [],
+      };
+
+      localStorage.setItem("playerState", JSON.stringify(state));
+
+      set({ playerState: preparePlayerObject });
     });
   },
 
