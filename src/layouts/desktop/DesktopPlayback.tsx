@@ -6,6 +6,7 @@ import { useStateStore } from "../../state/store";
 
 function DesktopPlayback() {
   const { currVolume, playerState } = useStateStore((state) => state);
+  const { setCurrentVolume } = useStateStore((state) => state);
 
   if (!playerState) return null;
 
@@ -35,8 +36,9 @@ function DesktopPlayback() {
         <HiOutlineQueueList />
         {/* <VolumeControl /> */}
         <ProgressBar
-          max={100}
+          max={1}
           currValue={currVolume}
+          onValueChange={(value) => setCurrentVolume(value)}
           additionalClasses="max-w-28"
         />
         <HiOutlineQueueList />

@@ -13,12 +13,12 @@ export interface PlaybackSlice {
   playerState: Spotify.PlaybackState | null;
   currVolume: number;
 
-  transferPlayback(deviceId: string): Promise<void>;
+  transferPlayback(deviceId: string): Promise<void | null>;
   setPlayer: (playerInstance: Spotify.Player) => void;
   getDevices: () => void;
   getPlayerState: () => void;
   togglePlayback: () => void;
-  getCurrentVolume: () => Promise<void>;
+  setCurrentVolume: (newValue: number) => Promise<void>;
   setPlayerState: (newState: Spotify.PlaybackState) => void;
   playTrack: (
     uri: string,
@@ -45,7 +45,7 @@ export const createPlaybackSlice: StateCreator<
   player: null,
   playerState: null,
   myDevices: [],
-  currVolume: 75,
+  currVolume: +JSON.parse(localStorage.getItem("curr_volume") || "75"),
   deviceId: window.spotifyDeviceId,
 
   transferPlayback: async (deviceId: string) => {
@@ -85,15 +85,22 @@ export const createPlaybackSlice: StateCreator<
     }
   },
 
-  getCurrentVolume: async () => {
+  setCurrentVolume: async (newValue) => {
     const { player } = get();
 
     if (!player) {
       console.error("Player not initialized");
       return;
     }
+
+    await player.setVolume(newValue);
     const volume = await player.getVolume();
+
+    // save into ls
+    localStorage.setItem("curr_volume", JSON.stringify(volume));
+
     set({ currVolume: volume });
+    // return volume;
   },
 
   getDevices: async () => {
@@ -136,31 +143,6 @@ export const createPlaybackSlice: StateCreator<
       throw error;
     }
   },
-
-  //   const { player } = get();
-
-  //   if (!player) {
-  //     console.error("Player not initialized");
-  //     return;
-  //   }
-
-  //   const state: Spotify.PlaybackState | null = await player.getCurrentState();
-
-  //   if (!state) {
-  //     console.error("Unable to fetch player state");
-  //     return;
-  //   }
-
-  //   // ! check which changes and call the right method
-
-  //   // if change == "curr-track", update
-
-  //   // get current player state
-
-  //   // Update the UI based on the new state
-
-  //   // ! to be called when changing songs
-  // },
 
   // ! to use player to start/stop playback
   getPlayerState: async () => {
