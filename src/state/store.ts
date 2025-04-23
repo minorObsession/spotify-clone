@@ -29,6 +29,7 @@ export const useStateStore = create<StateStore>()(
     ...createTrackSlice(...args),
     ...createArtistSlice(...args),
     ...createPlaybackSlice(...args),
-    // ...createRecommendationsSlice(...args),
   })),
 );
+
+export const store = useStateStore;

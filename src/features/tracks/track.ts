@@ -15,7 +15,6 @@ export interface TrackType {
   releaseDate: string;
   albumName: string;
   albumId: string;
-  // uri: string;
 }
 
 export interface TrackSlice {

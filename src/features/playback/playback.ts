@@ -3,6 +3,7 @@ import { StateStore } from "../../state/store";
 import { TrackType } from "../tracks/track";
 import { fetchFromSpotify } from "../../state/helpers";
 import { getSpotifyDeviceId } from "./spotifyPlayer";
+import { makeRequestBody } from "./playbackHelpers";
 
 export interface PlaybackSlice {
   isPlaying: boolean;
@@ -12,21 +13,25 @@ export interface PlaybackSlice {
   isShuffled: boolean;
   originalQueue: TrackType[];
   myDevices: DeviceType[];
-  player: any;
+  player: Spotify.Player | null;
   deviceId: string | null;
 
   getPlaybackState: () => Promise<void>;
   getDevices: () => void;
-  startPausePlayback: () => void;
+  togglePlayback: () => void;
   stopPlayback: () => void;
   nextTrack: () => void;
   previousTrack: () => void;
   shuffle: () => void;
 
   setQueue: (tracks: TrackType[], startIndex?: number) => void;
-  playTrack: (trackUri: string) => Promise<void>;
+  playTrack: (
+    trackUri: string,
+    dataType: "artist" | "album" | "playlist" | "track",
+  ) => Promise<void>;
   startNewPlayback(deviceId: string): Promise<void>;
   ensureDeviceId: () => Promise<string>;
+  setPlayer: (playerInstance: Spotify.Player) => void;
 }
 interface DeviceType {
   id: string;
@@ -51,10 +56,11 @@ export const createPlaybackSlice: StateCreator<
   isShuffled: false,
   originalQueue: [],
   myDevices: [],
-  player: window.spotifyPlayer,
+  player: null,
   deviceId: window.spotifyDeviceId,
 
-  // * API related stuff
+  // * Player related stuff
+  setPlayer: (playerInstance) => set({ player: playerInstance }),
 
   ensureDeviceId: async () => {
     const { deviceId } = get();
@@ -76,6 +82,7 @@ export const createPlaybackSlice: StateCreator<
     }
   },
 
+  // * API related stuff
   getDevices: async () => {
     return await fetchFromSpotify<any, DeviceType[]>({
       endpoint: "me/player/devices",
@@ -85,7 +92,6 @@ export const createPlaybackSlice: StateCreator<
       onDataReceived: (data) => set({ myDevices: data }),
     });
   },
-
   startNewPlayback: async (specificDeviceId) => {
     try {
       // Ensure we have a device ID
@@ -113,10 +119,8 @@ export const createPlaybackSlice: StateCreator<
       throw error;
     }
   },
-
-  playTrack: async (trackUri) => {
+  playTrack: async (uri, dataType) => {
     try {
-      console.log("playTrack..", trackUri);
       // Ensure we have a device ID
       const deviceId = await get().ensureDeviceId();
 
@@ -124,49 +128,67 @@ export const createPlaybackSlice: StateCreator<
         throw new Error("No device ID available");
       }
 
+      // fetch and play the track
       await fetchFromSpotify<any, any>({
         endpoint: "me/player/play",
         method: "PUT",
         deviceId: `?device_id=${deviceId}`,
-        requestBody: JSON.stringify({
-          uris: [trackUri],
-          position_ms: 0,
-        }),
+        requestBody: makeRequestBody(uri, dataType),
       });
 
-      // make promise that resolves in 2s
+      // Update playing state
+      set({ isPlaying: true });
+      const { getPlaybackState } = get();
+      // call playback state
+      getPlaybackState();
+
+      // UI: update player preview on bottom
     } catch (error) {
       console.error("Failed to play track:", error);
       throw error;
     }
   },
 
+  // ! to use player to start/stop playback
   getPlaybackState: async () => {
-    return await fetchFromSpotify<any, any>({
-      endpoint: "me/player",
-      // cacheName: "playback_state",
-      transformFn: (data: any) => console.log(data),
+    // ! to be called only when changing songs
+    const { player, isPlaying } = get();
+
+    player.getCurrentState().then((state: any) => {
+      if (!state) {
+        console.error("User is not playing music through the Web Playback SDK");
+        return;
+      }
+      console.log(state);
+      let current_track = state.track_window.current_track;
+      let next_track = state.track_window.next_tracks[0];
+      console.log("Currently Playing", current_track);
+      console.log("Playing Next", next_track);
     });
   },
 
-  // * zustand related stuff
+  togglePlayback: () => {
+    const { player, isPlaying } = get();
 
-  startPausePlayback: () => {
-    const { isPlaying, currentid, queue } = get();
-    console.log(get().player);
-
-    if (queue.length === 0) return;
-
-    if (currentid === null && queue.length > 0) {
-      set({
-        isPlaying: true,
-        currentid: queue[0].id,
-        currentTrackIndex: 0,
-      });
+    if (!player) {
+      console.error("Player not initialized");
       return;
     }
 
+    player.togglePlay();
     set({ isPlaying: !isPlaying });
+
+    // const { isPlaying, currentid, queue } = get();
+    // console.log(get().player);
+    // if (queue.length === 0) return;
+    // if (currentid === null && queue.length > 0) {
+    //   set({
+    //     isPlaying: true,
+    //     currentid: queue[0].id,
+    //     currentTrackIndex: 0,
+    //   });
+    //   return;
+    // }
   },
 
   stopPlayback: () => {
@@ -177,6 +199,7 @@ export const createPlaybackSlice: StateCreator<
     });
   },
 
+  // * queue related stuff
   nextTrack: () => {
     const { queue, currentTrackIndex } = get();
 

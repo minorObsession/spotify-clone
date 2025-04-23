@@ -18,7 +18,7 @@ function Sidebar() {
           name={usersSavedTracks.name}
           id={usersSavedTracks.id}
           ownerName={`${usersSavedTracks.numTracks} songs`}
-          images={usersSavedTracks.imageUrl}
+          image={usersSavedTracks.imageUrl}
         />
       )}
       {playlists?.map((playlist) => (
@@ -26,7 +26,7 @@ function Sidebar() {
           id={playlist.id}
           name={playlist.name}
           key={playlist.id}
-          images={playlist.images}
+          image={playlist.image}
           ownerName={playlist.ownerName}
         />
       ))}

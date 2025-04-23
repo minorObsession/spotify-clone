@@ -13,16 +13,6 @@ declare global {
   }
 }
 
-// Create a global promise that will resolve when the player is ready
-const createPlayerReadyPromise = () => {
-  let resolver: (deviceId: string) => void;
-  const promise = new Promise<string>((resolve) => {
-    resolver = resolve;
-  });
-  window.spotifyPlayerReady = promise;
-  window.resolveSpotifyPlayer = resolver!;
-};
-
 export const getSpotifyDeviceId = async (): Promise<string> => {
   // If device ID is already available, return it immediately
   if (window.spotifyDeviceId) {
@@ -37,6 +27,16 @@ export const getSpotifyDeviceId = async (): Promise<string> => {
     console.error("Failed to get Spotify device ID:", error);
     throw new Error("Spotify player failed to initialize");
   }
+};
+
+// Create a global promise that will resolve when the player is ready
+const createPlayerReadyPromise = () => {
+  let resolver: (deviceId: string) => void;
+  const promise = new Promise<string>((resolve) => {
+    resolver = resolve;
+  });
+  window.spotifyPlayerReady = promise;
+  window.resolveSpotifyPlayer = resolver!;
 };
 
 // Initialize the promise before SDK loads
@@ -64,6 +64,12 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     window.spotifyPlayer = player;
     window.spotifyDeviceId = device_id;
     window.resolveSpotifyPlayer(device_id); // Resolve the promise with device ID
+
+    // ensures we can't use the player before it's ready
+    // ✅ Notify Zustand after player is ready
+    import("../../state/store").then(({ store }) => {
+      store.getState().setPlayer(player);
+    });
   });
 
   player.addListener("not_ready", ({ device_id }: { device_id: string }) => {

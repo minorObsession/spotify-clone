@@ -7,8 +7,6 @@ interface FullPreviewTrackOverviewProps {
 }
 
 function FullPreviewTrackOverview({ data }: FullPreviewTrackOverviewProps) {
-  //
-
   return (
     // {/* // ! image and title */}
 

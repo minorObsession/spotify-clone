@@ -63,7 +63,11 @@ function FullPreviewPlaylist() {
   return (
     <div className={`fullPreviewContainer gap-3`}>
       <FPPlaylistOverview playlist={playlist} />
-      <FPControls item={playlist} options={playlistOptions} />
+      <FPControls
+        item={playlist}
+        previewType="playlist"
+        options={playlistOptions}
+      />
       <PlaylistPreviewHeader />
 
       <FPPlaylistTracks tracks={tracks} sentinelRef={sentinelRef} />

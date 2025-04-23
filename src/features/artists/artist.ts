@@ -17,16 +17,14 @@ export type TopTrackType = Omit<
   TrackType,
   | "albumName"
   | "multipleArtists"
-  | "id"
+  | "albumId"
   | "type"
-  | "artists"
   | "topTracks"
   | "releaseDate"
 >;
 export interface ArtistSlice {
   // ! get partial types
   artist: ArtistType | null;
-
   getArtist: (id: string) => Promise<ArtistType | null>;
   getTopTracks: (id: string) => Promise<TopTrackType[] | null>;
 }
@@ -44,7 +42,7 @@ export const createArtistSlice: StateCreator<
       endpoint: `artists/${id}/top-tracks`,
       cacheName: `top_tracks_for_${id}`,
       transformFn: (data) =>
-        data.tracks.map((track: any) => ({
+        data.tracks?.map((track: any) => ({
           name: track.name,
           id: track.id,
           imageUrl: track.album.images[0].url,

@@ -14,7 +14,7 @@ function FPPlaylistTrack() {
     <div className={`fullPreviewContainer gap-4`}>
       {/* <BackToHomeButton /> */}
       <FPTrackOverview data={data} />
-      <FPControls item={data} options={trackOptions} />
+      <FPControls previewType="track" item={data} options={trackOptions} />
       {/* <PlaylistPreviewHeader /> */}
       {/* <FPPlaylistTracks tracks={tracksArr} /> */}
     </div>

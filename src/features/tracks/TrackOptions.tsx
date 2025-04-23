@@ -7,7 +7,7 @@ import OptionsMenu from "../../components/OptionsMenu";
 
 interface TrackOptionsProps {
   options: string[];
-  artistsToDisplay: string[];
+  artistsToDisplay?: string[];
   isTrackBoxSelected: boolean;
   setIsTrackBoxSelected: React.Dispatch<React.SetStateAction<boolean>>;
   isTrackHovered: boolean;
@@ -23,7 +23,7 @@ function TrackOptions({
   options,
 }: TrackOptionsProps) {
   const { isHovered, handleMouseEnter, handleMouseLeave } = useHoverTrackItem();
-
+  // console.log(options);
   const [areOptionsVisible, setAreOptionsVisible] = useState(false);
   const menuRef = useOutsideClick(
     setAreOptionsVisible,

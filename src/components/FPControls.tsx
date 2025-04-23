@@ -13,7 +13,7 @@ import { useStateStore } from "../state/store";
 
 interface FPControlsProps {
   item: TrackType | TopTrackType | DetailedPlaylistType | ArtistType;
-  previewType?: "artist" | "playlist" | "track";
+  previewType: "artist" | "playlist" | "track";
   options: string[];
 }
 
@@ -34,8 +34,9 @@ function FPControls({ previewType, item, options }: FPControlsProps) {
   const handlePlayTrack = () => {
     if (deviceId === null) throw new Error("🛑 No deviceId found");
 
-    playTrack(item.)
-    // playTrack(item.uri);
+    const uri = `spotify:${previewType}:${item.id}`;
+    // ! improve this by using item.type (gotta refactor the types first)
+    playTrack(uri, previewType);
   };
 
   return (
