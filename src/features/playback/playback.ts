@@ -1,6 +1,5 @@
 import { StateCreator } from "zustand";
 import { StateStore } from "../../state/store";
-// import { TrackType } from "../tracks/track";
 import { fetchFromSpotify } from "../../state/helpers";
 import { getSpotifyDeviceId } from "./spotifyPlayer";
 import { makeRequestBody } from "./playbackHelpers";
@@ -15,15 +14,18 @@ export interface PlaybackSlice {
 
   transferPlayback(deviceId: string): Promise<void | null>;
   setPlayer: (playerInstance: Spotify.Player) => void;
-  getDevices: () => void;
-  getPlayerState: () => void;
-  togglePlayback: () => void;
-  setCurrentVolume: (newValue: number) => Promise<void>;
+  getDevices: () => Promise<DeviceType[] | null>;
+  getPlayerState: () => Promise<void>;
+  togglePlayback: () => Promise<void>;
+  seekToPosition: (positionMs: number) => Promise<void>;
+  setVolume: (newValue: number) => Promise<void>;
   setPlayerState: (newState: Spotify.PlaybackState) => void;
   playTrack: (
     uri: string,
     dataType: "artist" | "album" | "playlist" | "track",
   ) => Promise<void>;
+  nextTrack: () => Promise<void>;
+  prevTrack: () => Promise<void>;
   ensureDeviceId: () => Promise<string>;
 }
 interface DeviceType {
@@ -61,8 +63,7 @@ export const createPlaybackSlice: StateCreator<
   },
   // * Player related stuff
   setPlayer: (playerInstance) => set({ player: playerInstance }),
-  // state obj
-  // { position, duration, track_window: { current_track } }
+
   setPlayerState: (newState) => set({ playerState: newState }),
 
   ensureDeviceId: async () => {
@@ -85,7 +86,17 @@ export const createPlaybackSlice: StateCreator<
     }
   },
 
-  setCurrentVolume: async (newValue) => {
+  getDevices: async () => {
+    return await fetchFromSpotify<any, DeviceType[]>({
+      endpoint: "me/player/devices",
+      cacheName: "my_devices",
+      transformFn: (data: any) => data.devices,
+      onCacheFound: (data) => set({ myDevices: data }),
+      onDataReceived: (data) => set({ myDevices: data }),
+    });
+  },
+
+  setVolume: async (newValue) => {
     const { player } = get();
 
     if (!player) {
@@ -103,14 +114,15 @@ export const createPlaybackSlice: StateCreator<
     // return volume;
   },
 
-  getDevices: async () => {
-    return await fetchFromSpotify<any, DeviceType[]>({
-      endpoint: "me/player/devices",
-      cacheName: "my_devices",
-      transformFn: (data: any) => data.devices,
-      onCacheFound: (data) => set({ myDevices: data }),
-      onDataReceived: (data) => set({ myDevices: data }),
-    });
+  seekToPosition: async (positionMs: number) => {
+    const { player } = get();
+
+    if (!player) {
+      console.error("Player not initialized");
+      return;
+    }
+
+    await player.seek(positionMs);
   },
 
   playTrack: async (uri, dataType) => {
@@ -144,9 +156,7 @@ export const createPlaybackSlice: StateCreator<
     }
   },
 
-  // ! to use player to start/stop playback
   getPlayerState: async () => {
-    // ! to be called only when changing songs
     const { player } = get();
 
     if (!player) {
@@ -157,8 +167,6 @@ export const createPlaybackSlice: StateCreator<
     const state: Spotify.PlaybackState | null = await player.getCurrentState();
 
     set({ playerState: state });
-
-    // return playerState;
   },
 
   togglePlayback: async () => {
@@ -169,6 +177,28 @@ export const createPlaybackSlice: StateCreator<
       return;
     }
 
-    player.togglePlay();
+    await player.togglePlay();
+  },
+
+  nextTrack: async () => {
+    const { player } = get();
+
+    if (!player) {
+      console.error("Player not initialized");
+      return;
+    }
+
+    await player.nextTrack();
+  },
+
+  prevTrack: async () => {
+    const { player } = get();
+
+    if (!player) {
+      console.error("Player not initialized");
+      return;
+    }
+
+    await player.previousTrack();
   },
 });

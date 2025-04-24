@@ -60,20 +60,23 @@ window.onSpotifyWebPlaybackSDKReady = () => {
   });
 
   // * when player is ready, do init state setting
-  player.addListener("ready", ({ device_id }: { device_id: string }) => {
+  player.addListener("ready", async ({ device_id }: { device_id: string }) => {
     console.log("Ready with Device ID", device_id);
     window.spotifyPlayer = player;
     window.spotifyDeviceId = device_id;
     window.resolveSpotifyPlayer(device_id); // Resolve the promise with device ID
     // ✅ Notify Zustand after player is ready
-    store.getState().transferPlayback(device_id);
-    store.getState().setPlayer(player);
+
+    const { transferPlayback, setPlayer, setPlayerState } = store.getState();
+
+    await transferPlayback(device_id);
+    await setPlayer(player);
     // ! listen for state changes
     player.addListener(
       "player_state_changed",
       (newState: Spotify.PlaybackState) => {
         // ✅ Notify Zustand after change has occured
-        store.getState().setPlayerState(newState);
+        setPlayerState(newState);
       },
     );
   });
