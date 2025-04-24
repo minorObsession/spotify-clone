@@ -1,6 +1,6 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import Root from "./Root";
+import Root, { initialLoader } from "./Root";
 import Home, { initialStateLoader } from "./Home";
 import FullPreviewPlaylist, {
   playlistLoader,
@@ -22,6 +22,7 @@ function App() {
     {
       path: "/",
       element: <Root />,
+      loader: initialLoader,
       children: [
         {
           path: "home",

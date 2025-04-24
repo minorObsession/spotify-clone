@@ -27,7 +27,7 @@ export interface AuthSlice {
   refreshToken: string | null;
   initAuth: () => Promise<void>;
   logout: () => void;
-  // Internal actions:
+  waitForAuthentication: () => Promise<boolean>;
   requestAuthCodeAndRedirect: () => Promise<void>;
   requestToken: (authCode: string, codeVerifier: string) => Promise<void>;
   autoRefreshToken: () => Promise<void>;
@@ -230,7 +230,19 @@ export const createAuthSlice: StateCreator<
           // get().logout();
         }
       }
-    }, 60000 * 2); // ! Check every 15 minutes
+    }, 60000 * 10); // ! Check every 10 minutes
+  },
+
+  waitForAuthentication: async () => {
+    return new Promise((resolve) => {
+      const checkAuth = () => {
+        if (get().isAuthenticated) {
+          clearInterval(intervalId);
+          resolve(true);
+        }
+      };
+      const intervalId = setInterval(checkAuth, 500);
+    });
   },
 
   // --- Public Action: Logout ---

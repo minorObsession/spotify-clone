@@ -14,23 +14,9 @@ declare global {
   }
 }
 
-export const getSpotifyDeviceId = async (): Promise<string> => {
-  // If device ID is already available, return it immediately
-  if (window.spotifyDeviceId) {
-    return window.spotifyDeviceId;
-  }
-  // If not available, wait for the player ready promise to resolve
-  try {
-    const deviceId = await window.spotifyPlayerReady;
-    return deviceId;
-  } catch (error) {
-    console.error("Failed to get Spotify device ID:", error);
-    throw new Error("Spotify player failed to initialize");
-  }
-};
-
 // Create a global promise that will resolve when the player is ready
 const createPlayerReadyPromise = () => {
+  console.log("calling createPlayerReadyPromise");
   let resolver: (deviceId: string) => void;
   const promise = new Promise<string>((resolve) => {
     resolver = resolve;
@@ -44,6 +30,7 @@ createPlayerReadyPromise();
 
 // Set up the callback for when SDK is ready
 window.onSpotifyWebPlaybackSDKReady = () => {
+  console.log("calling onSpotifyWebPlaybackSDKReady");
   const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
   if (!accessToken) {
     console.error("Access token not found");
@@ -54,6 +41,7 @@ window.onSpotifyWebPlaybackSDKReady = () => {
   const player = new window.Spotify.Player({
     name: "Web Player",
     getOAuthToken: (cb: (token: string) => void) => {
+      console.log(accessToken.token);
       cb(accessToken.token);
     },
     volume: 0.5,
@@ -65,12 +53,13 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     window.spotifyPlayer = player;
     window.spotifyDeviceId = device_id;
     window.resolveSpotifyPlayer(device_id); // Resolve the promise with device ID
-    // ✅ Notify Zustand after player is ready
 
+    // ✅ Notify Zustand after player is ready
     const { transferPlayback, setPlayer, setPlayerState } = store.getState();
 
     await transferPlayback(device_id);
-    await setPlayer(player);
+    setPlayer(player);
+
     // ! listen for state changes
     player.addListener(
       "player_state_changed",
@@ -92,7 +81,28 @@ window.onSpotifyWebPlaybackSDKReady = () => {
   });
 };
 
+export const getSpotifyDeviceId = async (): Promise<string> => {
+  console.log("getSpotifyDeviceId called");
+  // If device ID is already available, return it immediately
+  if (window.spotifyDeviceId) {
+    return window.spotifyDeviceId;
+  }
+  // If not available, wait for the player ready promise to resolve
+  try {
+    const deviceId = await window.spotifyPlayerReady;
+    return deviceId;
+  } catch (error) {
+    console.error("Failed to get Spotify device ID:", error);
+    throw new Error("Spotify player failed to initialize");
+  }
+};
+
+let hasLoaded = false;
 export const loadSpotifySDK = () => {
+  if (hasLoaded) return;
+  hasLoaded = true;
+  console.log("calling loadSpotifySDK");
+
   if (window.Spotify) {
     console.log("Spotify SDK already loaded");
     return;

@@ -1,6 +1,7 @@
 import { ActionFunctionArgs } from "react-router";
 import { getFromLocalStorage } from "../features/auth/authHelpers";
 import { AccessTokenType } from "../features/auth/Auth";
+import { store } from "./store";
 
 export function createLoader<T>(
   nameOfData: string,
@@ -51,6 +52,8 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
   onDataReceived?: (data: ReturnType) => void;
 }): Promise<ReturnType | null> => {
   try {
+    await store.getState().waitForAuthentication();
+
     const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
     if (!accessToken) {
       throw new Error("Access token expired or doesn't exist");

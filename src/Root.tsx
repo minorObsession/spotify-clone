@@ -1,26 +1,31 @@
-import { Outlet, useNavigate } from "react-router";
+import { Outlet, redirect, useNavigate } from "react-router";
 import { useEffect } from "react";
-import { useStateStore } from "./state/store";
+import { store, useStateStore } from "./state/store";
+import { loadSpotifySDK } from "./features/playback/spotifyPlayer";
 // import { useAuthStore } from "./state/Auth.z";
+loadSpotifySDK();
 
 function Root() {
-  const navigate = useNavigate();
-  const initAuth = useStateStore((store) => store.initAuth);
-  const isAuthenticated = useStateStore((store) => store.isAuthenticated);
-  const autoRefreshToken = useStateStore((store) => store.autoRefreshToken);
+  const { isAuthenticated } = useStateStore((store) => store);
 
   useEffect(() => {
-    const verifyAuth = async () => {
-      if (isAuthenticated) {
-        // ! to start the auto refresh timer
-        autoRefreshToken();
-        navigate("/home");
-      } else await initAuth();
-    };
-    verifyAuth();
-  }, [isAuthenticated, navigate, initAuth, autoRefreshToken]);
+    loadSpotifySDK();
+  }, [isAuthenticated]);
 
   return <Outlet />;
 }
+
+const initAuth = store.getState().initAuth;
+const isAuthenticated = store.getState().isAuthenticated;
+const autoRefreshToken = store.getState().autoRefreshToken;
+
+export const initialLoader = async () => {
+  if (!isAuthenticated) await initAuth();
+  // ! to start the auto refresh timer
+  autoRefreshToken();
+  redirect("/home");
+
+  return null;
+};
 
 export default Root;
