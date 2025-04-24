@@ -12,13 +12,18 @@ import {
   createPlaybackSlice,
   PlaybackSlice,
 } from "../features/playback/playback";
+import {
+  createSpotifyPlayerSlice,
+  SpotifyPlayerSlice,
+} from "../features/playback/spotifyPlayerSlice";
 
 export type StateStore = AuthSlice &
   UserSlice &
   PlaylistSlice &
   TrackSlice &
   ArtistSlice &
-  PlaybackSlice;
+  PlaybackSlice &
+  SpotifyPlayerSlice;
 // RecommendationsSlice;
 
 export const useStateStore = create<StateStore>()(
@@ -29,6 +34,7 @@ export const useStateStore = create<StateStore>()(
     ...createTrackSlice(...args),
     ...createArtistSlice(...args),
     ...createPlaybackSlice(...args),
+    ...createSpotifyPlayerSlice(...args),
   })),
 );
 

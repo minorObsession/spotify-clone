@@ -1,15 +1,15 @@
-import { Outlet, redirect, useNavigate } from "react-router";
+import { Outlet, redirect } from "react-router";
 import { useEffect } from "react";
 import { store, useStateStore } from "./state/store";
-import { loadSpotifySDK } from "./features/playback/spotifyPlayer";
+// import { loadSpotifySDK } from "./features/playback/spotifyPlayer";
 // import { useAuthStore } from "./state/Auth.z";
-loadSpotifySDK();
+// loadSpotifySDK();
 
 function Root() {
-  const { isAuthenticated } = useStateStore((store) => store);
+  const { isAuthenticated, loadPlayer } = useStateStore((store) => store);
 
   useEffect(() => {
-    loadSpotifySDK();
+    loadPlayer();
   }, [isAuthenticated]);
 
   return <Outlet />;

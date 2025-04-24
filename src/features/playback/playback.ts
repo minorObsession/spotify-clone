@@ -1,41 +1,23 @@
 import { StateCreator } from "zustand";
-import { StateStore } from "../../state/store";
+import { StateStore, store } from "../../state/store";
 import { fetchFromSpotify } from "../../state/helpers";
-import { getSpotifyDeviceId } from "./spotifyPlayer";
+// import { getSpotifyDeviceId } from "./spotifyPlayer";
 import { makeRequestBody } from "./playbackHelpers";
 
 // todo / ideas
 export interface PlaybackSlice {
-  myDevices: DeviceType[];
-  player: Spotify.Player | null;
-  deviceId: string | null;
-  playerState: Spotify.PlaybackState | null;
   currVolume: number;
 
-  transferPlayback(deviceId: string): Promise<void | null>;
-  setPlayer: (playerInstance: Spotify.Player) => void;
-  getDevices: () => Promise<DeviceType[] | null>;
-  getPlayerState: () => Promise<void>;
+  // transferPlayback(deviceId: string): Promise<void | null>;
   togglePlayback: () => Promise<void>;
   seekToPosition: (positionMs: number) => Promise<void>;
   setVolume: (newValue: number) => Promise<void>;
-  setPlayerState: (newState: Spotify.PlaybackState) => void;
   playTrack: (
     uri: string,
     dataType: "artist" | "album" | "playlist" | "track",
   ) => Promise<void>;
   nextTrack: () => Promise<void>;
   prevTrack: () => Promise<void>;
-  ensureDeviceId: () => Promise<string>;
-}
-interface DeviceType {
-  id: string;
-  is_active: boolean;
-  is_private_session: boolean;
-  is_restricted: boolean;
-  name: string;
-  type: string;
-  volume_percent: number;
 }
 
 export const createPlaybackSlice: StateCreator<
@@ -43,61 +25,13 @@ export const createPlaybackSlice: StateCreator<
   [["zustand/devtools", never]],
   [],
   PlaybackSlice
-> = (set, get) => ({
-  player: null,
-  playerState: null,
-  myDevices: [],
+> = (set) => ({
   currVolume: +JSON.parse(localStorage.getItem("curr_volume") || "75"),
-  deviceId: window.spotifyDeviceId,
 
-  transferPlayback: async (deviceId: string) => {
-    return await fetchFromSpotify({
-      endpoint: "me/player",
-      deviceId: "", // deviceId gets added below manually to query
-      method: "PUT",
-      requestBody: JSON.stringify({
-        device_ids: [deviceId],
-        play: false,
-      }),
-    });
-  },
-  // * Player related stuff
-  setPlayer: (playerInstance) => set({ player: playerInstance }),
-
-  setPlayerState: (newState) => set({ playerState: newState }),
-
-  ensureDeviceId: async () => {
-    const { deviceId } = get();
-    if (deviceId) {
-      return deviceId;
-    }
-
-    try {
-      const deviceId = await getSpotifyDeviceId();
-      if (deviceId) {
-        set({ deviceId });
-        return deviceId;
-      }
-
-      throw new Error("Could not get a valid device ID");
-    } catch (error) {
-      console.error("Failed to ensure device ID:", error);
-      throw error;
-    }
-  },
-
-  getDevices: async () => {
-    return await fetchFromSpotify<any, DeviceType[]>({
-      endpoint: "me/player/devices",
-      cacheName: "my_devices",
-      transformFn: (data: any) => data.devices,
-      onCacheFound: (data) => set({ myDevices: data }),
-      onDataReceived: (data) => set({ myDevices: data }),
-    });
-  },
+  // ! to stay!!!!
 
   setVolume: async (newValue) => {
-    const { player } = get();
+    const { player } = store.getState();
 
     if (!player) {
       console.error("Player not initialized");
@@ -111,11 +45,10 @@ export const createPlaybackSlice: StateCreator<
     localStorage.setItem("curr_volume", JSON.stringify(volume));
 
     set({ currVolume: volume });
-    // return volume;
   },
 
   seekToPosition: async (positionMs: number) => {
-    const { player } = get();
+    const { player } = store.getState();
 
     if (!player) {
       console.error("Player not initialized");
@@ -127,8 +60,11 @@ export const createPlaybackSlice: StateCreator<
 
   playTrack: async (uri, dataType) => {
     try {
-      // Ensure we have a device ID
-      const deviceId = await get().ensureDeviceId();
+      const { deviceId } = store.getState();
+
+      // ! old way
+      // // Ensure we have a device ID
+      // const deviceId = await get().ensureDeviceId();
 
       if (!deviceId) {
         throw new Error("No device ID available");
@@ -144,9 +80,9 @@ export const createPlaybackSlice: StateCreator<
 
       // Update playing state
 
-      const { getPlayerState } = get();
-      // call playback state
-      getPlayerState();
+      // const { getPlayerState } = get();
+      // // call playback state
+      // getPlayerState();
 
       // * todo: add track to Local storage so it can be retrieved at first load
       // UI: update player preview on bottom
@@ -156,21 +92,8 @@ export const createPlaybackSlice: StateCreator<
     }
   },
 
-  getPlayerState: async () => {
-    const { player } = get();
-
-    if (!player) {
-      console.error("Player not initialized");
-      return;
-    }
-
-    const state: Spotify.PlaybackState | null = await player.getCurrentState();
-
-    set({ playerState: state });
-  },
-
   togglePlayback: async () => {
-    const { player } = get();
+    const { player } = store.getState();
 
     if (!player) {
       console.error("Player not initialized");
@@ -181,7 +104,7 @@ export const createPlaybackSlice: StateCreator<
   },
 
   nextTrack: async () => {
-    const { player } = get();
+    const { player } = store.getState();
 
     if (!player) {
       console.error("Player not initialized");
@@ -192,7 +115,7 @@ export const createPlaybackSlice: StateCreator<
   },
 
   prevTrack: async () => {
-    const { player } = get();
+    const { player } = store.getState();
 
     if (!player) {
       console.error("Player not initialized");

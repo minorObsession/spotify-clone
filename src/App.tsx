@@ -1,7 +1,7 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import Root, { initialLoader } from "./Root";
-import Home, { initialStateLoader } from "./Home";
+import Home, { userStateLoader } from "./Home";
 import FullPreviewPlaylist, {
   playlistLoader,
 } from "./features/playlists/FPPlaylist";
@@ -27,7 +27,7 @@ function App() {
         {
           path: "home",
           element: <Home />,
-          loader: initialStateLoader,
+          loader: userStateLoader,
           children: [
             {
               path: "playlist/:id",
