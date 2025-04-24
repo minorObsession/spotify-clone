@@ -7,18 +7,21 @@ import { MdSkipPrevious } from "react-icons/md";
 import { MdSkipNext } from "react-icons/md";
 import { LuRepeat1 } from "react-icons/lu";
 import { LuRepeat } from "react-icons/lu";
-import { useState } from "react";
+import { FaShuffle } from "react-icons/fa6";
+import { useEffect, useState } from "react";
 
 function DesktopPlayback() {
   const {
     currVolume,
     playerState,
+    player,
     setVolume,
     seekToPosition,
     prevTrack,
     nextTrack,
+    setPlayerState,
   } = useStateStore((state) => state);
-  const [repeatMode, setRepeatMode] = useState<"off" | "one" | "all">("off");
+  const [repeatMode, setRepeatMode] = useState<"off" | "one" | "all">("all");
 
   const renderRepeatIcon = () => {
     switch (repeatMode) {
@@ -26,11 +29,34 @@ function DesktopPlayback() {
         return <LuRepeat1 onClick={() => setRepeatMode("all")} />;
       case "all":
         // ! modify repeat icon sliglty - dot bellow and change color
-        return <LuRepeat onClick={() => setRepeatMode("off")} />;
+        return (
+          <LuRepeat
+            color="oklch(44.8% 0.119 151.328)"
+            onClick={() => setRepeatMode("off")}
+          />
+        );
       default:
         return <LuRepeat onClick={() => setRepeatMode("one")} />;
     }
   };
+
+  // * moving the postition bar...
+  // ! to move this into a seperate hoook
+  useEffect(() => {
+    if (!player || !playerState || playerState?.paused) {
+      return;
+    }
+    const interval = setInterval(async () => {
+      // get new state
+      const newState = await player.getCurrentState();
+      if (!newState) return;
+      setPlayerState(newState);
+    }, 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [playerState, player, setPlayerState]);
 
   // ! THIS MAKES FOR A VERY SLOW INITIAL RENDER... FIND A OPTIMISTIC BAREBONES RENDER SOLUTION
   if (!playerState) return null;
@@ -44,16 +70,21 @@ function DesktopPlayback() {
       <div className="mx-auto flex flex-2 flex-col items-center justify-center gap-2">
         {/* // ! BUTTONS */}
         <div className="flex gap-2">
+          <FaShuffle className="cursor-pointer" />
           <MdSkipPrevious className="cursor-pointer" onClick={prevTrack} />
           <PlayButton />
           <MdSkipNext className="cursor-pointer" onClick={nextTrack} />
-
-          {renderRepeatIcon()}
+          {/* icon contaier */}
+          <span
+            className={`flex cursor-pointer flex-col items-center ${repeatMode === "all" ? "after:color-green-500 after:absolute after:text-green-700 after:content-['.']" : ""}`}
+          >
+            {renderRepeatIcon()}
+          </span>
         </div>
         <ProgressBar
+          currValue={playerState?.position}
           max={playerState?.duration}
           onValueChange={(value) => seekToPosition(value)}
-          currValue={playerState?.position}
         />
       </div>
       {/* //! VOLUME AND QUEUE */}

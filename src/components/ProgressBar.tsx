@@ -37,7 +37,7 @@ function ProgressBar({
       style={bgStyle}
     >
       <div
-        className={`h-full transition-all duration-300 ease-in-out ${!barColor.startsWith("#") ? barColor : ""}`}
+        className={`h-full ease-in-out ${!barColor.startsWith("#") ? barColor : ""}`}
         style={{
           width: `${(currValue / max) * 100}%`, // Calculate progress width
           ...barStyle,

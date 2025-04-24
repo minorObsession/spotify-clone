@@ -20,7 +20,6 @@ export interface SpotifyPlayerSlice {
   deviceId: string | null;
   loadPlayer: () => void;
   initPlayer: () => void;
-  getDeviceId: () => Promise<string>;
   setPlayerState: (newState: Spotify.PlaybackState) => void;
   transferPlayback: (deviceId: string) => Promise<void>;
 }
@@ -94,23 +93,6 @@ export const createSpotifyPlayerSlice: StateCreator<
     player.addListener("player_state_changed", (newState) => {
       const { setPlayerState } = get();
       setPlayerState(newState);
-    });
-  },
-
-  getDeviceId: async () => {
-    const { deviceId } = get();
-    if (deviceId) return deviceId;
-
-    return new Promise<string>((resolve, reject) => {
-      // reject after 8seconds if no device ID is found
-      const timeout = setTimeout(() => reject("Timeout"), 8000);
-      const check = setInterval(() => {
-        if (deviceId) {
-          clearInterval(check);
-          clearTimeout(timeout);
-          resolve(deviceId);
-        }
-      }, 500);
     });
   },
 });

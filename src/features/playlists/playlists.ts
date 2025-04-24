@@ -34,7 +34,6 @@ export interface PlaylistSlice {
   playlists: UserPlaylistType[];
   playlistNamesWithids: PlaylistNamesWithidsType[];
   playlist: DetailedPlaylistType | object;
-  isLoadingPlaylists: boolean;
   getUserPlaylists: () => Promise<UserPlaylistType[] | null>;
   getPlaylist: (
     id: string,
@@ -49,18 +48,12 @@ export const createPlaylistSlice: StateCreator<
   [],
   PlaylistSlice
 > = (set, get) => ({
-  isLoadingPlaylists: false,
   playlists: JSON.parse(localStorage.getItem("user_playlists")!) || [],
   playlistNamesWithids:
     JSON.parse(localStorage.getItem("playlist_names_with_track_ids")!) || [],
   playlist: {},
   // ! STILL LEFT TO REFACTOR getUserPlaylists
   getUserPlaylists: async () => {
-    const { isLoadingPlaylists } = get();
-
-    if (isLoadingPlaylists) return get().playlists;
-    set({ isLoadingPlaylists: true });
-
     try {
       // ! access token
       const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
@@ -111,8 +104,6 @@ export const createPlaylistSlice: StateCreator<
       const { items } = await res.json();
       console.log(items);
 
-      // const tracksTempArray: Record<string, string[]>[] = [];
-
       const playlistNamesWithids: PlaylistNamesWithidsType[] =
         await Promise.all(
           items.map(async (playlist: any) => {
@@ -133,7 +124,7 @@ export const createPlaylistSlice: StateCreator<
         (playlist: any) => ({
           name: playlist.name,
           id: playlist.id,
-          image: playlist.images?.[0]?.url || "",
+          image: playlist.images?.[0]?.url,
           ownerName: playlist.owner?.display_name || "",
           // uri: playlist.uri,
         }),
@@ -144,10 +135,10 @@ export const createPlaylistSlice: StateCreator<
         "user_playlists",
         JSON.stringify(formattedPlaylists),
       );
-      // localStorage.setItem(
-      //   "playlist_names_with_track_ids",
-      //   JSON.stringify(playlistNamesWithids),
-      // );
+      localStorage.setItem(
+        "playlist_names_with_track_ids",
+        JSON.stringify(playlistNamesWithids),
+      );
 
       set({ playlists: formattedPlaylists });
 
@@ -157,8 +148,6 @@ export const createPlaylistSlice: StateCreator<
     } catch (err) {
       console.error("🛑 ❌", err);
       return []; // ensures the function always returns UserPlaylistType[]
-    } finally {
-      set({ isLoadingPlaylists: false });
     }
   },
   getPlaylist: async (id, offset = 0) => {
@@ -187,7 +176,7 @@ export const createPlaylistSlice: StateCreator<
             imageUrl:
               track.track.album.images.length > 0
                 ? track.track.album.images[0].url
-                : "",
+                : null,
             multipleArtists: track.track.artists.length > 1,
             artists: track.track.artists.map((artist: any) => ({
               name: artist.name,

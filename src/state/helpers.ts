@@ -60,6 +60,7 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
     }
 
     // Check local storage for cached data if cacheName is provided a is true
+
     if (cacheName) {
       const cachedData = getFromLocalStorage<ReturnType>(cacheName);
       if (cachedData) {

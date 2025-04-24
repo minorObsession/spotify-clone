@@ -16,6 +16,7 @@ import PageNotFound from "./components/PageNotFound";
 
 // ! while in playlists/track screen, the auto refresh won't refresh token!!!!
 // ! consolidate all icons in 1 place
+// ! in 'liked' - clicking doens't work - error - no id to url
 
 function App() {
   const router = createBrowserRouter([
