@@ -9,11 +9,19 @@ import { LuRepeat1 } from "react-icons/lu";
 import { LuRepeat } from "react-icons/lu";
 import { FaShuffle } from "react-icons/fa6";
 import { useEffect, useState } from "react";
+import FooterSkeleton from "../../components/FooterSkeleton";
+
+export interface CurrentTrack {
+  artistsArr: Spotify.Entity[];
+  trackName: string;
+  trackImg: string;
+}
 
 function DesktopPlayback() {
   const {
     currVolume,
     playerState,
+    isPlayerLoading,
     player,
     setVolume,
     seekToPosition,
@@ -22,6 +30,12 @@ function DesktopPlayback() {
     setPlayerState,
   } = useStateStore((state) => state);
   const [repeatMode, setRepeatMode] = useState<"off" | "one" | "all">("all");
+
+  const currentTrack: CurrentTrack = {
+    artistsArr: playerState?.track_window.current_track.artists || [],
+    trackName: playerState?.track_window.current_track.name || "",
+    trackImg: playerState?.track_window.current_track.album.images[0].url || "",
+  };
 
   const renderRepeatIcon = () => {
     switch (repeatMode) {
@@ -59,12 +73,13 @@ function DesktopPlayback() {
   }, [playerState, player, setPlayerState]);
 
   // ! THIS MAKES FOR A VERY SLOW INITIAL RENDER... FIND A OPTIMISTIC BAREBONES RENDER SOLUTION
-  if (!playerState) return null;
+  // return <FooterSkeleton />;
+  if (isPlayerLoading || !playerState) return <FooterSkeleton />;
 
   return (
-    <footer className="grid-playback-l z-10 col-span-2 flex h-[clamp(10lvh_15lvh_10rem)] w-screen items-center justify-between gap-10 bg-amber-200 px-3">
+    <footer className="grid-playback-l z-10 col-span-2 flex h-[clamp(10lvh_15lvh_10rem)] w-screen items-center justify-between gap-10 bg-amber-200 px-3 py-2">
       {/* // ! currently playing item (reuse grid from sidebar) */}
-      <CurrentlyPlayng />
+      <CurrentlyPlayng currentTrack={currentTrack} />
 
       {/* // ! PLAYBACK CENTER BOX */}
       <div className="mx-auto flex flex-2 flex-col items-center justify-center gap-2">
@@ -82,8 +97,8 @@ function DesktopPlayback() {
           </span>
         </div>
         <ProgressBar
-          currValue={playerState?.position}
-          max={playerState?.duration}
+          currValue={playerState?.position || 0}
+          max={playerState?.duration || 1}
           onValueChange={(value) => seekToPosition(value)}
         />
       </div>

@@ -1,13 +1,17 @@
 import { useNavigate } from "react-router";
 import Thumbnail from "../../components/Thumbnail";
 import { useStateStore } from "../../state/store";
+import { CurrentTrack } from "../../layouts/desktop/DesktopPlayback";
 
-function CurrentlyPlayng() {
+interface CurrentlyPlayngProps {
+  currentTrack: CurrentTrack;
+}
+
+function CurrentlyPlayng({ currentTrack }: CurrentlyPlayngProps) {
   const { playerState } = useStateStore((state) => state);
-
-  const artistsArr = playerState?.track_window?.current_track?.artists;
   const navigate = useNavigate();
-  const trackName = playerState?.track_window?.current_track?.name || "";
+
+  if (!playerState) return null;
 
   const handleArtistSelect = (artistId: string) => {
     navigate(`/home/artist/${artistId}`);
@@ -18,14 +22,11 @@ function CurrentlyPlayng() {
       className="playlist-item max-w-[30%] flex-1 gap-x-4"
       onClick={() => {}}
     >
-      <Thumbnail
-        minWidth="w-12"
-        img="https://mosaic.scdn.co/640/ab67616d00001e024ca68d59a4a29c856a4a39c2ab67616d00001e025fd7c284c0b719ad07b8eac2ab67616d00001e0270b88fc5a2e13bc5440d947cab67616d00001e029e1cfc756886ac782e363d79"
-      />
-      <p className="playlist-title">{trackName}</p>
-      {artistsArr && (
+      <Thumbnail minWidth="w-12" img={currentTrack.trackImg || ""} />
+      <p className="playlist-title">{currentTrack.trackName}</p>
+      {currentTrack.artistsArr && (
         <p>
-          {artistsArr.map((artist, i, array) => (
+          {currentTrack.artistsArr.map((artist, i, array) => (
             <span
               key={artist.uri + i}
               onClick={() => handleArtistSelect(artist.uri.split(":")[2])}

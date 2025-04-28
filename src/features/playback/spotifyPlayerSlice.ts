@@ -14,7 +14,7 @@ declare global {
 }
 
 export interface SpotifyPlayerSlice {
-  // isPlayerLoaded: boolean;
+  isPlayerLoading: boolean; // NEW  player: Spotify.Player | null;
   player: Spotify.Player | null;
   playerState: Spotify.PlaybackState | null;
   deviceId: string | null;
@@ -30,38 +30,25 @@ export const createSpotifyPlayerSlice: StateCreator<
   [],
   SpotifyPlayerSlice
 > = (set, get) => ({
-  // isPlayerLoaded: false,
   deviceId: null,
+  isPlayerLoading: false,
   player: null,
   playerState: null,
 
   loadPlayer: () => {
     const { player } = get();
-    if (player) return; // early return if player is already loaded
+    if (player) return;
 
-    // Set the global hook BEFORE the script is appended
-    window.onSpotifyWebPlaybackSDKReady = () => {
-      get().initPlayer(); // Call your slice's method
-    };
+    set({ isPlayerLoading: true }); // 👈 Start loading
 
-    const script = document.createElement("script");
-    script.src = "https://sdk.scdn.co/spotify-player.js";
-    script.defer = true;
-    document.body.appendChild(script);
+    if (window.Spotify) {
+      get().initPlayer();
+    } else {
+      window.onSpotifyWebPlaybackSDKReady = () => {
+        get().initPlayer();
+      };
+    }
   },
-
-  transferPlayback: async (deviceId: string) => {
-    return await fetchFromSpotify<any, any>({
-      endpoint: "me/player",
-      method: "PUT",
-      requestBody: JSON.stringify({
-        device_ids: [deviceId],
-        play: false,
-      }),
-    });
-  },
-
-  setPlayerState: (newState) => set({ playerState: newState }),
 
   initPlayer: () => {
     const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
@@ -77,7 +64,7 @@ export const createSpotifyPlayerSlice: StateCreator<
     });
 
     player.addListener("ready", async ({ device_id }) => {
-      set({ deviceId: device_id, player });
+      set({ deviceId: device_id, player, isPlayerLoading: false });
 
       const { transferPlayback } = get();
       await transferPlayback(device_id);
@@ -96,4 +83,17 @@ export const createSpotifyPlayerSlice: StateCreator<
       setPlayerState(newState);
     });
   },
+
+  transferPlayback: async (deviceId: string) => {
+    return await fetchFromSpotify<any, any>({
+      endpoint: "me/player",
+      method: "PUT",
+      requestBody: JSON.stringify({
+        device_ids: [deviceId],
+        play: false,
+      }),
+    });
+  },
+
+  setPlayerState: (newState) => set({ playerState: newState }),
 });

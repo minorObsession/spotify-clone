@@ -9,7 +9,7 @@ function Root() {
   const { isAuthenticated, loadPlayer } = useStateStore((store) => store);
 
   useEffect(() => {
-    loadPlayer();
+    if (isAuthenticated) loadPlayer();
   }, [isAuthenticated, loadPlayer]);
 
   return <Outlet />;
