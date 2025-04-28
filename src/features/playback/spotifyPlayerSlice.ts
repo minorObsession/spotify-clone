@@ -14,7 +14,7 @@ declare global {
 }
 
 export interface SpotifyPlayerSlice {
-  isPlayerLoaded: boolean;
+  // isPlayerLoaded: boolean;
   player: Spotify.Player | null;
   playerState: Spotify.PlaybackState | null;
   deviceId: string | null;
@@ -30,14 +30,14 @@ export const createSpotifyPlayerSlice: StateCreator<
   [],
   SpotifyPlayerSlice
 > = (set, get) => ({
-  isPlayerLoaded: false,
+  // isPlayerLoaded: false,
   deviceId: null,
   player: null,
   playerState: null,
 
   loadPlayer: () => {
-    if (get().isPlayerLoaded || window.Spotify) return;
-    set({ isPlayerLoaded: true });
+    const { player } = get();
+    if (player) return; // early return if player is already loaded
 
     // Set the global hook BEFORE the script is appended
     window.onSpotifyWebPlaybackSDKReady = () => {
@@ -60,6 +60,7 @@ export const createSpotifyPlayerSlice: StateCreator<
       }),
     });
   },
+
   setPlayerState: (newState) => set({ playerState: newState }),
 
   initPlayer: () => {

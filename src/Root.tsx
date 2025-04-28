@@ -10,7 +10,7 @@ function Root() {
 
   useEffect(() => {
     loadPlayer();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, loadPlayer]);
 
   return <Outlet />;
 }

@@ -103,6 +103,7 @@ export const createAuthSlice: StateCreator<
 
   // --- Internal Action: Request Auth Code & Redirect ---
   requestAuthCodeAndRedirect: async () => {
+    console.log("requestAuthCodeAndRedirect called");
     // Generate a code verifier and store it for later use
     const codeVerifier = generateRandomString(64);
     localStorage.setItem("code_verifier", codeVerifier);

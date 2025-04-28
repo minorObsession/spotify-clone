@@ -83,7 +83,7 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
         body: requestBody,
       },
     );
-    console.log(res);
+    // console.log(res);
 
     if (!res.ok) {
       throw new Error(`API request failed: ${res.status} ${res.statusText}`);
@@ -93,7 +93,7 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
     if (!transformFn) return null;
 
     const data: ResponseType = await res.json();
-
+    console.log(data);
     const transformedData: ReturnType = await transformFn(data);
 
     if (onDataReceived) onDataReceived(transformedData);

@@ -118,6 +118,7 @@ export const createPlaylistSlice: StateCreator<
           }),
         );
 
+      console.log(playlistNamesWithids);
       set({ playlistNamesWithids });
 
       const formattedPlaylists: UserPlaylistType[] = items.map(
@@ -195,7 +196,7 @@ export const createPlaylistSlice: StateCreator<
           (sum: number, item: any) => sum + (item.track?.duration_ms || 0),
           0,
         ),
-        imageUrl: data.images[0].url || "",
+        imageUrl: data.images?.[0]?.url || "",
         ownerName: data.owner.display_name,
         ownerId: data.owner.id,
       }),
