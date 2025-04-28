@@ -6,6 +6,7 @@ import TrackOptions from "../tracks/TrackOptions";
 import { useTrackItem } from "../../hooks/useTrackItem";
 import AddToPlaylist from "../../components/AddToPlaylist";
 import { trackOptions } from "../../config/menuOptions";
+import { FaPlay } from "react-icons/fa";
 
 interface TrackProps {
   track: TopTrackType;
@@ -25,7 +26,7 @@ function FPArtistTrackItem({ track, index }: TrackProps) {
     handleTrackSelect,
   } = useTrackItem(track);
   const id = track.id;
-  console.log(track);
+
   return (
     <article
       onMouseEnter={() => setIsTrackHovered(true)}
@@ -37,7 +38,19 @@ function FPArtistTrackItem({ track, index }: TrackProps) {
       <div className="playlist-item grid-rows-1 truncate p-1">
         {/* // ! number + thumbnail   */}
         <div className="row-span-2 flex items-center gap-2 lg:gap-3">
-          <span className="w-4">{index + 1}</span>
+          <span className="w-4">
+            {" "}
+            {isTrackHovered ? (
+              <FaPlay
+                id={id}
+                onClick={handleTrackSelect}
+                size={12}
+                className="cursor-pointer"
+              />
+            ) : (
+              index + 1
+            )}
+          </span>
           <Thumbnail
             additionalClasses="w-7 md:w-7.5 lg:w-8.5"
             img={thumbnailUrl}

@@ -4,13 +4,13 @@ import { useScreenWidthRem } from "./useScreenWidthRem";
 import { TrackType } from "../features/tracks/track";
 import { TopTrackType } from "../features/artists/artist";
 import { flexibleMillisecondsConverter } from "../helpers/helperFunctions";
+import { useStateStore } from "../state/store";
 
 export function useTrackItem(track: TrackType | TopTrackType) {
   const navigate = useNavigate();
   const { screenWidth: screenWidthRem } = useScreenWidthRem();
   const [isTrackBoxSelected, setIsTrackBoxSelected] = useState(false);
   const [isTrackHovered, setIsTrackHovered] = useState(false);
-
   const trackName = track.name;
   const trackDurationFormatted = flexibleMillisecondsConverter(
     track.trackDuration,
@@ -25,10 +25,16 @@ export function useTrackItem(track: TrackType | TopTrackType) {
       return el;
     });
 
+  const { playTrack } = useStateStore.getState();
+
   const thumbnailUrl = track.imageUrl;
 
-  const handleTrackSelect = (e: React.MouseEvent<HTMLElement>) => {
-    navigate(`/home/track/${e.currentTarget.id}`);
+  const handleTrackSelect = (e: React.MouseEvent<HTMLElement | SVGElement>) => {
+    if (e.currentTarget instanceof SVGElement) {
+      playTrack(`spotify:track:${e.currentTarget.id}`, "track");
+    } else {
+      navigate(`/home/track/${e.currentTarget.id}`);
+    }
   };
 
   return {

@@ -97,3 +97,17 @@ html {
   /* min-height: 100lvh; */
   overflow: hidden;
 }
+
+@theme {
+  --animate-bounce-bar: bounce 1s infinite ease-in-out;
+
+  @keyframes bounce {
+    0%,
+    100% {
+      transform: scaleY(0.3);
+    }
+    50% {
+      transform: scaleY(1);
+    }
+  }
+}

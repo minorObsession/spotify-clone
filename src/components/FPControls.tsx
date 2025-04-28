@@ -1,6 +1,6 @@
 import { BiPlusCircle } from "react-icons/bi";
 import { SlOptions } from "react-icons/sl";
-import { IoMdPlay } from "react-icons/io";
+import { IoMdPause, IoMdPlay } from "react-icons/io";
 import useHoverTrackItem from "../hooks/useHoverTrackItem";
 import { TrackType } from "../features/tracks/track";
 import { DetailedPlaylistType } from "../features/playlists/playlists";
@@ -19,9 +19,16 @@ interface FPControlsProps {
 
 function FPControls({ previewType, item, options }: FPControlsProps) {
   const [areOptionsVisible, setAreOptionsVisible] = useState(false);
-  const { playTrack } = useStateStore((state) => state);
+  const { playTrack, deviceId, playerState, togglePlayback } = useStateStore(
+    (state) => state,
+  );
   const { isHovered } = useHoverTrackItem();
-  const { deviceId } = useStateStore((state) => state);
+
+  const isCurrentlyPlaying = !playerState?.paused;
+  const isCurrentlyPlayingThisPlaylist =
+    playerState?.context?.uri?.split(":")[2] === item.id || false;
+  // console.log(isCurrentlyPlayingThisPlaylist);
+  console.log(playerState);
 
   const menuRef = useOutsideClick(
     setAreOptionsVisible,
@@ -33,23 +40,31 @@ function FPControls({ previewType, item, options }: FPControlsProps) {
 
   const handlePlayTrack = () => {
     if (deviceId === null) throw new Error("🛑 No deviceId found");
-
     const uri = `spotify:${previewType}:${item.id}`;
     // ! improve this by using item.type (gotta refactor the types first)
-
-    playTrack(uri, previewType);
+    return isCurrentlyPlayingThisPlaylist
+      ? togglePlayback()
+      : playTrack(uri, previewType);
   };
 
   return (
     // ! CONTROLS div
     <div className="flex items-center gap-5">
-      <IoMdPlay
-        onClick={handlePlayTrack}
-        size={54}
-        fill="black"
-        floodColor="red"
-        className="cursor-pointer rounded-[50%] bg-green-500 p-4 transition duration-200 hover:scale-105 hover:brightness-120"
-      />
+      {isCurrentlyPlaying ? (
+        <IoMdPause
+          onClick={togglePlayback}
+          size={54}
+          fill="black"
+          className="cursor-pointer rounded-[50%] bg-green-500 p-4 transition duration-150 hover:brightness-120"
+        />
+      ) : (
+        <IoMdPlay
+          onClick={handlePlayTrack}
+          size={54}
+          fill="black"
+          className="cursor-pointer rounded-[50%] bg-green-500 p-4 transition duration-150 hover:brightness-120"
+        />
+      )}
       {previewType === "artist" && <button>Follow</button>}
       {previewType === "track" && (
         <BiPlusCircle

@@ -7,6 +7,8 @@ import { useTrackItem } from "../../hooks/useTrackItem";
 import AddToPlaylist from "../../components/AddToPlaylist";
 import { trackOptions } from "../../config/menuOptions";
 
+import TrackStatusOrIndex from "../../components/TrackStatusOrIndex";
+import { useStateStore } from "../../state/store";
 interface TrackProps {
   track: TrackType;
   index: number;
@@ -36,6 +38,11 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
   const id = track.id;
   const album = track.albumName;
   const artistsToDisplay = track.artists.map((artist) => " " + artist.name);
+  const { playerState } = useStateStore((state) => state);
+
+  const isTrackCurrentlyQueued =
+    playerState?.track_window.current_track.id === track.id;
+
   return (
     <article
       onMouseEnter={() => setIsTrackHovered(true)}
@@ -44,9 +51,15 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
       className={`playlist-row text:xs ${!isTrackBoxSelected && "hover:bg-amber-400"} ${isTrackBoxSelected && "bg-amber-700"} lg:text-base`}
     >
       <div className="playlist-item p-1">
-        {/* // ! number + thumbnail   */}
+        {/* // ! index/bars + thumbnail   */}
         <div className="row-span-2 flex items-center lg:gap-2">
-          <span className="w-3">{index + 1}</span>
+          <TrackStatusOrIndex
+            handleTrackSelect={handleTrackSelect}
+            isTrackHovered={isTrackHovered}
+            track={track}
+            index={index}
+            id={id}
+          />
           <Thumbnail
             additionalClasses="w-7 md:w-7.5 lg:w-8.5"
             img={thumbnailUrl}
@@ -56,7 +69,7 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
         <span
           onClick={handleTrackSelect}
           id={id}
-          className="w-fittruncate underline-offset-1 hover:cursor-pointer hover:underline"
+          className={`w-fittruncate max-w-fit cursor-pointer underline-offset-1 hover:underline ${isTrackCurrentlyQueued ? "text-green-700" : ""}`}
         >
           {trackName}
         </span>
@@ -66,7 +79,7 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
             <span
               key={artist.artistId + i}
               onClick={() => handleArtistSelect(artist.artistId)}
-              className="underline-offset-1 hover:cursor-pointer hover:underline"
+              className="cursor-pointer underline-offset-1 hover:underline"
             >
               {i + 1 === array.length ? artist.name : `${artist.name}, `}
             </span>
@@ -75,7 +88,7 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
       </div>
 
       {screenWidthRem > 64 && (
-        <span className="truncate text-sm underline-offset-1 hover:cursor-pointer hover:underline">
+        <span className="cursor-pointer truncate text-sm underline-offset-1 hover:underline">
           {album}
         </span>
       )}
