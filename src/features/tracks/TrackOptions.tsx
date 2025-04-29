@@ -23,7 +23,6 @@ function TrackOptions({
   options,
 }: TrackOptionsProps) {
   const { isHovered, handleMouseEnter, handleMouseLeave } = useHoverTrackItem();
-  // console.log(options);
   const [areOptionsVisible, setAreOptionsVisible] = useState(false);
   const menuRef = useOutsideClick(
     setAreOptionsVisible,

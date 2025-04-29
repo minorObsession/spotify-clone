@@ -61,6 +61,7 @@ function FPControls({ previewType, item, options }: FPControlsProps) {
           className="cursor-pointer rounded-[50%] bg-green-500 p-4 transition duration-150 hover:brightness-120"
         />
       ) : (
+        // * not currently playing
         <IoMdPlay
           onClick={handlePlayTrack}
           size={54}
@@ -93,6 +94,7 @@ function FPControls({ previewType, item, options }: FPControlsProps) {
         ref={menuRef}
         areOptionsVisible={areOptionsVisible}
         options={options}
+        directionOfMenu="bottomLeft"
       />
     </div>
   );
