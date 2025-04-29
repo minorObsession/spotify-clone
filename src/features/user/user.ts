@@ -47,7 +47,6 @@ export const createUserSlice: StateCreator<
     });
   },
   getUserSavedTracks: async (offset = 0) => {
-    console.log("calling getUserSavedTracks", offset);
     const result = await fetchFromSpotify<any, DetailedPlaylistType>({
       endpoint: "me/tracks",
       cacheName: `users_saved_tracks_with_offset_of_${offset}`,

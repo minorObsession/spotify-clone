@@ -25,6 +25,7 @@ export interface AuthSlice {
   isAuthenticated: boolean;
   accessToken: AccessTokenType | null;
   refreshToken: string | null;
+  refreshInterval: number | null;
   initAuth: () => Promise<void>;
   logout: () => void;
   waitForAuthentication: () => Promise<boolean>;
@@ -56,7 +57,7 @@ export const createAuthSlice: StateCreator<
     ? JSON.parse(localStorage.getItem("access_token")!)
     : null,
   refreshToken: localStorage.getItem("refresh_token"),
-
+  refreshInterval: null,
   // --- Public Action: Initialize Auth Flow ---
   initAuth: async () => {
     console.log("initAuth called");
@@ -175,15 +176,22 @@ export const createAuthSlice: StateCreator<
 
   // --- Internal Action: Auto–Refresh Token ---
   autoRefreshToken: async () => {
-    const safetyNetMinutes = 20; // refresh 20 minutes before expiry
-    // Setup an interval to check token expiry every minute
-    const refreshInterval = setInterval(async () => {
+    let { refreshInterval } = get();
+
+    if (refreshInterval) clearInterval(refreshInterval); // 🔁 prevent duplicate
+
+    const interval = setInterval(async () => {
       const { accessToken, refreshToken } = get();
       if (!accessToken || !refreshToken) {
-        clearInterval(refreshInterval);
+        clearInterval(interval);
+        set({ refreshInterval: null });
         return;
       }
-      const minutesLeft = (accessToken.expiresAt - Date.now()) / 1000 / 60;
+
+      const safetyNetMinutes = 20; // refresh 20 minutes before expiry
+
+      // ! if safetuy net is reached - refresh token request
+      const minutesLeft = (+accessToken.expiresAt - Date.now()) / 1000 / 60;
       console.log(`Token expires in ${minutesLeft.toFixed(2)} minutes.`);
       if (minutesLeft <= safetyNetMinutes) {
         try {
@@ -211,10 +219,10 @@ export const createAuthSlice: StateCreator<
               JSON.stringify(newAccessToken),
             );
             // Use the new refresh token if provided, otherwise keep the old one
-            localStorage.setItem(
-              "refresh_token",
-              data.refresh_token || refreshToken,
-            );
+            if (data.refresh_token) {
+              localStorage.setItem("refresh_token", data.refresh_token);
+              set({ refreshToken: data.refresh_token });
+            }
             set({
               accessToken: newAccessToken,
               refreshToken: data.refresh_token || refreshToken,
@@ -232,6 +240,9 @@ export const createAuthSlice: StateCreator<
         }
       }
     }, 60000 * 10); // ! Check every 10 minutes
+
+    // set refresh interval state
+    set({ refreshInterval: interval });
   },
 
   waitForAuthentication: async () => {
