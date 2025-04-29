@@ -49,6 +49,7 @@ function TrackOptions({
         isVisible={isHovered && !areOptionsVisible}
       />
       <OptionsMenu
+        menuFor="track"
         ref={menuRef}
         areOptionsVisible={areOptionsVisible}
         options={options}

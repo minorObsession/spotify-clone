@@ -9,7 +9,7 @@ function MobileHeader() {
 
   return (
     <menu className={`flex items-center bg-amber-500`}>
-      <UserAvatar />
+      <UserAvatar inHeader={true} />
     </menu>
   );
 }

@@ -14,6 +14,9 @@ import PageNotFound from "./components/PageNotFound";
 
 // TODO:
 
+// * DIFFERENT USER NOTES:
+// in order to not mx out api - local storage of user playlists and all other stuff with username in key as well
+
 // ! while in playlists/track screen, the auto refresh won't refresh token!!!!
 // ! consolidate all icons in 1 place
 // ! in 'liked' - clicking doens't work - error - no id to url

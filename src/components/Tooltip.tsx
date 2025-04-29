@@ -1,14 +1,22 @@
 interface TooltipProps {
   message: string;
   isVisible: boolean;
+  directionOfMenu?: "topLeft" | "bottomLeft";
+  addClassName?: string;
 }
 
-const Tooltip = ({ message, isVisible }: TooltipProps) => {
+const Tooltip = ({
+  message,
+  isVisible,
+  directionOfMenu,
+  addClassName,
+}: TooltipProps) => {
   return (
     <span
-      className={`absolute -right-4 bottom-7 z-12 rounded-md bg-amber-200 p-1 text-xs text-nowrap shadow-md ${
+      // ! needs a relative on parent
+      className={`absolute ${directionOfMenu === "bottomLeft" ? "-left-40" : "-right-4"} ${directionOfMenu === "bottomLeft" ? "top-7" : "bottom-7"} z-12 rounded-md bg-amber-200 p-1 text-xs text-nowrap shadow-md ${
         isVisible ? "inline" : "hidden"
-      }`}
+      } ${addClassName} `}
     >
       {message}
     </span>

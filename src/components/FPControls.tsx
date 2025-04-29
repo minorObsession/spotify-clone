@@ -24,7 +24,7 @@ function FPControls({ previewType, item, options }: FPControlsProps) {
   const playTrack = useStateStore((store) => store.playTrack);
   const togglePlayback = useStateStore((store) => store.togglePlayback);
   const deviceId = useStateStore((store) => store.deviceId);
-  const { isHovered } = useHoverTrackItem();
+  const { isHovered, handleMouseEnter, handleMouseLeave } = useHoverTrackItem();
   const [areOptionsVisible, setAreOptionsVisible] = useState(false);
   const params = useParams();
   const isCurrentlyPlaying = !playerState?.paused;
@@ -52,7 +52,7 @@ function FPControls({ previewType, item, options }: FPControlsProps) {
 
   return (
     // ! CONTROLS div
-    <div className="flex items-center gap-5">
+    <div className="relative flex w-fit items-center gap-5">
       {isCurrentlyPlaying ? (
         <IoMdPause
           onClick={togglePlayback}
@@ -81,16 +81,21 @@ function FPControls({ previewType, item, options }: FPControlsProps) {
       <Tooltip
         message={`See more options for ${item.name}`}
         isVisible={isHovered && !areOptionsVisible}
+        directionOfMenu="topLeft"
+        addClassName={`-right-48 transform -translate-y-3`}
       />
       {/* // ! dots */}
       <SlOptions
         onClick={handleDisplayTrackOptions}
         size={24}
         fill="grey"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         className="cursor-pointer transition duration-200 hover:scale-105 hover:brightness-120"
       />
       {/* // ! menu    */}
       <OptionsMenu
+        menuFor="playlist"
         ref={menuRef}
         areOptionsVisible={areOptionsVisible}
         options={options}

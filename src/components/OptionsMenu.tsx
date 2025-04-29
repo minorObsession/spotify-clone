@@ -1,17 +1,21 @@
 import useHoverTrackItem from "../hooks/useHoverTrackItem";
+import OptionItem from "./OptionItem";
+
+export type MenuFor = "userAvatar" | "playlist" | "track";
 
 interface OptionsMenuProps {
   options: string[];
+  menuFor: MenuFor;
   ref: React.RefObject<HTMLUListElement>;
   areOptionsVisible: boolean;
   directionOfMenu?: "topLeft" | "bottomLeft";
-  onOptionSelect?: (option: string) => void;
 }
 
 function OptionsMenu({
   ref,
   directionOfMenu = "topLeft",
   areOptionsVisible,
+  menuFor,
   options,
 }: OptionsMenuProps) {
   const { handleMouseEnter, handleMouseLeave } = useHoverTrackItem();
@@ -29,10 +33,11 @@ function OptionsMenu({
     >
       <ul
         ref={ref}
-        className={`absolute -right-4 ${directionOfMenu === "bottomLeft" ? "top-7" : "bottom-2"} z-10 rounded-md bg-amber-200 p-1 text-xs text-nowrap shadow-md ${areOptionsVisible ? "inline" : "hidden"}`}
+        className={`absolute p-2 ${directionOfMenu === "bottomLeft" ? "-left-20" : "-right-4"} ${directionOfMenu === "bottomLeft" ? "top-2" : "bottom-2"} z-10 rounded-md bg-amber-200 p-1 text-xs text-nowrap shadow-md ${areOptionsVisible ? "inline" : "hidden"}`}
       >
         {options.map((option) => (
-          <li key={option}>{option}</li>
+          // menuFor
+          <OptionItem menuFor={menuFor} option={option} />
         ))}
       </ul>
     </div>

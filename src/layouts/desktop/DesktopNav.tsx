@@ -32,7 +32,7 @@ function DesktopNav() {
       </div>
 
       {/* // ! user avatar div */}
-      <UserAvatar />
+      <UserAvatar inHeader={true} />
     </menu>
   );
 }

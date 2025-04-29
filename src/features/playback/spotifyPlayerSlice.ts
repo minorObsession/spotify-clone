@@ -24,6 +24,7 @@ export interface SpotifyPlayerSlice {
     newState: Spotify.PlaybackState | ((state: Spotify.PlaybackState) => any),
   ) => void;
   transferPlayback: (deviceId: string) => Promise<void>;
+  cleanupPlayer: () => void;
 }
 
 export const createSpotifyPlayerSlice: StateCreator<
@@ -41,9 +42,10 @@ export const createSpotifyPlayerSlice: StateCreator<
     const { player } = get();
     if (player) return;
 
-    set({ isPlayerLoading: true }); // 👈 Start loading
+    set({ isPlayerLoading: true });
 
-    if (window.Spotify) {
+    // Always call initPlayer if Spotify SDK is already loaded
+    if (window.Spotify && typeof window.Spotify.Player === "function") {
       get().initPlayer();
     } else {
       window.onSpotifyWebPlaybackSDKReady = () => {
@@ -104,4 +106,12 @@ export const createSpotifyPlayerSlice: StateCreator<
       playerState:
         typeof updater === "function" ? updater(state.playerState!) : updater,
     })),
+
+  cleanupPlayer: () => {
+    const { player } = get();
+    if (player) {
+      player.disconnect();
+      set({ player: null, deviceId: null, playerState: null });
+    }
+  },
 });

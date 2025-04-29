@@ -16,6 +16,7 @@ export interface UserSlice {
   usersSavedTracks: DetailedPlaylistType | null;
   getUser: () => Promise<UserType | null>;
   getUserSavedTracks(offset: number): Promise<DetailedPlaylistType | null>;
+  logoutUser: () => void;
 }
 
 export const createUserSlice: StateCreator<
@@ -25,13 +26,12 @@ export const createUserSlice: StateCreator<
   UserSlice
 > = (set, get) => ({
   user: null,
-  usersSavedTracks:
-    JSON.parse(localStorage.getItem("users_saved_tracks_with_offset_of_0")!) ||
-    null,
+  usersSavedTracks: null,
   getUser: async () => {
+    const { user } = get();
     return await fetchFromSpotify<any, UserType>({
       endpoint: "me",
-      cacheName: "user",
+      cacheName: `user_${user?.username}`,
       transformFn: (data) => ({
         username: data.display_name,
         photo: data.images?.[0]?.url || "",
@@ -47,10 +47,23 @@ export const createUserSlice: StateCreator<
     });
   },
   getUserSavedTracks: async (offset = 0) => {
+    const { user } = get();
+
+    if (!get().usersSavedTracks && user?.username) {
+      const local = localStorage.getItem(
+        `${user.username}s_saved_tracks_with_offset_of_${offset}`,
+      );
+      if (local) {
+        const parsed = JSON.parse(local);
+        set({ usersSavedTracks: parsed });
+        return parsed;
+      }
+    }
     const result = await fetchFromSpotify<any, DetailedPlaylistType>({
       endpoint: "me/tracks",
-      cacheName: `users_saved_tracks_with_offset_of_${offset}`,
-      offset: `?offset=${offset}&limit=50`,
+      cacheName: `${user?.username}s_saved_tracks_with_offset_of_${offset}`,
+      // ! TEMPORARY LIMIT
+      offset: `?offset=${offset}&limit=10`,
       transformFn: (data) => {
         const newTracks = data.items.map(
           (item: any): TrackType => ({
@@ -98,7 +111,7 @@ export const createUserSlice: StateCreator<
         return tracksToStore;
       },
     });
-
     return result;
   },
+  logoutUser: () => set({ user: null, usersSavedTracks: null }),
 });
