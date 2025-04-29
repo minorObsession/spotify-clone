@@ -22,7 +22,6 @@ function DesktopPlayback() {
     currVolume,
     playerState,
     isPlayerLoading,
-    player,
     setVolume,
     seekToPosition,
     prevTrack,
@@ -32,9 +31,10 @@ function DesktopPlayback() {
   const [repeatMode, setRepeatMode] = useState<"off" | "one" | "all">("all");
 
   const currentTrack: CurrentTrack = {
-    artistsArr: playerState?.track_window.current_track.artists || [],
-    trackName: playerState?.track_window.current_track.name || "",
-    trackImg: playerState?.track_window.current_track.album.images[0].url || "",
+    artistsArr: playerState?.track_window?.current_track?.artists || [],
+    trackName: playerState?.track_window?.current_track?.name || "",
+    trackImg:
+      playerState?.track_window?.current_track?.album?.images[0].url || "",
   };
 
   const renderRepeatIcon = () => {
@@ -54,26 +54,18 @@ function DesktopPlayback() {
     }
   };
 
-  // * moving the postition bar...
-  // ! to move this into a seperate hoook
   useEffect(() => {
-    if (!player || !playerState || playerState?.paused) {
-      return;
-    }
-    const interval = setInterval(async () => {
-      // get new state
-      const newState = await player.getCurrentState();
-      if (!newState) return;
-      setPlayerState(newState);
+    if (!playerState || playerState.paused) return;
+
+    const interval = setInterval(() => {
+      setPlayerState((prev) =>
+        prev ? { ...prev, position: prev.position + 1000 } : prev,
+      );
     }, 1000);
 
-    return () => {
-      clearInterval(interval);
-    };
-  }, [playerState, player, setPlayerState]);
+    return () => clearInterval(interval);
+  }, [playerState?.paused, playerState, setPlayerState]);
 
-  // ! THIS MAKES FOR A VERY SLOW INITIAL RENDER... FIND A OPTIMISTIC BAREBONES RENDER SOLUTION
-  // return <FooterSkeleton />;
   if (isPlayerLoading || !playerState) return <FooterSkeleton />;
 
   return (

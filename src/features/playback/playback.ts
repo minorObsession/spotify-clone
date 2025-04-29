@@ -15,6 +15,7 @@ export interface PlaybackSlice {
   playTrack: (
     uri: string,
     dataType: "artist" | "album" | "playlist" | "track",
+    trackIndex?: number,
   ) => Promise<void>;
   nextTrack: () => Promise<void>;
   prevTrack: () => Promise<void>;
@@ -58,13 +59,10 @@ export const createPlaybackSlice: StateCreator<
     await player.seek(positionMs);
   },
 
-  playTrack: async (uri, dataType) => {
+  playTrack: async (uri, dataType, trackIndex = 0) => {
+    console.log(uri, dataType, trackIndex);
     try {
       const { deviceId } = store.getState();
-
-      // ! old way
-      // // Ensure we have a device ID
-      // const deviceId = await get().ensureDeviceId();
 
       if (!deviceId) {
         throw new Error("No device ID available");
@@ -75,14 +73,8 @@ export const createPlaybackSlice: StateCreator<
         endpoint: "me/player/play",
         method: "PUT",
         deviceId: `?device_id=${deviceId}`,
-        requestBody: makeRequestBody(uri, dataType),
+        requestBody: makeRequestBody(uri, dataType, trackIndex),
       });
-
-      // Update playing state
-
-      // const { getPlayerState } = get();
-      // // call playback state
-      // getPlayerState();
 
       // * todo: add track to Local storage so it can be retrieved at first load
       // UI: update player preview on bottom

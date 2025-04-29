@@ -20,7 +20,9 @@ export interface SpotifyPlayerSlice {
   deviceId: string | null;
   loadPlayer: () => void;
   initPlayer: () => void;
-  setPlayerState: (newState: Spotify.PlaybackState) => void;
+  setPlayerState: (
+    newState: Spotify.PlaybackState | ((state: Spotify.PlaybackState) => any),
+  ) => void;
   transferPlayback: (deviceId: string) => Promise<void>;
 }
 
@@ -95,5 +97,11 @@ export const createSpotifyPlayerSlice: StateCreator<
     });
   },
 
-  setPlayerState: (newState) => set({ playerState: newState }),
+  setPlayerState: (
+    updater: Spotify.PlaybackState | ((state: Spotify.PlaybackState) => any),
+  ) =>
+    set((state) => ({
+      playerState:
+        typeof updater === "function" ? updater(state.playerState!) : updater,
+    })),
 });

@@ -18,10 +18,7 @@ function CurrentlyPlayng({ currentTrack }: CurrentlyPlayngProps) {
   };
 
   return (
-    <div
-      className="playlist-item max-w-[30%] flex-1 gap-x-4"
-      // onClick={() => {}}
-    >
+    <div className="playlist-item max-w-[30%] flex-1 gap-x-4">
       <Thumbnail minWidth="w-12" img={currentTrack.trackImg || ""} />
       <p className="playlist-title">{currentTrack.trackName}</p>
       {currentTrack.artistsArr && (

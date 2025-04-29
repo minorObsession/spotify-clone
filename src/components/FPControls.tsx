@@ -6,10 +6,12 @@ import { TrackType } from "../features/tracks/track";
 import { DetailedPlaylistType } from "../features/playlists/playlists";
 import { ArtistType, TopTrackType } from "../features/artists/artist";
 import useOutsideClick from "../hooks/useOutsideClick";
-import { useState } from "react";
+import { memo, useState } from "react";
 import Tooltip from "./Tooltip";
 import OptionsMenu from "./OptionsMenu";
+
 import { useStateStore } from "../state/store";
+import { useParams } from "react-router";
 
 interface FPControlsProps {
   item: TrackType | TopTrackType | DetailedPlaylistType | ArtistType;
@@ -18,17 +20,18 @@ interface FPControlsProps {
 }
 
 function FPControls({ previewType, item, options }: FPControlsProps) {
-  const [areOptionsVisible, setAreOptionsVisible] = useState(false);
-  const { playTrack, deviceId, playerState, togglePlayback } = useStateStore(
-    (state) => state,
-  );
+  const playerState = useStateStore((store) => store.playerState);
+  const playTrack = useStateStore((store) => store.playTrack);
+  const togglePlayback = useStateStore((store) => store.togglePlayback);
+  const deviceId = useStateStore((store) => store.deviceId);
   const { isHovered } = useHoverTrackItem();
-
+  const [areOptionsVisible, setAreOptionsVisible] = useState(false);
+  const params = useParams();
   const isCurrentlyPlaying = !playerState?.paused;
+
   const isCurrentlyPlayingThisPlaylist =
-    playerState?.context?.uri?.split(":")[2] === item.id || false;
-  // console.log(isCurrentlyPlayingThisPlaylist);
-  console.log(playerState);
+    playerState?.context?.uri?.split(":")[2] === item.id ||
+    params.id === item.id;
 
   const menuRef = useOutsideClick(
     setAreOptionsVisible,
@@ -41,7 +44,7 @@ function FPControls({ previewType, item, options }: FPControlsProps) {
   const handlePlayTrack = () => {
     if (deviceId === null) throw new Error("🛑 No deviceId found");
     const uri = `spotify:${previewType}:${item.id}`;
-    // ! improve this by using item.type (gotta refactor the types first)
+
     return isCurrentlyPlayingThisPlaylist
       ? togglePlayback()
       : playTrack(uri, previewType);
@@ -95,4 +98,4 @@ function FPControls({ previewType, item, options }: FPControlsProps) {
   );
 }
 
-export default FPControls;
+export default memo(FPControls);

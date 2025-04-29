@@ -14,20 +14,15 @@ import { playlistOptions } from "../../config/menuOptions";
 
 function FullPreviewPlaylist() {
   const playlist = useLoaderData() as DetailedPlaylistType;
-
-  const [tracks, setTracks] = useState(playlist.tracks);
-
-  const isFetching = useRef(false);
   const { getUserSavedTracks } = useStateStore();
-  // const { usersSavedTracks } = useStateStore();
-
+  const [tracks, setTracks] = useState(playlist.tracks);
+  const isFetching = useRef(false);
   const hasMoreToLoad = tracks?.length < (playlist.numTracks || 0);
 
   const handleLoadMore = async () => {
     if (!hasMoreToLoad) return;
     try {
       isFetching.current = true;
-      console.log("will start hanldeloadmore...");
       let loadedTracks;
       if (playlist.id === "liked_songs")
         loadedTracks = await getUserSavedTracks(tracks?.length);
@@ -62,13 +57,12 @@ function FullPreviewPlaylist() {
   return (
     <div className={`fullPreviewContainer gap-3`}>
       <FPPlaylistOverview playlist={playlist} />
+      <PlaylistPreviewHeader />
       <FPControls
         item={playlist}
         previewType="playlist"
         options={playlistOptions}
       />
-      <PlaylistPreviewHeader />
-
       <FPPlaylistTracks tracks={tracks} sentinelRef={sentinelRef} />
     </div>
   );
@@ -78,9 +72,7 @@ const { getPlaylist } = useStateStore.getState();
 export const playlistLoader = createLoader<DetailedPlaylistType>(
   "playlist",
   async (id: string) => {
-    console.log("playlist loader running....");
     const playlist = await getPlaylist(id);
-    console.log(playlist);
 
     playlist.tracks = playlist.tracks.slice(0, 50);
     return playlist;

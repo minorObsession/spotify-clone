@@ -35,13 +35,14 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
     navigate(`/home/artist/${id}`);
   };
 
-  const id = track.id;
-  const album = track.albumName;
-  const artistsToDisplay = track.artists.map((artist) => " " + artist.name);
+  const id = track?.id;
+  const album = track?.albumName;
+  const artistsToDisplay = track?.artists.map((artist) => " " + artist.name);
   const { playerState } = useStateStore((state) => state);
 
   const isTrackCurrentlyQueued =
-    playerState?.track_window.current_track.id === track.id;
+    playerState?.track_window?.current_track?.id === track?.id ||
+    playerState?.track_window?.current_track?.name === track.name;
 
   return (
     <article
@@ -54,7 +55,7 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
         {/* // ! index/bars + thumbnail   */}
         <div className="row-span-2 flex items-center lg:gap-2">
           <TrackStatusOrIndex
-            handleTrackSelect={handleTrackSelect}
+            handleTrackSelect={(e) => handleTrackSelect(e, index)}
             isTrackHovered={isTrackHovered}
             track={track}
             index={index}

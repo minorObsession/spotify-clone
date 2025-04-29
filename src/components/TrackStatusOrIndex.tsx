@@ -21,7 +21,8 @@ function TrackStatusOrIndex({
   const { playerState, togglePlayback } = useStateStore((state) => state);
 
   const isTrackCurrentlyQueued =
-    playerState?.track_window.current_track.id === track.id;
+    playerState?.track_window?.current_track?.id === track?.id ||
+    playerState?.track_window?.current_track?.name === track.name;
 
   const isTrackCurrentlyPlaying =
     isTrackCurrentlyQueued && !playerState?.paused;

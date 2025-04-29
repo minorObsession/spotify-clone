@@ -25,6 +25,7 @@ function FPArtistTrackItem({ track, index }: TrackProps) {
     thumbnailUrl,
     handleTrackSelect,
   } = useTrackItem(track);
+
   const id = track.id;
 
   return (
@@ -51,6 +52,7 @@ function FPArtistTrackItem({ track, index }: TrackProps) {
               index + 1
             )}
           </span>
+
           <Thumbnail
             additionalClasses="w-7 md:w-7.5 lg:w-8.5"
             img={thumbnailUrl}

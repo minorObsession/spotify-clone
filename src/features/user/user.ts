@@ -26,7 +26,8 @@ export const createUserSlice: StateCreator<
 > = (set, get) => ({
   user: null,
   usersSavedTracks:
-    JSON.parse(localStorage.getItem("users_saved_tracks")!) || null,
+    JSON.parse(localStorage.getItem("users_saved_tracks_with_offset_of_0")!) ||
+    null,
   getUser: async () => {
     return await fetchFromSpotify<any, UserType>({
       endpoint: "me",

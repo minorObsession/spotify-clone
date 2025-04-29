@@ -1,6 +1,7 @@
 export const makeRequestBody = (
   uri: string,
   dataType: "artist" | "album" | "playlist" | "track",
+  trackIndex: number,
 ) => {
   if (dataType === "track") {
     return JSON.stringify({
@@ -10,7 +11,7 @@ export const makeRequestBody = (
   }
   return JSON.stringify({
     context_uri: uri,
-    offset: { position: 0 },
+    offset: { position: trackIndex },
     position_ms: 0,
   });
 };
