@@ -70,7 +70,7 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
     }
 
     // Fetch data from Spotify API
-    console.log(`🛜 Fetching from API: ${endpoint}`);
+    console.log(`🛜 Calling spotify API: ${endpoint}`);
 
     const res = await fetch(
       `https://api.spotify.com/v1/${endpoint}${offset}${deviceId}`,
@@ -83,7 +83,6 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
         body: requestBody,
       },
     );
-    // console.log(res);
 
     if (!res.ok) {
       throw new Error(`API request failed: ${res.status} ${res.statusText}`);

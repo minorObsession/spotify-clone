@@ -41,6 +41,7 @@ export interface PlaylistSlice {
     offset?: number,
     type?: "playlists" | "shows" | "albums",
   ) => Promise<DetailedPlaylistType>;
+  uploadNewPlaylistImage: (id: string, base64ImageUrl: string) => Promise<void>;
 }
 
 export const createPlaylistSlice: StateCreator<
@@ -205,5 +206,17 @@ export const createPlaylistSlice: StateCreator<
 
     if (!result) throw new Error("Couldn't fetch playlist");
     return result;
+  },
+
+  uploadNewPlaylistImage: async (id, base64ImageUrl) => {
+    try {
+      await fetchFromSpotify({
+        endpoint: `playlists/${id}/images`,
+        method: "PUT",
+        requestBody: base64ImageUrl,
+      });
+    } catch (err) {
+      console.error("🛑 ❌ Couldn't upload new image:", err);
+    }
   },
 });

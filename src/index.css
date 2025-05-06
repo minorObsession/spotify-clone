@@ -122,5 +122,5 @@ form input:active,
 form textarea:focus,
 form textarea:active {
   outline: none;
-  background-color: red;
+  /* background-color: red; */
 }
