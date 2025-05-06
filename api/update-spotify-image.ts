@@ -3,24 +3,37 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: "10mb", // Adjust based on your expected image size
+      sizeLimit: "10mb",
     },
   },
 };
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  console.log("Request received:", req.method);
+// CORS middleware function
+const allowCors =
+  (fn: any) => async (req: VercelRequest, res: VercelResponse) => {
+    // Set CORS headers
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS",
+    );
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Requested-With",
+    );
 
-  // Set CORS headers first, before any other logic
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    // Handle preflight requests
+    if (req.method === "OPTIONS") {
+      res.status(200).end();
+      return;
+    }
 
-  // Handle preflight OPTIONS request immediately
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
+    // Call the actual handler function
+    return await fn(req, res);
+  };
 
+// Main handler function
+async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (req.method !== "PUT") {
       return res.status(405).json({ message: "Method Not Allowed" });
@@ -58,3 +71,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 }
+
+// Export the wrapped handler
+export default allowCors(handler);
