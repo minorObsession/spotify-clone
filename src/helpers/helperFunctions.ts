@@ -31,15 +31,18 @@ export const handleUploadToSpotify = async (
   const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
   if (!accessToken) throw new Error("Access token expired or doesn't exist");
 
-  const response = await fetch("/api/update-spotify-image", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      playlistId,
-      base64Image,
-      accessToken: `${accessToken?.token}`, // temporary; ideally secure this
-    }),
-  });
+  const response = await fetch(
+    "https://your-vercel-project.vercel.app/api/update-spotify-image",
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        playlistId,
+        base64Image,
+        accessToken: `${accessToken?.token}`, // temporary; ideally secure this
+      }),
+    },
+  );
 
   const data = await response.json();
   console.log(data);

@@ -1,4 +1,3 @@
-// api/update-spotify-image.ts
 import { VercelRequest, VercelResponse } from "@vercel/node";
 
 export const config = {
@@ -10,6 +9,16 @@ export const config = {
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // CORS headers
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  // Handle CORS preflight
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   if (req.method !== "PUT") {
     return res.status(405).json({ message: "Method Not Allowed" });
   }
