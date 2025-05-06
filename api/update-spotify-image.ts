@@ -34,6 +34,7 @@ const allowCors =
 
 // Main handler function
 async function handler(req: VercelRequest, res: VercelResponse) {
+  console.log("calling handler");
   try {
     if (req.method !== "PUT") {
       return res.status(405).json({ message: "Method Not Allowed" });
