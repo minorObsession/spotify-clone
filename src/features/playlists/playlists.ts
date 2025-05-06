@@ -15,6 +15,7 @@ export interface UserPlaylistType {
 export interface DetailedPlaylistType {
   id: string;
   name: string;
+  description?: string;
   type: string;
   ownerName: string;
   ownerId: string;
@@ -155,8 +156,11 @@ export const createPlaylistSlice: StateCreator<
 
   getPlaylist: async (id, offset = 0) => {
     if (id === "liked_songs") {
-      console.log("getP called... will set tracks to ", get().usersSavedTracks);
-      return get().usersSavedTracks as DetailedPlaylistType;
+      const usersSavedTracks = get().usersSavedTracks;
+
+      if (!usersSavedTracks)
+        return (await get().getUserSavedTracks(0)) as DetailedPlaylistType;
+      else return usersSavedTracks as DetailedPlaylistType;
     }
 
     const result = await fetchFromSpotify<any, DetailedPlaylistType>({

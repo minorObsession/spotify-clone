@@ -3,6 +3,9 @@ import { useStateStore } from "../../state/store";
 import UserAvatar from "../../components/UserAvatar";
 import { DetailedPlaylistType } from "./playlists";
 import FullPreviewThumbnail from "../../components/FPOverviewThumbnail";
+import { useState } from "react";
+import EditPlaylistModal from "../../components/EditPlaylistModal";
+import { createPortal } from "react-dom";
 
 interface FPPlaylistOverviewProps {
   playlist: DetailedPlaylistType;
@@ -11,10 +14,24 @@ interface FPPlaylistOverviewProps {
 function FPPlaylistOverview({ playlist }: FPPlaylistOverviewProps) {
   const currentUserID = useStateStore((store) => store.user?.userID);
   const currUserOwnsPlaylist = Boolean(playlist.ownerId === currentUserID);
+  const [isEditingPlaylist, setIsEditingPlaylist] = useState(true);
+
+  const handleEditPlaylist = () => {
+    setIsEditingPlaylist((prev) => !prev);
+  };
 
   return (
     // {/* // ! image and title */}
     <article className="flex gap-3 border-b-2 py-4">
+      {isEditingPlaylist &&
+        createPortal(
+          <EditPlaylistModal
+            playlist={playlist}
+            setIsEditingPlaylist={setIsEditingPlaylist}
+            isEditingPlaylist={isEditingPlaylist}
+          />,
+          document.getElementById("root")!,
+        )}
       {/* // ! Image */}
       <FullPreviewThumbnail imageUrl={playlist.imageUrl} />
       {/* // ! Playlist Info Div */}

@@ -96,6 +96,7 @@ html {
   max-width: 100svw;
   /* min-height: 100lvh; */
   overflow: hidden;
+  position: relative;
 }
 
 @theme {
@@ -110,4 +111,16 @@ html {
       transform: scaleY(1);
     }
   }
+}
+
+textarea {
+  resize: none;
+}
+
+form input:focus,
+form input:active,
+form textarea:focus,
+form textarea:active {
+  outline: none;
+  background-color: red;
 }
