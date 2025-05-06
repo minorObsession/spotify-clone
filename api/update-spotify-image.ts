@@ -2,39 +2,29 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 export const config = {
   api: {
-    bodyParser: false, // we'll handle it manually
+    bodyParser: {
+      sizeLimit: "10mb", // Adjust based on your expected image size
+    },
   },
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Set CORS headers first, before any other logic
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  // Handle preflight OPTIONS request immediately
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   try {
-    // CORS headers
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader(
-      "Access-Control-Allow-Methods",
-      "GET,POST,PUT,DELETE,OPTIONS",
-    );
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization",
-    );
-
-    // Handle preflight
-    if (req.method === "OPTIONS") {
-      return res.status(200).end();
-    }
-
     if (req.method !== "PUT") {
       return res.status(405).json({ message: "Method Not Allowed" });
     }
 
-    // Manually parse raw body
-    const buffers: Buffer[] = [];
-    for await (const chunk of req) {
-      buffers.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
-    }
-    const rawBody = Buffer.concat(buffers).toString();
-    const { playlistId, base64Image, accessToken } = JSON.parse(rawBody);
+    const { playlistId, base64Image, accessToken } = req.body;
 
     if (!playlistId || !base64Image || !accessToken) {
       return res.status(400).json({ message: "Missing required fields" });
@@ -48,7 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "image/jpeg",
         },
-        body: Buffer.from(base64Image, "base64"),
+        body: Buffer.from(base64Image.split(",")[1] || base64Image, "base64"),
       },
     );
 
