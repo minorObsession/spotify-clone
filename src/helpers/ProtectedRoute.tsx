@@ -1,7 +1,8 @@
 // src/auth/ProtectedRoute.tsx
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
-// import { useAuth } from "../auth/AuthContext";
+import { useStateStore } from "../state/store";
+
 // ! MISSING THE ISauthenticated variable
 // ! MISSING THE ISauthenticated variable
 // ! MISSING THE ISauthenticated variable
@@ -12,7 +13,7 @@ interface ProtectedRouteProps {
 
 // ! ASSUMING there is a useAuth() context hook!
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useStateStore((store) => store);
   const location = useLocation();
 
   if (!isAuthenticated) {

@@ -7,7 +7,7 @@ function RecentlyPlayedDesktop() {
   // ! IDEA: md: maybe remove progress bar to be able to spread the title in 2 lines
   return (
     <div className="flex flex-wrap bg-amber-400 p-2 sm:grid-cols-[repeat(2,_minmax(15rem,_1fr))] sm:grid-rows-4 md:grid md:grid-cols-[repeat(4,_minmax(8rem,_1fr))] md:grid-rows-2">
-      {[1, 2, 3, 4, 5, 6, 7, 8].map((t, i) => (
+      {[1, 2, 3, 4, 5, 6, 7, 8].map((_, i) => (
         <RecentTab key={i} />
       ))}
     </div>

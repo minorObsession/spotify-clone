@@ -13,7 +13,7 @@ import MobileHeader from "./layouts/mobile/MobileHeader";
 import RecentlyPlayedMobile from "./layouts/mobile/RecentlyPlayedMobile";
 import RecentlyPlayedDesktop from "./layouts/desktop/RecentlyPlayedDesktop";
 import { useStateStore } from "./state/store";
-import SuggestionsRow from "./components/SuggestionsRow";
+// import SuggestionsRow from "./components/SuggestionsRow";
 
 function Home() {
   const isAuthenticated = useStateStore((store) => store.isAuthenticated);
@@ -46,11 +46,11 @@ function Home() {
         {isHomepage ? (
           <>
             <RecentlyPlayedDesktop />
-            <SuggestionsRow />
+            {/* <SuggestionsRow /> */}
             {/* // ! suggestions - albums by artist you follow */}
             {/* // ! suggestions - audiobooks */}
 
-            <SuggestionsRow />
+            {/* <SuggestionsRow /> */}
           </>
         ) : (
           <Outlet />
