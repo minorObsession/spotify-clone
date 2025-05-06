@@ -32,7 +32,7 @@ export const handleUploadToSpotify = async (
   if (!accessToken) throw new Error("Access token expired or doesn't exist");
 
   const response = await fetch(
-    "https://your-vercel-project.vercel.app/api/update-spotify-image",
+    "https://spotify-clone-2005.vercel.app/api/update-spotify-image",
     {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
