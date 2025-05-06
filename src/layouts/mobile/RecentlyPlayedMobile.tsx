@@ -6,7 +6,7 @@ function RecentlyPlayedMobile() {
 
   return (
     <div className="md: flex flex-wrap bg-amber-300 p-2">
-      {[1, 2, 3, 4, 5, 6, 7, 8].map((t, i) => (
+      {[1, 2, 3, 4, 5, 6, 7, 8].map((_, i) => (
         <RecentTab key={i} />
       ))}
     </div>
