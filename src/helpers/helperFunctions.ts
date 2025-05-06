@@ -39,7 +39,7 @@ export const handleUploadToSpotify = async (
       body: JSON.stringify({
         playlistId,
         base64Image,
-        accessToken: `${accessToken?.token}`, // temporary; ideally secure this
+        accessToken: `${accessToken?.token}`,
       }),
     },
   );
