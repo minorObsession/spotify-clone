@@ -1,5 +1,11 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
+export const config = {
+  api: {
+    bodyParser: false, // we'll handle it manually
+  },
+};
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // CORS headers
@@ -22,7 +28,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(405).json({ message: "Method Not Allowed" });
     }
 
-    const { playlistId, base64Image, accessToken } = req.body;
+    // Manually parse raw body
+    const buffers: Buffer[] = [];
+    for await (const chunk of req) {
+      buffers.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+    }
+    const rawBody = Buffer.concat(buffers).toString();
+    const { playlistId, base64Image, accessToken } = JSON.parse(rawBody);
 
     if (!playlistId || !base64Image || !accessToken) {
       return res.status(400).json({ message: "Missing required fields" });
@@ -48,8 +60,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ message: "Image uploaded successfully" });
   } catch (err: any) {
     console.error("API handler error:", err);
-    return res
-      .status(500)
-      .json({ message: "Internal Server Error", error: err.message });
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: err.message || "Unknown error",
+    });
   }
 }
