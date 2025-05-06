@@ -25,7 +25,7 @@ export interface AuthSlice {
   isAuthenticated: boolean;
   accessToken: AccessTokenType | null;
   refreshToken: string | null;
-  refreshInterval: number | null;
+  refreshInterval: NodeJS.Timeout | null;
   initAuth: () => Promise<void>;
   logout: () => void;
   waitForAuthentication: () => Promise<boolean>;

@@ -3,7 +3,6 @@ import imageCompression from "browser-image-compression";
 import { useRef, useState } from "react";
 import { DetailedPlaylistType } from "../features/playlists/playlists";
 import FloatingLabel from "./FloatingLabel";
-import { useStateStore } from "../state/store";
 import { handleUploadToSpotify } from "../helpers/helperFunctions";
 
 type PartialPlaylist = Pick<
@@ -29,10 +28,6 @@ function EditPlaylistModal({
     description: playlist.description,
     imageUrl: playlist.imageUrl,
   });
-
-  const uploadNewPlaylistImage = useStateStore(
-    (store) => store.uploadNewPlaylistImage,
-  );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 

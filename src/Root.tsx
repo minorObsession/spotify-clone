@@ -5,9 +5,9 @@ import { store, useStateStore } from "./state/store";
 function Root() {
   const { isAuthenticated, loadPlayer } = useStateStore((store) => store);
 
-  // useEffect(() => {
-  //   if (isAuthenticated) loadPlayer();
-  // }, [isAuthenticated, loadPlayer]);
+  useEffect(() => {
+    if (isAuthenticated) loadPlayer();
+  }, [isAuthenticated, loadPlayer]);
 
   return <Outlet />;
 }
