@@ -23,3 +23,6 @@ export function useReactivePlaylist(initialPlaylist: DetailedPlaylistType) {
     refreshPlaylist,
   };
 }
+
+// ! ! ! TO FIGURE OUT THE FLOW OF REQUSTS
+// GOTTA SKIP USING THIS HOOK AND MAKE IT WORK WITH JUST ZUSTAND - SINGLE SORRCE OF THRUTH

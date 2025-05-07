@@ -72,8 +72,9 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
     }
 
     // Fetch data from Spotify API
-    console.log(`🛜 Calling spotify API: ${endpoint}`);
+    console.log(`🛜 Calling spotify API: ${endpoint} ${method} ${cacheName}`);
 
+    console.log("BODY:", requestBody);
     const res = await fetch(
       `https://api.spotify.com/v1/${endpoint}${offset}${deviceId}`,
       {
