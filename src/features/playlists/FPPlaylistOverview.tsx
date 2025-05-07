@@ -9,12 +9,12 @@ import { createPortal } from "react-dom";
 
 interface FPPlaylistOverviewProps {
   playlist: DetailedPlaylistType;
-  refreshPlaylist: (skipCache?: boolean) => Promise<void>;
+  // refetchPlaylist: (skipCache?: boolean) => Promise<void>;
 }
 
 function FPPlaylistOverview({
   playlist,
-  refreshPlaylist,
+  // refetchPlaylist,
 }: FPPlaylistOverviewProps) {
   const currentUserID = useStateStore((store) => store.user?.userID);
   const currUserOwnsPlaylist = Boolean(playlist.ownerId === currentUserID);
@@ -28,7 +28,7 @@ function FPPlaylistOverview({
         createPortal(
           <EditPlaylistModal
             playlist={playlist}
-            refreshPlaylist={refreshPlaylist}
+            // refetchPlaylist={refetchPlaylist}
             setIsEditingPlaylist={setIsEditingPlaylist}
             isEditingPlaylist={isEditingPlaylist}
           />,

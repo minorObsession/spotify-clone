@@ -12,7 +12,6 @@ export interface UserPlaylistType {
   image: string; // Extract only 1 image
   ownerName: string;
 }
-
 export interface DetailedPlaylistType {
   id: string;
   name: string;
@@ -31,10 +30,22 @@ interface PlaylistNamesWithidsType {
   ids: string[];
 }
 
+const initialPlaylist: DetailedPlaylistType = {
+  id: "",
+  name: "",
+  type: "",
+  ownerName: "",
+  ownerId: "",
+  tracks: [],
+  numTracks: 0,
+  totalDurationMs: 0,
+  imageUrl: "",
+};
+
 export interface PlaylistSlice {
   playlists: UserPlaylistType[];
   playlistNamesWithids: PlaylistNamesWithidsType[];
-  playlist: DetailedPlaylistType | object;
+  playlist: DetailedPlaylistType;
   playlistsFetched: boolean;
   setPlaylist: (playlist: DetailedPlaylistType) => void;
   getUserPlaylists: () => Promise<UserPlaylistType[] | null>;
@@ -62,10 +73,12 @@ export const createPlaylistSlice: StateCreator<
 > = (set, get) => ({
   playlists: [],
   playlistNamesWithids: [],
-  playlist: {},
+  playlist: initialPlaylist,
   playlistsFetched: false,
   setPlaylist: (playlist) => {
     set({ playlist });
+    // update cache
+    localStorage.setItem(`playlist${playlist.id}`, JSON.stringify(playlist));
   },
   getUserPlaylists: async () => {
     try {
@@ -237,14 +250,14 @@ export const createPlaylistSlice: StateCreator<
   },
 
   // upgrade this method to suppurt tracks updating
-  updatePlaylistDetails: async (id, updatedPlaylist) => {
+  updatePlaylistDetails: async (id, updatedFields) => {
     console.log("clling updatePlaylistDetails");
     await fetchFromSpotify({
       endpoint: `playlists/${id}`,
       method: "PUT",
       requestBody: JSON.stringify({
-        name: updatedPlaylist.name,
-        description: updatedPlaylist.description || "",
+        name: updatedFields.name,
+        description: updatedFields.description || "",
       }),
     });
   },

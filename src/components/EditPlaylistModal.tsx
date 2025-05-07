@@ -14,14 +14,13 @@ interface EditPlaylistModalProps {
   playlist: PartialPlaylist;
   isEditingPlaylist: boolean;
   setIsEditingPlaylist: (isEditingPlaylist: boolean) => void;
-  refreshPlaylist: (skipCache?: boolean) => Promise<void>;
+  // refetchPlaylist: (skipCache?: boolean) => Promise<void>;
 }
 
 function EditPlaylistModal({
   playlist,
   setIsEditingPlaylist,
   isEditingPlaylist,
-  refreshPlaylist,
 }: EditPlaylistModalProps) {
   const [isNameFocused, setIsNameFocused] = useState(false);
   const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
@@ -60,29 +59,41 @@ function EditPlaylistModal({
           );
 
         // refetch the playlist so the image gets updated locally!
+        // has to make an extra api call to get image from Spotify backend
         await useStateStore.getState().getPlaylist(playlist.id, 0, true);
-        console.log("should be updated");
-        // * refresh and DONT' SKIP cache
-
-        refreshPlaylist();
       }
 
       // if name or description changed, but not image
       if (nameChanged || descriptionChanged) {
-        const updatedPlaylist = {
+        const updatedFields = {
           ...playlist,
           name: formData.name,
           description: formData.description,
         };
 
-        // hit api
+        // hit api with a put request
         await useStateStore
           .getState()
-          .updatePlaylistDetails(playlist.id, updatedPlaylist);
+          .updatePlaylistDetails(playlist.id, updatedFields);
 
         console.log("will call refresh and skip cache");
-        // * refresh and SKIP cache
-        refreshPlaylist(true);
+        // * optimistic state update
+
+        // Optimistically update the state
+        useStateStore.setState((state) => ({
+          playlist: {
+            ...state.playlist,
+            name: updatedFields.name,
+            description: updatedFields.description,
+          },
+        }));
+        // useStateStore.getState().playlist
+        localStorage.setItem(
+          `playlist${playlist.id}`,
+          JSON.stringify(useStateStore.getState().playlist),
+        );
+
+        // refetchPlaylist(true);
       }
 
       console.log("submit handler done... ");
