@@ -131,7 +131,6 @@ export const createPlaylistSlice: StateCreator<
       if (!res.ok) throw new Error("No playlists or bad request");
 
       const { items } = await res.json();
-      console.log(items);
 
       const playlistNamesWithids: PlaylistNamesWithidsType[] =
         await Promise.all(
@@ -147,7 +146,6 @@ export const createPlaylistSlice: StateCreator<
           }),
         );
 
-      console.log(playlistNamesWithids);
       set({ playlistNamesWithids });
 
       const formattedPlaylists: UserPlaylistType[] = items.map(

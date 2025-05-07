@@ -76,10 +76,9 @@ function EditPlaylistModal({
           .getState()
           .updatePlaylistDetails(playlist.id, updatedFields);
 
-        console.log("will call refresh and skip cache");
         // * optimistic state update
 
-        // Optimistically update the state
+        // Optimistically update playlist
         useStateStore.setState((state) => ({
           playlist: {
             ...state.playlist,
@@ -87,13 +86,31 @@ function EditPlaylistModal({
             description: updatedFields.description,
           },
         }));
-        // useStateStore.getState().playlist
+
+        // update cache for playlist
         localStorage.setItem(
           `playlist${playlist.id}`,
           JSON.stringify(useStateStore.getState().playlist),
         );
 
-        // refetchPlaylist(true);
+        // Optimistically update playlists
+        useStateStore.setState((state) => ({
+          playlists: state.playlists.map((p) =>
+            p.id === playlist.id
+              ? {
+                  ...p,
+                  name: updatedFields.name,
+                  desciption: updatedFields.description,
+                }
+              : { ...p },
+          ),
+        }));
+
+        // update cache for playlists
+        localStorage.setItem(
+          `${useStateStore.getState().user?.username}_playlists`,
+          JSON.stringify(useStateStore.getState().playlists),
+        );
       }
 
       console.log("submit handler done... ");
