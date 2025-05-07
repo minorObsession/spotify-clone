@@ -8,62 +8,69 @@ import PlaylistPreviewHeader from "./PlaylistPreviewHeader";
 import { createLoader } from "../../state/helpers";
 import FPPlaylistOverview from "./FPPlaylistOverview";
 import { useLoadMoreTracksOnScroll } from "../../hooks/useLoadMoreTracksOnScroll";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useRef } from "react";
 import FPControls from "../../components/FPControls";
 import { playlistOptions } from "../../config/menuOptions";
+import { useReactivePlaylist } from "../../hooks/useReactivePlaylist";
 
 function FullPreviewPlaylist() {
-  const playlist = useLoaderData() as DetailedPlaylistType;
+  const initialPlaylist = useLoaderData() as DetailedPlaylistType;
+  const { updatedPlaylist, setUpdatedPlaylist, refreshPlaylist } =
+    useReactivePlaylist(initialPlaylist);
   const { getUserSavedTracks } = useStateStore();
-  const [tracks, setTracks] = useState(playlist.tracks);
   const isFetching = useRef(false);
-  const hasMoreToLoad = tracks?.length < (playlist.numTracks || 0);
+  const hasMoreToLoad =
+    updatedPlaylist.tracks?.length < (updatedPlaylist.numTracks || 0);
 
+  // wrap into useCallback
   const handleLoadMore = async () => {
     if (!hasMoreToLoad) return;
+    isFetching.current = true;
     try {
-      isFetching.current = true;
-      let loadedTracks;
-      if (playlist.id === "liked_songs")
-        loadedTracks = await getUserSavedTracks(tracks?.length);
-      else loadedTracks = await getPlaylist(playlist.id, tracks?.length);
+      const loadedTracks =
+        updatedPlaylist.id === "liked_songs"
+          ? await getUserSavedTracks(updatedPlaylist.tracks.length)
+          : await getPlaylist(
+              updatedPlaylist.id,
+              updatedPlaylist.tracks.length,
+            );
 
       if (loadedTracks) {
-        setTracks((prevTracks) => {
-          const allTracks = [...prevTracks, ...loadedTracks.tracks];
+        setUpdatedPlaylist((prev) => {
+          const allTracks = [...prev.tracks, ...loadedTracks.tracks];
+          const uniqueTracks = Array.from(
+            new Map(allTracks.map((track) => [track.id, track])).values(),
+          );
 
-          const uniqueTracksMap = new Map();
-          for (const track of allTracks) {
-            if (!uniqueTracksMap.has(track.id)) {
-              uniqueTracksMap.set(track.id, track);
-            }
-          }
-          return Array.from(uniqueTracksMap.values());
+          return {
+            ...prev,
+            tracks: uniqueTracks,
+          };
         });
       }
-    } catch (err) {
-      console.error(err);
     } finally {
       isFetching.current = false;
     }
   };
 
-  useEffect(() => {
-    setTracks(playlist.tracks);
-  }, [playlist.tracks]);
-
   const sentinelRef = useLoadMoreTracksOnScroll(handleLoadMore);
 
   return (
     <div className={`fullPreviewContainer gap-3`}>
-      <FPPlaylistOverview playlist={playlist} />
+      <FPPlaylistOverview
+        playlist={updatedPlaylist}
+        refreshPlaylist={refreshPlaylist}
+      />
       <PlaylistPreviewHeader />
       <FPControls
-        item={playlist}
+        item={updatedPlaylist}
         previewType="playlist"
         options={playlistOptions}
       />
-      <FPPlaylistTracks tracks={tracks} sentinelRef={sentinelRef} />
+      <FPPlaylistTracks
+        tracks={updatedPlaylist.tracks}
+        sentinelRef={sentinelRef}
+      />
     </div>
   );
 }

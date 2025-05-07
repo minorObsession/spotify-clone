@@ -5,7 +5,7 @@ import { DetailedPlaylistType } from "../features/playlists/playlists";
 import FloatingLabel from "./FloatingLabel";
 import { useStateStore } from "../state/store";
 
-type PartialPlaylist = Pick<
+export type PartialPlaylist = Pick<
   DetailedPlaylistType,
   "id" | "name" | "imageUrl" | "description"
 >;
@@ -14,12 +14,14 @@ interface EditPlaylistModalProps {
   playlist: PartialPlaylist;
   isEditingPlaylist: boolean;
   setIsEditingPlaylist: (isEditingPlaylist: boolean) => void;
+  refreshPlaylist: () => Promise<void>;
 }
 
 function EditPlaylistModal({
   playlist,
   setIsEditingPlaylist,
   isEditingPlaylist,
+  refreshPlaylist,
 }: EditPlaylistModalProps) {
   const [isNameFocused, setIsNameFocused] = useState(false);
   const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
@@ -31,6 +33,8 @@ function EditPlaylistModal({
     description: playlist.description,
     imageUrl: playlist.imageUrl,
   });
+
+  // useReactivePlaylist(playlist);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -56,6 +60,8 @@ function EditPlaylistModal({
         // refetch the playlist so the image gets updated locally!
         await useStateStore.getState().getPlaylist(playlist.id, 0, true);
         console.log("should be updated");
+
+        refreshPlaylist();
       }
     } catch (err) {
       console.error(err);

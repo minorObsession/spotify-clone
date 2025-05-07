@@ -9,9 +9,13 @@ import { createPortal } from "react-dom";
 
 interface FPPlaylistOverviewProps {
   playlist: DetailedPlaylistType;
+  refreshPlaylist: () => Promise<void>;
 }
 
-function FPPlaylistOverview({ playlist }: FPPlaylistOverviewProps) {
+function FPPlaylistOverview({
+  playlist,
+  refreshPlaylist,
+}: FPPlaylistOverviewProps) {
   const currentUserID = useStateStore((store) => store.user?.userID);
   const currUserOwnsPlaylist = Boolean(playlist.ownerId === currentUserID);
   const [isEditingPlaylist, setIsEditingPlaylist] = useState(true);
@@ -24,6 +28,7 @@ function FPPlaylistOverview({ playlist }: FPPlaylistOverviewProps) {
         createPortal(
           <EditPlaylistModal
             playlist={playlist}
+            refreshPlaylist={refreshPlaylist}
             setIsEditingPlaylist={setIsEditingPlaylist}
             isEditingPlaylist={isEditingPlaylist}
           />,
