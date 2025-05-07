@@ -39,6 +39,7 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
   deviceId = "",
   method = "GET",
   requestBody = null, // optional request body for POST requests
+  bypassCache = false,
 }: {
   endpoint: string;
   offset?: string;
@@ -46,6 +47,7 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
   method?: string;
   deviceId?: string;
   requestBody?: string | null;
+  bypassCache?: boolean;
   additionalHeaders?: Record<string, string>;
   transformFn?: (data: ResponseType) => Promise<ReturnType> | ReturnType;
   onCacheFound?: (data: ReturnType) => void;
@@ -61,7 +63,7 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
 
     // Check local storage for cached data if cacheName is provided a is true
 
-    if (cacheName) {
+    if (cacheName && !bypassCache) {
       const cachedData = getFromLocalStorage<ReturnType>(cacheName);
       if (cachedData) {
         if (onCacheFound) onCacheFound(cachedData);

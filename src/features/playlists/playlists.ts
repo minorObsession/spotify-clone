@@ -39,9 +39,13 @@ export interface PlaylistSlice {
   getPlaylist: (
     id: string,
     offset?: number,
+    bypassCache?: boolean,
     type?: "playlists" | "shows" | "albums",
   ) => Promise<DetailedPlaylistType>;
-  uploadNewPlaylistImage: (id: string, base64ImageUrl: string) => Promise<void>;
+  uploadNewPlaylistImage: (
+    id: string,
+    base64ImageUrl: string,
+  ) => Promise<boolean>;
 }
 
 export const createPlaylistSlice: StateCreator<
@@ -155,7 +159,7 @@ export const createPlaylistSlice: StateCreator<
     }
   },
 
-  getPlaylist: async (id, offset = 0) => {
+  getPlaylist: async (id, offset = 0, bypassCache = false) => {
     if (id === "liked_songs") {
       const usersSavedTracks = get().usersSavedTracks;
 
@@ -168,6 +172,7 @@ export const createPlaylistSlice: StateCreator<
       endpoint: `playlists/${id}`,
       cacheName: `playlist${id}`,
       offset: `?offset=${offset}&limit=5`,
+      bypassCache,
       transformFn: (data) => ({
         name: data.name,
         id: data.id,
@@ -215,8 +220,11 @@ export const createPlaylistSlice: StateCreator<
         method: "PUT",
         requestBody: base64ImageUrl,
       });
+
+      return true;
     } catch (err) {
       console.error("🛑 ❌ Couldn't upload new image:", err);
+      return false;
     }
   },
 });

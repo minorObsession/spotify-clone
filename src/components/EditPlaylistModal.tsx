@@ -3,7 +3,7 @@ import imageCompression from "browser-image-compression";
 import { useRef, useState } from "react";
 import { DetailedPlaylistType } from "../features/playlists/playlists";
 import FloatingLabel from "./FloatingLabel";
-import { handleUploadToSpotify } from "../helpers/helperFunctions";
+import { useStateStore } from "../state/store";
 
 type PartialPlaylist = Pick<
   DetailedPlaylistType,
@@ -23,6 +23,9 @@ function EditPlaylistModal({
 }: EditPlaylistModalProps) {
   const [isNameFocused, setIsNameFocused] = useState(false);
   const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
+  const [newlySelectedImage, setNewlySelectedImage] = useState<string | null>(
+    null,
+  );
   const [formData, setFormData] = useState({
     name: playlist.name,
     description: playlist.description,
@@ -31,50 +34,79 @@ function EditPlaylistModal({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmitModifiedPlaylist = (
+  const handleSubmitModifiedPlaylist = async (
     e: React.FormEvent<HTMLFormElement>,
   ) => {
     e.preventDefault();
 
-    // hit the API to update the playlist
+    try {
+      if (newlySelectedImage) {
+        // Send to Spotify
+        const isUploadSuccessful = await useStateStore
+          .getState()
+          .uploadNewPlaylistImage(playlist.id, newlySelectedImage);
+
+        console.log("was upload to spotify succssful:", isUploadSuccessful);
+
+        if (!isUploadSuccessful)
+          alert(
+            "Failed to upload image, please try again.. any other changes will be saved",
+          );
+
+        // refetch the playlist so the image gets updated locally!
+        await useStateStore.getState().getPlaylist(playlist.id, 0, true);
+        console.log("should be updated");
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // todo: better alert if image is too large
+
+  const handleFileChangeAndUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const newImage = e.target.files?.[0];
 
     if (!newImage) return;
 
     try {
-      const reader = new FileReader();
-
       const imageResizeOptions = {
-        maxSizeMB: 0.1, // max size in MB
+        maxSizeMB: 0.0005, // max size in MB
         useWebWorker: true,
       };
-
       const compressedImage = await imageCompression(
         newImage,
         imageResizeOptions,
       );
 
-      reader.readAsDataURL(newImage);
+      const reader = new FileReader();
+      reader.readAsDataURL(compressedImage);
 
-      console.log(compressedImage.size / 1024 / 1024 + " MB");
-
-      // ! preview the uploaded iamge
       reader.onloadend = async () => {
         const base64DataUrl = reader.result as string;
+
+        // Preview
         setFormData((prev) => ({
           ...prev,
-          imageUrl: reader.result as string, // shows the preview
+          imageUrl: base64DataUrl,
         }));
 
-        // Remove the data URL prefix
+        // Strip the prefix for Spotify
         const base64ImgString = base64DataUrl.replace(
           /^data:image\/jpeg;base64,/,
           "",
         );
 
-        await handleUploadToSpotify(playlist.id, base64ImgString);
+        // check size of base64ImgString
+        const sizeInKB = ((base64ImgString.length * 3) / 4 - 2) / 1024;
+        console.log(sizeInKB, " KB");
+
+        // if more than 256 KB, DON'T send to Spotify
+        if (sizeInKB > 256) return alert("Image too large.. please try again");
+
+        setNewlySelectedImage(base64ImgString);
+        console.log("new image saved to state");
       };
     } catch (error) {
       console.error(error);
@@ -95,7 +127,7 @@ function EditPlaylistModal({
         <img
           src={formData.imageUrl || playlist.imageUrl}
           alt="Playlist image"
-          //  TODO: add overlay pen image
+          //  TODO add overlay pen image
           className={`max-h-[12rem] w-1/2 hover:cursor-pointer hover:brightness-75`}
           onClick={() => fileInputRef.current?.click()}
         />
@@ -104,7 +136,7 @@ function EditPlaylistModal({
           type="file"
           accept="image/jpg,image/jpeg"
           ref={fileInputRef}
-          onChange={handleFileChange}
+          onChange={handleFileChangeAndUpload}
           className="hidden"
         />
         <form
