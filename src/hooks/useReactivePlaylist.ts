@@ -11,9 +11,9 @@ export function useReactivePlaylist(initialPlaylist: DetailedPlaylistType) {
     setUpdatedPlaylist(initialPlaylist);
   }, [initialPlaylist]);
 
-  const refreshPlaylist = async () => {
+  const refreshPlaylist = async (skipCache = false) => {
     console.log("refresh called...");
-    const newData = await getPlaylist(updatedPlaylist.id, 0, true);
+    const newData = await getPlaylist(updatedPlaylist.id, 0, skipCache);
     if (newData) setUpdatedPlaylist(newData);
   };
 

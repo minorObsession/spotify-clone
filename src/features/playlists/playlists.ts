@@ -4,6 +4,7 @@ import { AccessTokenType } from "../auth/Auth";
 import { getFromLocalStorage } from "../auth/authHelpers";
 import { TrackType } from "../tracks/track";
 import { fetchFromSpotify } from "../../state/helpers";
+import { PartialPlaylist } from "../../components/EditPlaylistModal";
 
 export interface UserPlaylistType {
   name: string;
@@ -35,6 +36,7 @@ export interface PlaylistSlice {
   playlistNamesWithids: PlaylistNamesWithidsType[];
   playlist: DetailedPlaylistType | object;
   playlistsFetched: boolean;
+  setPlaylist: (playlist: DetailedPlaylistType) => void;
   getUserPlaylists: () => Promise<UserPlaylistType[] | null>;
   getPlaylist: (
     id: string,
@@ -46,6 +48,10 @@ export interface PlaylistSlice {
     id: string,
     base64ImageUrl: string,
   ) => Promise<boolean>;
+  updatePlaylistDetails: (
+    id: string,
+    updatedPlaylist: PartialPlaylist,
+  ) => Promise<void>;
 }
 
 export const createPlaylistSlice: StateCreator<
@@ -58,7 +64,9 @@ export const createPlaylistSlice: StateCreator<
   playlistNamesWithids: [],
   playlist: {},
   playlistsFetched: false,
-
+  setPlaylist: (playlist) => {
+    set({ playlist });
+  },
   getUserPlaylists: async () => {
     try {
       if (get().playlistsFetched) return get().playlists;
@@ -226,5 +234,18 @@ export const createPlaylistSlice: StateCreator<
       console.error("🛑 ❌ Couldn't upload new image:", err);
       return false;
     }
+  },
+
+  // upgrade this method to suppurt tracks updating
+  updatePlaylistDetails: async (id, updatedPlaylist) => {
+    console.log("clling updatePlaylistDetails");
+    await fetchFromSpotify({
+      endpoint: `playlists/${id}`,
+      method: "PUT",
+      requestBody: JSON.stringify({
+        name: updatedPlaylist.name,
+        description: updatedPlaylist.description || "",
+      }),
+    });
   },
 });

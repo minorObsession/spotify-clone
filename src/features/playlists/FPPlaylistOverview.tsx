@@ -9,7 +9,7 @@ import { createPortal } from "react-dom";
 
 interface FPPlaylistOverviewProps {
   playlist: DetailedPlaylistType;
-  refreshPlaylist: () => Promise<void>;
+  refreshPlaylist: (skipCache?: boolean) => Promise<void>;
 }
 
 function FPPlaylistOverview({

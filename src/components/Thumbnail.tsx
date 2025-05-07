@@ -11,7 +11,7 @@ function Thumbnail({
 }: ThumbnailProps) {
   return (
     <img
-      className={`row-span-2 aspect-square ${minWidth} ${additionalClasses || ""}`}
+      className={`row-span-2 aspect-square object-cover ${minWidth} ${additionalClasses || ""}`}
       src={img}
     />
   );

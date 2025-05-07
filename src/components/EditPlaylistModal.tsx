@@ -14,7 +14,7 @@ interface EditPlaylistModalProps {
   playlist: PartialPlaylist;
   isEditingPlaylist: boolean;
   setIsEditingPlaylist: (isEditingPlaylist: boolean) => void;
-  refreshPlaylist: () => Promise<void>;
+  refreshPlaylist: (skipCache?: boolean) => Promise<void>;
 }
 
 function EditPlaylistModal({
@@ -34,8 +34,6 @@ function EditPlaylistModal({
     imageUrl: playlist.imageUrl,
   });
 
-  // useReactivePlaylist(playlist);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmitModifiedPlaylist = async (
@@ -43,14 +41,18 @@ function EditPlaylistModal({
   ) => {
     e.preventDefault();
 
+    const imageChanged =
+      newlySelectedImage !== null && newlySelectedImage !== playlist.imageUrl;
+    const nameChanged = formData.name !== playlist.name;
+    const descriptionChanged = formData.description !== playlist.description;
+
     try {
-      if (newlySelectedImage) {
+      // if only image changed
+      if (imageChanged) {
         // Send to Spotify
         const isUploadSuccessful = await useStateStore
           .getState()
           .uploadNewPlaylistImage(playlist.id, newlySelectedImage);
-
-        console.log("was upload to spotify succssful:", isUploadSuccessful);
 
         if (!isUploadSuccessful)
           alert(
@@ -60,15 +62,35 @@ function EditPlaylistModal({
         // refetch the playlist so the image gets updated locally!
         await useStateStore.getState().getPlaylist(playlist.id, 0, true);
         console.log("should be updated");
+        // * refresh and DONT' SKIP cache
 
         refreshPlaylist();
       }
+
+      // if name or description changed, but not image
+      if (nameChanged || descriptionChanged) {
+        const updatedPlaylist = {
+          ...playlist,
+          name: formData.name,
+          description: formData.description,
+        };
+
+        // hit api
+        await useStateStore
+          .getState()
+          .updatePlaylistDetails(playlist.id, updatedPlaylist);
+
+        console.log("will call refresh and skip cache");
+        // * refresh and SKIP cache
+        refreshPlaylist(true);
+      }
+
+      console.log("submit handler done... ");
     } catch (err) {
       console.error(err);
     }
   };
   // todo: better alert if image is too large
-
   const handleFileChangeAndUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -154,7 +176,7 @@ function EditPlaylistModal({
               onFocus={() => setIsNameFocused(true)}
               onBlur={() => setIsNameFocused(false)}
               type="text"
-              value={playlist.name}
+              value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
@@ -166,7 +188,7 @@ function EditPlaylistModal({
             <textarea
               onFocus={() => setIsDescriptionFocused(true)}
               onBlur={() => setIsDescriptionFocused(false)}
-              value={playlist.description}
+              value={formData.description}
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
               }
