@@ -70,12 +70,17 @@ function FullPreviewPlaylist() {
     </div>
   );
 }
+let playlistLoaderNumRUNS = 0;
 
-const { getPlaylist } = useStateStore.getState();
+const getPlaylist = useStateStore.getState().getPlaylist;
 export const playlistLoader = createLoader<DetailedPlaylistType>(
   "playlist",
   async (id: string) => {
+    playlistLoaderNumRUNS++;
+    console.log("playlistLoaderNumRUNS:", playlistLoaderNumRUNS);
+
     const playlist = await getPlaylist(id);
+    // console.log("playlist", playlist);
 
     playlist.tracks = playlist.tracks.slice(0, 50);
     useStateStore.getState().setPlaylist(playlist); // Hydrate Zustand

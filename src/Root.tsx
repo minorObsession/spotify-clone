@@ -28,8 +28,3 @@ export const initialLoader = async () => {
 };
 
 export default memo(Root);
-
-// ! WON'T REDIRECT HOME
-// ! WON'T REDIRECT HOME
-// ! WON'T REDIRECT HOME
-// ! WON'T REDIRECT HOME

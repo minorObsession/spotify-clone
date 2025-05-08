@@ -73,10 +73,13 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
 
     if (cacheName && cacheName.includes("undefineds_saved_tracks")) {
       console.log("escaping redunnt calls ..... ");
+
       return null;
     }
+
     // Fetch data from Spotify API
     console.log(`🛜 Calling spotify API: ${endpoint} ${method} ${cacheName}`);
+    console.trace(); // <- this shows the call stack
 
     const res = await fetch(
       `https://api.spotify.com/v1/${endpoint}${offset}${deviceId}`,

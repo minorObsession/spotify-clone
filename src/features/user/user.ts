@@ -19,8 +19,6 @@ export interface UserSlice {
   logoutUser: () => void;
 }
 
-let hasFetchedUser = false;
-
 export const createUserSlice: StateCreator<
   StateStore,
   [["zustand/devtools", never]],
@@ -29,9 +27,13 @@ export const createUserSlice: StateCreator<
 > = (set, get) => ({
   user: null,
   usersSavedTracks: null,
+
   getUser: async () => {
-    if (hasFetchedUser) return get().user;
-    hasFetchedUser = true;
+    console.log("calling getUser");
+    const { user } = get(); // from Zustand
+    if (user) return user;
+
+    console.log("calling getUser PAST guard");
 
     const userData = await fetchFromSpotify<any, UserType>({
       endpoint: "me",
@@ -49,7 +51,7 @@ export const createUserSlice: StateCreator<
         set({ user: data });
       },
     });
-    console.log(userData);
+
     return userData;
   },
   getUserSavedTracks: async (offset = 0) => {

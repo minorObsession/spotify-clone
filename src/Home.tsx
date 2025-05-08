@@ -74,15 +74,31 @@ function Home() {
 
 export default memo(Home);
 
-export const userStateLoader = async () => {
-  const { getUser, getUserPlaylists } = useStateStore.getState();
-  const user = await getUser(); // this sets the user in state
+// ! syntetic solution - forcing only 1 execution of the loader... NOT GOOD LONG TERM!! MAYBE WORKS HERE BUT NOT FOR PLAYLISTS...
+let homeLoaderNumOfRuns = 0;
+// const MAX_ALLOWED_CALLS = 1;
 
-  console.log(user);
+export const userStateLoader = async (caller = "unknown") => {
+  // if (homeLoaderNumOfRuns >= MAX_ALLOWED_CALLS) {
+  //   console.warn("⚠️ Too many userStateLoader calls! Skipping extra...");
+  //   return null;
+  // }
+  homeLoaderNumOfRuns++;
+  console.log(
+    `🔍 userStateLoader called from [${caller}] — run #${homeLoaderNumOfRuns}`,
+  );
+
+  const getUserPlaylists = useStateStore.getState().getUserPlaylists;
+  const getUser = useStateStore.getState().getUser;
+  const user = await getUser();
+
+  console.log("👤 User from getUser():", user);
   if (!user) {
-    console.error("❌ User is still null..even after getUser call");
+    console.error("❌ User is still null.. even after getUser() call");
     return null;
-  } else await getUserPlaylists(); // now username is available
+  } else {
+    await getUserPlaylists();
+  }
 
   return null;
 };

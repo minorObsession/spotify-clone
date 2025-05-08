@@ -88,7 +88,7 @@ export const createPlaylistSlice: StateCreator<
       if (get().user === null) {
         console.log("NO USER HERE WILL ESCAPE");
         return null;
-      }
+      } else console.log("user is defined....");
 
       const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
       if (!accessToken)

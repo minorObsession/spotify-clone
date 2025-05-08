@@ -20,9 +20,16 @@ import PageNotFound from "./components/PageNotFound";
 
 // * DIFFERENT USER NOTES:
 
-// ! ROOT WONT' redirect("/home");!
-// ! ROOT WONT' redirect("/home");!
 // ! consolidate all icons in 1 place
+
+// !debugging notes:
+// !debugging notes:
+// !debugging notes:
+// !debugging notes:
+
+// every loader running 4 times
+//!  getUser and getUserPlaylists running normally - rendering 2 times
+// it's not the useEffect in Home.tsx
 
 function App() {
   const router = createBrowserRouter([
@@ -39,22 +46,22 @@ function App() {
         {
           path: "home",
           element: <Home />,
-          loader: userStateLoader, // This loader is only on the home route
+          loader: userStateLoader,
           children: [
             {
               path: "playlist/:id",
               element: <FullPreviewPlaylist />,
-              loader: playlistLoader, // This loader is only on the playlist route
+              loader: playlistLoader,
             },
             {
               path: "track/:id",
               element: <FullPreviewTrack />,
-              loader: trackLoader, // This loader is only on the track route
+              loader: trackLoader,
             },
             {
               path: "artist/:id",
               element: <FullPreviewArtist />,
-              loader: artistLoader, // This loader is only on the artist route
+              loader: artistLoader,
             },
           ],
         },
