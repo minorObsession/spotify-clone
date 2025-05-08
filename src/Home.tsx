@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 
 import Sidebar from "./layouts/desktop/Sidebar";
 import { useScreenWidthRem } from "./hooks/useScreenWidthRem";
@@ -72,17 +72,17 @@ function Home() {
   );
 }
 
-export default Home;
+export default memo(Home);
 
 export const userStateLoader = async () => {
   const { getUser, getUserPlaylists } = useStateStore.getState();
   const user = await getUser(); // this sets the user in state
+
   console.log(user);
   if (!user) {
-    console.error("❌ User is still undefined after getUser call");
+    console.error("❌ User is still null..even after getUser call");
     return null;
-  }
+  } else await getUserPlaylists(); // now username is available
 
-  await getUserPlaylists(); // now username is available
   return null;
 };

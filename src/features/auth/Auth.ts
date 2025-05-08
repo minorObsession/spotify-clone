@@ -46,7 +46,7 @@ export const createAuthSlice: StateCreator<
     localStorage.getItem("access_token") &&
       (() => {
         try {
-          const token = JSON.parse(
+          const token: AccessTokenType = JSON.parse(
             localStorage.getItem("access_token") || "{}",
           );
           return token.expiresAt > Date.now();
@@ -148,7 +148,6 @@ export const createAuthSlice: StateCreator<
         }),
       });
       const data = await response.json();
-      console.log("token response:", data);
       if (response.ok) {
         // Build the new access token object
         const newAccessToken: AccessTokenType = {

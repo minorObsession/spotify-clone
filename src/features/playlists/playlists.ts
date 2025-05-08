@@ -85,6 +85,10 @@ export const createPlaylistSlice: StateCreator<
       if (get().playlistsFetched) return get().playlists;
 
       set({ playlistsFetched: true });
+      if (get().user === null) {
+        console.log("NO USER HERE WILL ESCAPE");
+        return null;
+      }
 
       const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
       if (!accessToken)
@@ -96,6 +100,7 @@ export const createPlaylistSlice: StateCreator<
       const storedPlaylistsWithids = getFromLocalStorage<
         PlaylistNamesWithidsType[]
       >(`${get().user?.username}_playlist_names_with_track_ids`);
+
       const likedSongs = getFromLocalStorage<DetailedPlaylistType>(
         `${get().user?.username}s_saved_tracks_with_offset_of_0`,
       );
@@ -156,6 +161,13 @@ export const createPlaylistSlice: StateCreator<
           ownerName: playlist.owner?.display_name || "",
         }),
       );
+
+      console.log(get().user);
+
+      if (!get().user || get().user === null) {
+        console.log("NO USER HERE");
+        return null;
+      }
 
       localStorage.setItem(
         `${get().user?.username}_playlists`,

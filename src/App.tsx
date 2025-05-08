@@ -1,4 +1,8 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  redirect,
+  RouterProvider,
+} from "react-router-dom";
 
 import Root, { initialLoader } from "./Root";
 import Home, { userStateLoader } from "./Home";
@@ -16,7 +20,8 @@ import PageNotFound from "./components/PageNotFound";
 
 // * DIFFERENT USER NOTES:
 
-// ! while in playlists/track screen, the auto refresh won't refresh token!!!!
+// ! ROOT WONT' redirect("/home");!
+// ! ROOT WONT' redirect("/home");!
 // ! consolidate all icons in 1 place
 
 function App() {
@@ -25,13 +30,16 @@ function App() {
       path: "/",
       element: <Root />,
       loader: initialLoader,
-      shouldRevalidate: () => false,
       children: [
+        {
+          index: true,
+          // auto redirect home
+          loader: () => redirect("/home"),
+        },
         {
           path: "home",
           element: <Home />,
           loader: userStateLoader, // This loader is only on the home route
-          shouldRevalidate: () => false,
           children: [
             {
               path: "playlist/:id",

@@ -1,10 +1,7 @@
 import { StateCreator } from "zustand";
 import { StateStore } from "../../state/store";
 import { fetchFromSpotify } from "../../state/helpers";
-import {
-  DetailedPlaylistType,
-  initialEmptyPlaylist,
-} from "../playlists/playlists";
+import { DetailedPlaylistType } from "../playlists/playlists";
 import { TrackType } from "../tracks/track";
 
 export interface UserType {
@@ -17,11 +14,12 @@ export interface UserSlice {
   // ! get partial types
   user: UserType | null;
   usersSavedTracks: DetailedPlaylistType | null;
-  loaderHasRun: boolean;
   getUser: () => Promise<UserType | null>;
   getUserSavedTracks(offset: number): Promise<DetailedPlaylistType>;
   logoutUser: () => void;
 }
+
+let hasFetchedUser = false;
 
 export const createUserSlice: StateCreator<
   StateStore,
@@ -30,9 +28,11 @@ export const createUserSlice: StateCreator<
   UserSlice
 > = (set, get) => ({
   user: null,
-  loaderHasRun: false,
   usersSavedTracks: null,
   getUser: async () => {
+    if (hasFetchedUser) return get().user;
+    hasFetchedUser = true;
+
     const userData = await fetchFromSpotify<any, UserType>({
       endpoint: "me",
       cacheName: `user_me`, // Static key, not `user_${user?.username}` (which is undefined now)
@@ -57,7 +57,7 @@ export const createUserSlice: StateCreator<
 
     if (!get().usersSavedTracks && user?.username) {
       const local = localStorage.getItem(
-        `${user?.username}s_saved_tracks_with_offset_of_${offset}`,
+        `${user?.username}s_saved_trackssssss_with_offset_of_${offset}`,
       );
       if (local) {
         const parsed = JSON.parse(local);
@@ -65,6 +65,7 @@ export const createUserSlice: StateCreator<
         return parsed;
       }
     }
+
     const result = await fetchFromSpotify<any, DetailedPlaylistType>({
       endpoint: "me/tracks",
       cacheName: `${user?.username}s_saved_tracks_with_offset_of_${offset}`,
@@ -119,5 +120,5 @@ export const createUserSlice: StateCreator<
     });
     return result;
   },
-  logoutUser: () => set({ user: null, usersSavedTracks: initialEmptyPlaylist }),
+  logoutUser: () => set({ user: null, usersSavedTracks: null }),
 });
