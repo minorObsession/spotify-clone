@@ -96,10 +96,10 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
 
       {screenWidthRem > 102 && <p className="truncate text-sm">date</p>}
 
-      {/* // ! THIS ONE IS CORRECT */}
       {/* // ! only when hovered */}
       <div className="track-utilities">
         <AddToPlaylist
+          track={track}
           id={id}
           isTrackHovered={isTrackHovered}
           isTrackBoxSelected={isTrackBoxSelected}

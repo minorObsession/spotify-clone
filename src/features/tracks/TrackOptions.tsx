@@ -24,7 +24,7 @@ function TrackOptions({
 }: TrackOptionsProps) {
   const { isHovered, handleMouseEnter, handleMouseLeave } = useHoverTrackItem();
   const [areOptionsVisible, setAreOptionsVisible] = useState(false);
-  const menuRef = useOutsideClick(
+  const menuRef = useOutsideClick<HTMLUListElement>(
     setAreOptionsVisible,
     setIsTrackBoxSelected,
   ) as React.RefObject<HTMLUListElement>;

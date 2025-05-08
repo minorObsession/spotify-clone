@@ -14,7 +14,7 @@ function UserAvatar({ inHeader = false }: UserAvatarProps) {
   const userPhoto = useStateStore((store) => store.user && store.user.photo);
   const [areOptionsVisible, setAreOptionsVisible] = useState(false);
   const { isHovered, handleMouseEnter, handleMouseLeave } = useHoverTrackItem();
-  const menuRef = useOutsideClick(
+  const menuRef = useOutsideClick<HTMLUListElement>(
     setAreOptionsVisible,
   ) as React.RefObject<HTMLUListElement>;
 

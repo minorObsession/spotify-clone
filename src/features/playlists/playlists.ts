@@ -30,7 +30,7 @@ interface PlaylistNamesWithidsType {
   ids: string[];
 }
 
-const initialPlaylist: DetailedPlaylistType = {
+export const initialEmptyPlaylist: DetailedPlaylistType = {
   id: "",
   name: "",
   type: "",
@@ -73,7 +73,7 @@ export const createPlaylistSlice: StateCreator<
 > = (set, get) => ({
   playlists: [],
   playlistNamesWithids: [],
-  playlist: initialPlaylist,
+  playlist: initialEmptyPlaylist,
   playlistsFetched: false,
   setPlaylist: (playlist) => {
     set({ playlist });
@@ -97,7 +97,7 @@ export const createPlaylistSlice: StateCreator<
         PlaylistNamesWithidsType[]
       >(`${get().user?.username}_playlist_names_with_track_ids`);
       const likedSongs = getFromLocalStorage<DetailedPlaylistType>(
-        `${get().user?.username}s_saved_tracks`,
+        `${get().user?.username}s_saved_tracks_with_offset_of_0`,
       );
 
       if (storedPlaylists) {
@@ -161,6 +161,8 @@ export const createPlaylistSlice: StateCreator<
         `${get().user?.username}_playlists`,
         JSON.stringify(formattedPlaylists),
       );
+
+      // ! UNDEFINED HERE
       localStorage.setItem(
         `${get().user?.username}_playlist_names_with_track_ids`,
         JSON.stringify(playlistNamesWithids),
@@ -249,7 +251,6 @@ export const createPlaylistSlice: StateCreator<
 
   // upgrade this method to suppurt tracks updating
   updatePlaylistDetails: async (id, updatedFields) => {
-    console.log("clling updatePlaylistDetails");
     await fetchFromSpotify({
       endpoint: `playlists/${id}`,
       method: "PUT",
@@ -259,4 +260,14 @@ export const createPlaylistSlice: StateCreator<
       }),
     });
   },
+
+  addTrackToPlaylist: async (id: string, trackId: string) => {
+    await fetchFromSpotify({
+      endpoint: `playlists/${id}/tracks`,
+      method: "POST",
+      requestBody: JSON.stringify({ uris: [trackId] }),
+    });
+  },
+
+  // addToLikedSongs: async (trackId: string) => {}
 });

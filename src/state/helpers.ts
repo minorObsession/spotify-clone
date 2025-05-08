@@ -54,6 +54,8 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
   onDataReceived?: (data: ReturnType) => void;
 }): Promise<ReturnType | null> => {
   try {
+    console.log("running fetchFromSpotify");
+
     await store.getState().waitForAuthentication();
 
     const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
@@ -70,11 +72,9 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
         return cachedData;
       }
     }
-
     // Fetch data from Spotify API
     console.log(`🛜 Calling spotify API: ${endpoint} ${method} ${cacheName}`);
 
-    console.log("BODY:", requestBody);
     const res = await fetch(
       `https://api.spotify.com/v1/${endpoint}${offset}${deviceId}`,
       {

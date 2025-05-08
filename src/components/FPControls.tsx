@@ -33,7 +33,7 @@ function FPControls({ previewType, item, options }: FPControlsProps) {
     playerState?.context?.uri?.split(":")[2] === item.id ||
     params.id === item.id;
 
-  const menuRef = useOutsideClick(
+  const menuRef = useOutsideClick<HTMLUListElement>(
     setAreOptionsVisible,
   ) as React.RefObject<HTMLUListElement>;
 

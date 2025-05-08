@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import { DetailedPlaylistType } from "../features/playlists/playlists";
 import FloatingLabel from "./FloatingLabel";
 import { useStateStore } from "../state/store";
+import { useKeyPress } from "../hooks/useKeyPress";
+import useOutsideClick from "../hooks/useOutsideClick";
 
 export type PartialPlaylist = Pick<
   DetailedPlaylistType,
@@ -34,6 +36,12 @@ function EditPlaylistModal({
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useKeyPress("Escape", () => setIsEditingPlaylist(false));
+
+  const modalRef = useOutsideClick<HTMLDialogElement>(() =>
+    setIsEditingPlaylist(false),
+  );
 
   const handleSubmitModifiedPlaylist = async (
     e: React.FormEvent<HTMLFormElement>,
@@ -112,10 +120,11 @@ function EditPlaylistModal({
           JSON.stringify(useStateStore.getState().playlists),
         );
       }
-
-      console.log("submit handler done... ");
     } catch (err) {
       console.error(err);
+    } finally {
+      // close modal on form submit
+      setIsEditingPlaylist(false);
     }
   };
   // todo: better alert if image is too large
@@ -172,7 +181,10 @@ function EditPlaylistModal({
   if (!isEditingPlaylist) return null;
 
   return (
-    <dialog className="h-fit-content absolute top-1/2 left-1/2 z-100 flex min-w-[30vw] -translate-x-1/2 -translate-y-1/2 flex-col gap-3 bg-stone-400 p-4">
+    <dialog
+      ref={modalRef}
+      className="h-fit-content absolute top-1/2 left-1/2 z-100 flex min-w-[30vw] -translate-x-1/2 -translate-y-1/2 flex-col gap-3 bg-stone-400 p-4"
+    >
       {/* // ! name and close */}
       <div className="flex items-center justify-between">
         <p>Edit details</p>

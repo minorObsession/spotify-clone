@@ -18,7 +18,7 @@ function FPPlaylistOverview({
 }: FPPlaylistOverviewProps) {
   const currentUserID = useStateStore((store) => store.user?.userID);
   const currUserOwnsPlaylist = Boolean(playlist.ownerId === currentUserID);
-  const [isEditingPlaylist, setIsEditingPlaylist] = useState(true);
+  const [isEditingPlaylist, setIsEditingPlaylist] = useState(false);
 
   return (
     // {/* // ! image and title */}

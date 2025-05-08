@@ -11,6 +11,7 @@ export function useTrackItem(track: TrackType | TopTrackType) {
   const { screenWidth: screenWidthRem } = useScreenWidthRem();
   const [isTrackBoxSelected, setIsTrackBoxSelected] = useState(false);
   const [isTrackHovered, setIsTrackHovered] = useState(false);
+
   const trackName = track.name;
   const params = useParams();
   const trackDurationFormatted = flexibleMillisecondsConverter(

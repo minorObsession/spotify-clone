@@ -1,7 +1,10 @@
 import { StateCreator } from "zustand";
 import { StateStore } from "../../state/store";
 import { fetchFromSpotify } from "../../state/helpers";
-import { DetailedPlaylistType } from "../playlists/playlists";
+import {
+  DetailedPlaylistType,
+  initialEmptyPlaylist,
+} from "../playlists/playlists";
 import { TrackType } from "../tracks/track";
 
 export interface UserType {
@@ -14,8 +17,9 @@ export interface UserSlice {
   // ! get partial types
   user: UserType | null;
   usersSavedTracks: DetailedPlaylistType | null;
+  loaderHasRun: boolean;
   getUser: () => Promise<UserType | null>;
-  getUserSavedTracks(offset: number): Promise<DetailedPlaylistType | null>;
+  getUserSavedTracks(offset: number): Promise<DetailedPlaylistType>;
   logoutUser: () => void;
 }
 
@@ -26,32 +30,34 @@ export const createUserSlice: StateCreator<
   UserSlice
 > = (set, get) => ({
   user: null,
+  loaderHasRun: false,
   usersSavedTracks: null,
   getUser: async () => {
-    const { user } = get();
-    return await fetchFromSpotify<any, UserType>({
+    const userData = await fetchFromSpotify<any, UserType>({
       endpoint: "me",
-      cacheName: `user_${user?.username}`,
+      cacheName: `user_me`, // Static key, not `user_${user?.username}` (which is undefined now)
       transformFn: (data) => ({
         username: data.display_name,
         photo: data.images?.[0]?.url || "",
         userID: data.id,
         email: data.email,
       }),
-      onCacheFound: (data) => {
-        set({ user: data });
-      },
       onDataReceived: (data) => {
         set({ user: data });
       },
+      onCacheFound: (data) => {
+        set({ user: data });
+      },
     });
+    console.log(userData);
+    return userData;
   },
   getUserSavedTracks: async (offset = 0) => {
     const { user } = get();
 
     if (!get().usersSavedTracks && user?.username) {
       const local = localStorage.getItem(
-        `${user.username}s_saved_tracks_with_offset_of_${offset}`,
+        `${user?.username}s_saved_tracks_with_offset_of_${offset}`,
       );
       if (local) {
         const parsed = JSON.parse(local);
@@ -113,5 +119,5 @@ export const createUserSlice: StateCreator<
     });
     return result;
   },
-  logoutUser: () => set({ user: null, usersSavedTracks: null }),
+  logoutUser: () => set({ user: null, usersSavedTracks: initialEmptyPlaylist }),
 });

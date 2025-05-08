@@ -34,6 +34,8 @@ export interface AuthSlice {
   autoRefreshToken: () => Promise<void>;
 }
 
+let hasFetchedToken = false;
+
 export const createAuthSlice: StateCreator<
   StateStore,
   [["zustand/devtools", never]],
@@ -47,7 +49,7 @@ export const createAuthSlice: StateCreator<
           const token = JSON.parse(
             localStorage.getItem("access_token") || "{}",
           );
-          return token.tokenExpiresAt > Date.now();
+          return token.expiresAt > Date.now();
         } catch {
           return false;
         }
@@ -60,7 +62,10 @@ export const createAuthSlice: StateCreator<
   refreshInterval: null,
   // --- Public Action: Initialize Auth Flow ---
   initAuth: async () => {
-    console.log("initAuth called");
+    if (hasFetchedToken) return;
+    hasFetchedToken = true;
+
+    console.log("initAuth called...passed the flag");
     // ! 1. Check localStorage for existing tokens
     const storedAccessTokenString = localStorage.getItem("access_token");
     const storedRefreshToken = localStorage.getItem("refresh_token");
@@ -79,7 +84,6 @@ export const createAuthSlice: StateCreator<
           });
           // ! Start auto–refresh interval
           get().autoRefreshToken();
-          return;
         }
       } catch (error) {
         console.error("Error parsing stored access token", error);
@@ -131,9 +135,6 @@ export const createAuthSlice: StateCreator<
 
   // --- Internal Action: Request Token Using Auth Code ---
   requestToken: async (authCode, codeVerifier) => {
-    // const accessTokenPresent = get();
-
-    // if (accessTokenPresent !== null) return;
     try {
       const response = await fetch(AUTH_CONFIG.tokenUrl, {
         method: "POST",
@@ -147,6 +148,7 @@ export const createAuthSlice: StateCreator<
         }),
       });
       const data = await response.json();
+      console.log("token response:", data);
       if (response.ok) {
         // Build the new access token object
         const newAccessToken: AccessTokenType = {
@@ -165,6 +167,7 @@ export const createAuthSlice: StateCreator<
           refreshToken: data.refresh_token,
           isAuthenticated: true,
         });
+
         console.log("User authenticated successfully.");
         // Start auto–refresh interval
         await get().autoRefreshToken();

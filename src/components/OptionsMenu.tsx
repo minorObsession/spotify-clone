@@ -1,7 +1,7 @@
 import useHoverTrackItem from "../hooks/useHoverTrackItem";
 import OptionItem from "./OptionItem";
 
-export type MenuFor = "userAvatar" | "playlist" | "track";
+export type MenuFor = "userAvatar" | "playlist" | "track" | "addToPlaylist";
 
 interface OptionsMenuProps {
   options: string[];
@@ -37,7 +37,7 @@ function OptionsMenu({
       >
         {options.map((option) => (
           // menuFor
-          <OptionItem menuFor={menuFor} option={option} />
+          <OptionItem menuFor={menuFor} option={option} key={option} />
         ))}
       </ul>
     </div>

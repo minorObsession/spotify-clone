@@ -18,6 +18,12 @@ function OptionItem({ option, menuFor }: OptionItemProps) {
       }
     }
 
+    if (menuFor === "addToPlaylist") {
+      if (clickedOption === "Edit details") {
+        // ! open modal
+      }
+    }
+
     if (menuFor === "track") {
       if (clickedOption === "Add to playlist") {
         // ! open modal

@@ -25,26 +25,28 @@ function App() {
       path: "/",
       element: <Root />,
       loader: initialLoader,
+      shouldRevalidate: () => false,
       children: [
         {
           path: "home",
           element: <Home />,
-          loader: userStateLoader,
+          loader: userStateLoader, // This loader is only on the home route
+          shouldRevalidate: () => false,
           children: [
             {
               path: "playlist/:id",
               element: <FullPreviewPlaylist />,
-              loader: playlistLoader,
+              loader: playlistLoader, // This loader is only on the playlist route
             },
             {
               path: "track/:id",
               element: <FullPreviewTrack />,
-              loader: trackLoader,
+              loader: trackLoader, // This loader is only on the track route
             },
             {
               path: "artist/:id",
               element: <FullPreviewArtist />,
-              loader: artistLoader,
+              loader: artistLoader, // This loader is only on the artist route
             },
           ],
         },

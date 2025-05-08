@@ -17,6 +17,8 @@ const isAuthenticated = store.getState().isAuthenticated;
 const autoRefreshToken = store.getState().autoRefreshToken;
 
 export const initialLoader = async () => {
+  console.log("running initial loader");
+  console.log(isAuthenticated);
   if (!isAuthenticated) await initAuth();
   // ! to start the auto refresh timer
   autoRefreshToken();

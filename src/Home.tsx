@@ -74,12 +74,15 @@ function Home() {
 
 export default Home;
 
-const { getUser, getUserPlaylists } = useStateStore.getState();
-
 export const userStateLoader = async () => {
-  await getUser();
-  await getUserPlaylists();
-  // getUserSavedTracks(0);
+  const { getUser, getUserPlaylists } = useStateStore.getState();
+  const user = await getUser(); // this sets the user in state
+  console.log(user);
+  if (!user) {
+    console.error("❌ User is still undefined after getUser call");
+    return null;
+  }
 
+  await getUserPlaylists(); // now username is available
   return null;
 };

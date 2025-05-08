@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react";
 
-function useOutsideClick(
+function useOutsideClick<T extends HTMLElement>(
   actionFunction: React.Dispatch<React.SetStateAction<boolean>>,
   optionalFunction?: React.Dispatch<React.SetStateAction<boolean>>,
   listenInCapturingPhase = true,
 ) {
   // ! adjust type for ref as needed
-  const menuRef = useRef<HTMLUListElement | null>(null);
+  const menuRef = useRef<T>(null);
   useEffect(
     function () {
       function handleClick(e: MouseEvent) {
