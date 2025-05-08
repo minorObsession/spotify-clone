@@ -68,7 +68,7 @@ function AddToPlaylist({
         tracks: [track, ...usersSavedTracks.tracks],
       },
     });
-    console.log(useStateStore.getState().user);
+    console.log(useStateStore.getState().user?.username);
     // * update local storage
     localStorage.setItem(
       `${useStateStore.getState().user?.username}s_saved_tracks`,

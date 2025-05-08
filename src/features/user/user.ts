@@ -15,7 +15,7 @@ export interface UserSlice {
   user: UserType | null;
   usersSavedTracks: DetailedPlaylistType | null;
   getUser: () => Promise<UserType | null>;
-  getUserSavedTracks(offset: number): Promise<DetailedPlaylistType>;
+  getUserSavedTracks(offset: number): Promise<DetailedPlaylistType | null>;
   logoutUser: () => void;
 }
 
@@ -55,22 +55,18 @@ export const createUserSlice: StateCreator<
     return userData;
   },
   getUserSavedTracks: async (offset = 0) => {
-    const { user } = get();
+    const { user, getUser } = get();
 
-    if (!get().usersSavedTracks && user?.username) {
-      const local = localStorage.getItem(
-        `${user?.username}s_saved_trackssssss_with_offset_of_${offset}`,
-      );
-      if (local) {
-        const parsed = JSON.parse(local);
-        set({ usersSavedTracks: parsed });
-        return parsed;
-      }
+    const currentUser = user || (await getUser());
+
+    if (!currentUser?.username) {
+      console.warn("❌ No username. Skipping...");
+      return null;
     }
 
     const result = await fetchFromSpotify<any, DetailedPlaylistType>({
       endpoint: "me/tracks",
-      cacheName: `${user?.username}s_saved_tracks_with_offset_of_${offset}`,
+      cacheName: `${currentUser?.username}s_saved_tracks_with_offset_of_${offset}`,
       // ! TEMPORARY LIMIT
       offset: `?offset=${offset}&limit=10`,
       transformFn: (data) => {

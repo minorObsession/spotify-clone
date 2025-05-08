@@ -76,13 +76,13 @@ export default memo(Home);
 
 // ! syntetic solution - forcing only 1 execution of the loader... NOT GOOD LONG TERM!! MAYBE WORKS HERE BUT NOT FOR PLAYLISTS...
 let homeLoaderNumOfRuns = 0;
-// const MAX_ALLOWED_CALLS = 1;
+const MAX_ALLOWED_CALLS = 1;
 
 export const userStateLoader = async (caller = "unknown") => {
-  // if (homeLoaderNumOfRuns >= MAX_ALLOWED_CALLS) {
-  //   console.warn("⚠️ Too many userStateLoader calls! Skipping extra...");
-  //   return null;
-  // }
+  if (homeLoaderNumOfRuns >= MAX_ALLOWED_CALLS) {
+    console.warn("⚠️ Too many userStateLoader calls! Skipping extra...");
+    return null;
+  }
   homeLoaderNumOfRuns++;
   console.log(
     `🔍 userStateLoader called from [${caller}] — run #${homeLoaderNumOfRuns}`,

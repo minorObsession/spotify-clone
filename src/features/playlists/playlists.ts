@@ -84,7 +84,6 @@ export const createPlaylistSlice: StateCreator<
     try {
       if (get().playlistsFetched) return get().playlists;
 
-      set({ playlistsFetched: true });
       if (get().user === null) {
         console.log("NO USER HERE WILL ESCAPE");
         return null;
@@ -113,10 +112,18 @@ export const createPlaylistSlice: StateCreator<
         }
 
         if (likedSongs) {
+          console.log(
+            "found cache and found likedSongs so will return cached..",
+          );
+
           set({ usersSavedTracks: likedSongs });
         } else {
+          console.log(
+            "found cache but no stored likedSongs so will call usersSavedTracks...",
+          );
           set({ usersSavedTracks: await get().getUserSavedTracks(0) });
         }
+        set({ playlistsFetched: true });
 
         return storedPlaylists;
       }
