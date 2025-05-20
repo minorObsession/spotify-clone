@@ -25,11 +25,6 @@ export interface DetailedPlaylistType {
   imageUrl: string;
 }
 
-interface PlaylistNamesWithidsType {
-  name: string;
-  ids: string[];
-}
-
 export const initialEmptyPlaylist: DetailedPlaylistType = {
   id: "",
   name: "",
@@ -44,9 +39,7 @@ export const initialEmptyPlaylist: DetailedPlaylistType = {
 
 export interface PlaylistSlice {
   playlists: UserPlaylistType[];
-  playlistNamesWithids: PlaylistNamesWithidsType[];
   playlist: DetailedPlaylistType;
-  playlistsFetched: boolean;
   setPlaylist: (playlist: DetailedPlaylistType) => void;
   getUserPlaylists: () => Promise<UserPlaylistType[]>;
   getPlaylist: (
@@ -72,35 +65,27 @@ export const createPlaylistSlice: StateCreator<
   PlaylistSlice
 > = (set, get) => ({
   playlists: [],
-  playlistNamesWithids: [],
   playlist: initialEmptyPlaylist,
-  playlistsFetched: false,
   setPlaylist: (playlist) => {
     set({ playlist });
     // update cache
     localStorage.setItem(`playlist${playlist.id}`, JSON.stringify(playlist));
   },
+  // ! NEVER TRY TO FIT THIS INTO FETCHFROMSPOTIFY!! YOU FAILED 4 TIMES
   getUserPlaylists: async () => {
+    // 1st UserPlaylistType then DetailedPlaylistType
     try {
-      console.log("1: getUserPlaylists running...");
-      if (get().playlistsFetched) return get().playlists;
-
       if (get().user === null) {
-        console.log("NO USER HERE WILL ESCAPE");
-        return null;
+        throw new Error("No user found in getUserPlaylists function");
       } else console.log("2: user is defined....");
 
       const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
       if (!accessToken)
         throw new Error("Access token expired or doesn't exist");
 
-      console.log("3: will try stored playlists...");
       const storedPlaylists = getFromLocalStorage<UserPlaylistType[]>(
         `${get().user?.username}_playlists`,
       );
-      const storedPlaylistsWithids = getFromLocalStorage<
-        PlaylistNamesWithidsType[]
-      >(`${get().user?.username}_playlist_names_with_track_ids`);
 
       const likedSongs = getFromLocalStorage<DetailedPlaylistType>(
         `${get().user?.username}s_saved_tracks_with_offset_of_0`,
@@ -109,23 +94,11 @@ export const createPlaylistSlice: StateCreator<
       if (storedPlaylists) {
         set({ playlists: storedPlaylists });
 
-        if (storedPlaylistsWithids) {
-          set({ playlistNamesWithids: storedPlaylistsWithids });
-        }
-
         if (likedSongs) {
-          console.log(
-            "4: found cache and found likedSongs so will return cached..",
-          );
           set({ usersSavedTracks: likedSongs });
         } else {
-          console.log(
-            "found cache but no stored likedSongs so will call usersSavedTracks...",
-          );
           set({ usersSavedTracks: await get().getUserSavedTracks(0) });
         }
-        set({ playlistsFetched: true });
-        console.log("5: FINAL returning user playlists");
         return storedPlaylists;
       }
 
@@ -145,22 +118,6 @@ export const createPlaylistSlice: StateCreator<
 
       const { items } = await res.json();
 
-      const playlistNamesWithids: PlaylistNamesWithidsType[] =
-        await Promise.all(
-          items.map(async (playlist: any) => {
-            const idsForCurrentP = (
-              await get().getPlaylist(playlist.id)
-            ).tracks.map((track: TrackType) => track.id);
-
-            return {
-              name: playlist.name,
-              ids: idsForCurrentP,
-            };
-          }),
-        );
-
-      set({ playlistNamesWithids });
-
       const formattedPlaylists: UserPlaylistType[] = items.map(
         (playlist: any) => ({
           name: playlist.name,
@@ -170,10 +127,7 @@ export const createPlaylistSlice: StateCreator<
         }),
       );
 
-      console.log(get().user);
-
       if (!get().user || get().user === null) {
-        console.log("NO USER HERE");
         throw new Error("🛑 no user found");
       }
 
@@ -182,16 +136,8 @@ export const createPlaylistSlice: StateCreator<
         JSON.stringify(formattedPlaylists),
       );
 
-      // ! UNDEFINED HERE
-      localStorage.setItem(
-        `${get().user?.username}_playlist_names_with_track_ids`,
-        JSON.stringify(playlistNamesWithids),
-      );
-
       set({ playlists: formattedPlaylists });
       await get().getUserSavedTracks(0);
-
-      set({ playlistsFetched: true });
 
       return formattedPlaylists;
     } catch (err) {
@@ -201,59 +147,66 @@ export const createPlaylistSlice: StateCreator<
   },
 
   getPlaylist: async (id, offset = 0, bypassCache = false) => {
-    console.log("getPlaylist running...");
+    try {
+      console.log("getPlaylist running...");
 
-    if (id === "liked_songs") {
-      const usersSavedTracks = get().usersSavedTracks;
+      if (id === "liked_songs") {
+        const usersSavedTracks = get().usersSavedTracks;
 
-      if (!usersSavedTracks)
-        return (await get().getUserSavedTracks(0)) as DetailedPlaylistType;
-      else return usersSavedTracks as DetailedPlaylistType;
+        if (!usersSavedTracks)
+          return (await get().getUserSavedTracks(0)) as DetailedPlaylistType;
+        else return usersSavedTracks as DetailedPlaylistType;
+      }
+
+      const fetchedPlaylist = await fetchFromSpotify<any, DetailedPlaylistType>(
+        {
+          endpoint: `playlists/${id}`,
+          cacheName: `playlist${id}`,
+          offset: `?offset=${offset}&limit=5`,
+          bypassCache,
+          transformFn: (data) => ({
+            name: data.name,
+            id: data.id,
+            type: data.type,
+            tracks: data.tracks.items
+              .filter((tra: any) => tra.track !== null)
+              .map(
+                (track: any): TrackType => ({
+                  name: track.track.name,
+                  id: track.track.id,
+                  imageUrl: track.track.album.images[0]?.url || null,
+                  multipleArtists: track.track.artists.length > 1,
+                  artists: track.track.artists.map((artist: any) => ({
+                    name: artist.name,
+                    artistId: artist.id,
+                  })),
+                  type: track.track.type,
+                  trackDuration: track.track.duration_ms,
+                  releaseDate: track.track.album.release_date,
+                  albumName: track.track.album.name,
+                  albumId: track.track.album.id,
+                }),
+              ),
+            numTracks: data.tracks.items.length,
+            totalDurationMs: data.tracks.items.reduce(
+              (sum: number, item: any) => sum + (item.track?.duration_ms || 0),
+              0,
+            ),
+            imageUrl: data.images?.[0]?.url || "",
+            ownerName: data.owner.display_name,
+            ownerId: data.owner.id,
+          }),
+          onCacheFound: (data) => set({ playlist: data }),
+          onDataReceived: (data) => set({ playlist: data }),
+        },
+      );
+
+      if (!fetchedPlaylist) throw new Error("Couldn't fetch playlist");
+      return fetchedPlaylist;
+    } catch (err) {
+      console.error("🛑 ❌ Couldn't fetch playlist", err);
+      throw err;
     }
-
-    const result = await fetchFromSpotify<any, DetailedPlaylistType>({
-      endpoint: `playlists/${id}`,
-      cacheName: `playlist${id}`,
-      offset: `?offset=${offset}&limit=5`,
-      bypassCache,
-      transformFn: (data) => ({
-        name: data.name,
-        id: data.id,
-        type: data.type,
-        tracks: data.tracks.items
-          .filter((tra: any) => tra.track !== null)
-          .map(
-            (track: any): TrackType => ({
-              name: track.track.name,
-              id: track.track.id,
-              imageUrl: track.track.album.images[0]?.url || null,
-              multipleArtists: track.track.artists.length > 1,
-              artists: track.track.artists.map((artist: any) => ({
-                name: artist.name,
-                artistId: artist.id,
-              })),
-              type: track.track.type,
-              trackDuration: track.track.duration_ms,
-              releaseDate: track.track.album.release_date,
-              albumName: track.track.album.name,
-              albumId: track.track.album.id,
-            }),
-          ),
-        numTracks: data.tracks.items.length,
-        totalDurationMs: data.tracks.items.reduce(
-          (sum: number, item: any) => sum + (item.track?.duration_ms || 0),
-          0,
-        ),
-        imageUrl: data.images?.[0]?.url || "",
-        ownerName: data.owner.display_name,
-        ownerId: data.owner.id,
-      }),
-      onCacheFound: (data) => set({ playlist: data }),
-      onDataReceived: (data) => set({ playlist: data }),
-    });
-
-    if (!result) throw new Error("Couldn't fetch playlist");
-    return result;
   },
 
   uploadNewPlaylistImage: async (id, base64ImageUrl) => {

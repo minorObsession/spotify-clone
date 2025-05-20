@@ -17,15 +17,14 @@ import FullPreviewArtist, { artistLoader } from "./features/artists/FPArtist";
 import PageNotFound from "./components/PageNotFound";
 
 // TODO:
+// test handleAddToLikedSongs with a random btn and random track
+// ! implement search functionallity
+// think about better caching
+//
 
 // * DIFFERENT USER NOTES:
 
 // ! consolidate all icons in 1 place
-
-// !debugging notes:
-// !debugging notes:
-// !debugging notes:
-// !debugging notes:
 
 // every loader running 4 times
 //!  getUser and getUserPlaylists running normally - rendering 2 times

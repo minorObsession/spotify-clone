@@ -14,20 +14,25 @@ import { playlistOptions } from "../../config/menuOptions";
 
 function FullPreviewPlaylist() {
   const initialPlaylist = useLoaderData() as DetailedPlaylistType;
-  const { getPlaylist, setPlaylist, playlist } = useStateStore(
-    (store) => store,
-  );
-  const getUserSavedTracks = useStateStore().getUserSavedTracks;
+  const playlist = useStateStore((state) => state.playlist);
+  const setPlaylist = useStateStore((state) => state.setPlaylist);
+  const getPlaylist = useStateStore((state) => state.getPlaylist);
+  const getUserSavedTracks = useStateStore((state) => state.getUserSavedTracks);
   const isFetching = useRef(false);
   const hasMoreToLoad = playlist.tracks?.length < (playlist.numTracks || 0);
+  const currPlaylist = useStateStore((state) =>
+    state.playlist?.id === "liked_songs"
+      ? (state.usersSavedTracks as DetailedPlaylistType)
+      : state.playlist,
+  );
   // On mount, initialize Zustand with loader data
-
   useEffect(() => {
     if (initialPlaylist) setPlaylist(initialPlaylist);
   }, [initialPlaylist, setPlaylist]);
 
   // wrap into useCallback
   const handleLoadMore = async () => {
+    console.log("calling HLM");
     if (!hasMoreToLoad) return;
     isFetching.current = true;
     try {
@@ -66,10 +71,14 @@ function FullPreviewPlaylist() {
         previewType="playlist"
         options={playlistOptions}
       />
-      <FPPlaylistTracks tracks={playlist.tracks} sentinelRef={sentinelRef} />
+      <FPPlaylistTracks
+        tracks={currPlaylist.tracks}
+        sentinelRef={sentinelRef}
+      />
     </div>
   );
 }
+
 let playlistLoaderNumRUNS = 0;
 
 const getPlaylist = useStateStore.getState().getPlaylist;

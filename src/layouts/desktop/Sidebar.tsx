@@ -8,7 +8,6 @@ function Sidebar() {
   const usersSavedTracks = useStateStore((store) => store.usersSavedTracks);
 
   if (!playlists) return null;
-
   return (
     <aside
       className={`grid-sidebar-l min-w-[20vw] overflow-y-auto bg-amber-600 p-2 py-5`}
@@ -17,7 +16,7 @@ function Sidebar() {
         <UserPlaylist
           name={usersSavedTracks.name}
           id={usersSavedTracks.id}
-          ownerName={`${usersSavedTracks.numTracks} songs`}
+          ownerName={`${usersSavedTracks.numTracks} liked songs`}
           image={usersSavedTracks.imageUrl}
         />
       )}

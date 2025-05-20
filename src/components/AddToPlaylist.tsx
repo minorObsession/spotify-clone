@@ -17,6 +17,8 @@ interface AddToPlaylistProps {
   isTrackBoxSelected: boolean;
 }
 
+// * put this back into the componnet
+
 function AddToPlaylist({
   track,
   id,
@@ -35,22 +37,6 @@ function AddToPlaylist({
     undefined,
     true,
   ) as React.RefObject<HTMLUListElement>;
-
-  const handleAddToPlaylist = (
-    e: React.MouseEvent<HTMLDivElement>,
-    id: string,
-  ) => {
-    e.stopPropagation();
-    // * open options menu
-    if (isPlaylistSelectMenuOpen) setIsPlaylistSelectMenuOpen(false);
-
-    setTimeout(() => setIsPlaylistSelectMenuOpen(true), 0);
-    // * get all users playlists
-    //
-    // * call spotify api with post req
-    // * optimistic update UI
-  };
-
   const handleAddToLikedSongs = (
     e: React.MouseEvent<HTMLDivElement>,
     id: string,
@@ -58,8 +44,8 @@ function AddToPlaylist({
     // * optimistic update UI
     // for testing
     const testTrack = {
-      name: "CIGANCICI (Radio Edit)",
-      id: "473seUIaybpMVhu4BpPgz2",
+      name: ` ${Math.random()} GANCI (Radio Edit)`,
+      id: Math.random().toString(),
       imageUrl:
         "https://i.scdn.co/image/ab67616d0000b27323933555145a05249a9e8042",
       multipleArtists: false,
@@ -76,34 +62,45 @@ function AddToPlaylist({
       albumId: "5xmCzFYRqTRVjym8GbLinh",
     };
 
-    let usersSavedTracks;
+    let usersSavedTracksVar: DetailedPlaylistType;
+
     // local store update
     useStateStore.setState((prevState) => {
       if (!prevState.usersSavedTracks) return prevState;
-      const newSavedTracks = {
+      const newState = {
         ...prevState,
         usersSavedTracks: {
           ...prevState.usersSavedTracks,
-          tracks: [
-            ...new Set([testTrack, ...prevState.usersSavedTracks.tracks]),
-          ],
+          tracks: [testTrack, ...prevState.usersSavedTracks.tracks],
         },
       };
-      usersSavedTracks = newSavedTracks;
-      return newSavedTracks;
+      usersSavedTracksVar = newState.usersSavedTracks;
+      return newState;
     });
 
-    // USER PLAYLISTS COME OUT UNDEFINED SOMEHOW!!! CHECK ALL STATE
-    const currUsernam = useStateStore.getState().user?.username;
-    console.log(currUsernam);
     // * update local storage
     localStorage.setItem(
-      `${currUsernam}s_saved_tracks_with_offset_of_0`,
-      JSON.stringify(usersSavedTracks),
+      `${useStateStore.getState().user?.username}s_saved_tracks_with_offset_of_0`,
+      JSON.stringify(usersSavedTracksVar!),
     );
 
     console.log("should be all updated");
     // * call spotify api with post req
+  };
+
+  const handleAddToPlaylist = (
+    e: React.MouseEvent<HTMLDivElement>,
+    id: string,
+  ) => {
+    e.stopPropagation();
+    // * open options menu
+    if (isPlaylistSelectMenuOpen) setIsPlaylistSelectMenuOpen(false);
+
+    setTimeout(() => setIsPlaylistSelectMenuOpen(true), 0);
+    // * get all users playlists
+    //
+    // * call spotify api with post req
+    // * optimistic update UI
   };
 
   // ! look for this ID in all playlists - make function that does this

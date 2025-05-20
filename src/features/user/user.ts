@@ -61,8 +61,6 @@ export const createUserSlice: StateCreator<
       throw new Error("❌ No username.. exiting with error...");
     }
 
-    // if there's a user,
-    console.log("❌🛜the fetch will happen now...");
     const result = await fetchFromSpotify<any, DetailedPlaylistType>({
       endpoint: "me/tracks",
       cacheName: `${currentUser?.username}s_saved_tracks_with_offset_of_${offset}`,
@@ -91,7 +89,6 @@ export const createUserSlice: StateCreator<
         );
 
         const currentSaved = get().usersSavedTracks;
-        console.log("currentSaved", currentSaved);
         // debugger;
         const mergedTracks =
           offset > 0 && currentSaved

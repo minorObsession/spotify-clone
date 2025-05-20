@@ -11,7 +11,19 @@ export const getPlaylistLenght = (data: TrackType[]) => {
   );
 };
 
-export const isTrackInLibrary = (id: string) =>
-  useStateStore
+export const isTrackInLibrary = (id: string) => {
+  // check userPlaylists
+  // check userSaved tracks
+
+  const savedTracks = useStateStore.getState().usersSavedTracks;
+  if (!savedTracks) throw new Error("no saved tracsk");
+  const idsFromLikedSongs = savedTracks.tracks.map((track) => track.id);
+
+  const idsFromUserPlaylists = useStateStore
     .getState()
-    .playlistNamesWithids.some((playlist) => playlist.ids?.includes(id));
+    .playlists.map((playlist) => playlist.id);
+
+  const allIds = [...idsFromLikedSongs, ...idsFromUserPlaylists];
+
+  return allIds.some((trackId) => trackId === id);
+};

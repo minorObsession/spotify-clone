@@ -28,18 +28,7 @@ export function createLoader<T>(
     }
   };
 }
-
-export const fetchFromSpotify = async <ResponseType, ReturnType>({
-  endpoint,
-  transformFn,
-  cacheName,
-  offset = "",
-  onCacheFound,
-  onDataReceived,
-  method = "GET",
-  requestBody,
-  bypassCache = false,
-}: {
+interface FetchFromSpotifyParams<ResponseType, ReturnType> {
   endpoint: string;
   offset?: string;
   cacheName?: string;
@@ -50,10 +39,22 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
   transformFn?: (data: ResponseType) => Promise<ReturnType> | ReturnType;
   onCacheFound?: (data: ReturnType) => void;
   onDataReceived?: (data: ReturnType) => void;
-}): Promise<ReturnType> => {
+}
+export const fetchFromSpotify = async <ResponseType, ReturnType>({
+  endpoint,
+  transformFn,
+  cacheName,
+  offset = "",
+  onCacheFound,
+  onDataReceived,
+  method = "GET",
+  requestBody,
+  bypassCache = false,
+}: FetchFromSpotifyParams<ResponseType, ReturnType>): Promise<ReturnType> => {
   try {
     console.log(`calling fetch ${endpoint} ${cacheName} `);
 
+    // ! THIS CODE WAS CAUSING AN ISSUE
     // debugger;
     // await store.getState().waitForAuthentication();
 
