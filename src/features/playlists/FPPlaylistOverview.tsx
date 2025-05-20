@@ -6,7 +6,6 @@ import FullPreviewThumbnail from "../../components/FPOverviewThumbnail";
 import { useState } from "react";
 import EditPlaylistModal from "../../components/EditPlaylistModal";
 import { createPortal } from "react-dom";
-console.log("aaa");
 
 interface FPPlaylistOverviewProps {
   playlist: DetailedPlaylistType;

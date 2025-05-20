@@ -42,7 +42,7 @@ function AddToPlaylist({
   ) => {
     e.stopPropagation();
     // * open options menu
-    // if (isPlaylistSelectMenuOpen) setIsPlaylistSelectMenuOpen(false);
+    if (isPlaylistSelectMenuOpen) setIsPlaylistSelectMenuOpen(false);
 
     setTimeout(() => setIsPlaylistSelectMenuOpen(true), 0);
     // * get all users playlists
@@ -56,33 +56,60 @@ function AddToPlaylist({
     id: string,
   ) => {
     // * optimistic update UI
+    // for testing
+    const testTrack = {
+      name: "CIGANCICI (Radio Edit)",
+      id: "473seUIaybpMVhu4BpPgz2",
+      imageUrl:
+        "https://i.scdn.co/image/ab67616d0000b27323933555145a05249a9e8042",
+      multipleArtists: false,
+      artists: [
+        {
+          name: "Remusic",
+          artistId: "6fm0ZVpyhf6bQZltcDl8yu",
+        },
+      ],
+      type: "track",
+      trackDuration: 276917,
+      releaseDate: "2024-07-12",
+      albumName: "Roma",
+      albumId: "5xmCzFYRqTRVjym8GbLinh",
+    };
 
-    const usersSavedTracks = useStateStore.getState()
-      .usersSavedTracks as DetailedPlaylistType;
-
-    if (!usersSavedTracks || usersSavedTracks === null) return;
-
-    useStateStore.setState({
-      usersSavedTracks: {
-        ...usersSavedTracks,
-        tracks: [track, ...usersSavedTracks.tracks],
-      },
+    let usersSavedTracks;
+    // local store update
+    useStateStore.setState((prevState) => {
+      if (!prevState.usersSavedTracks) return prevState;
+      const newSavedTracks = {
+        ...prevState,
+        usersSavedTracks: {
+          ...prevState.usersSavedTracks,
+          tracks: [
+            ...new Set([testTrack, ...prevState.usersSavedTracks.tracks]),
+          ],
+        },
+      };
+      usersSavedTracks = newSavedTracks;
+      return newSavedTracks;
     });
-    console.log(useStateStore.getState().user?.username);
+
+    // USER PLAYLISTS COME OUT UNDEFINED SOMEHOW!!! CHECK ALL STATE
+    const currUsernam = useStateStore.getState().user?.username;
+    console.log(currUsernam);
     // * update local storage
     localStorage.setItem(
-      `${useStateStore.getState().user?.username}s_saved_tracks`,
+      `${currUsernam}s_saved_tracks_with_offset_of_0`,
       JSON.stringify(usersSavedTracks),
     );
 
-    console.log("should be updated");
+    console.log("should be all updated");
     // * call spotify api with post req
   };
 
   // ! look for this ID in all playlists - make function that does this
 
   const isTheTrackInLibrary = isTrackInLibrary(id);
-
+  // console.log(isTheTrackInLibrary);
   return (
     // ! container
     <div

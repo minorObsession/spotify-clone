@@ -82,7 +82,8 @@ export const playlistLoader = createLoader<DetailedPlaylistType>(
     const playlist = await getPlaylist(id);
     // console.log("playlist", playlist);
 
-    playlist.tracks = playlist.tracks.slice(0, 50);
+    // ! following line fucks up caching!
+    // playlist.tracks = playlist.tracks.slice(0, 50);
     useStateStore.getState().setPlaylist(playlist); // Hydrate Zustand
     return playlist;
   },

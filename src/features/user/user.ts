@@ -14,8 +14,8 @@ export interface UserSlice {
   // ! get partial types
   user: UserType | null;
   usersSavedTracks: DetailedPlaylistType | null;
-  getUser: () => Promise<UserType | null>;
-  getUserSavedTracks(offset: number): Promise<DetailedPlaylistType | null>;
+  getUser: () => Promise<UserType>;
+  getUserSavedTracks(offset: number): Promise<DetailedPlaylistType>;
   logoutUser: () => void;
 }
 
@@ -29,11 +29,8 @@ export const createUserSlice: StateCreator<
   usersSavedTracks: null,
 
   getUser: async () => {
-    console.log("calling getUser");
     const { user } = get(); // from Zustand
     if (user) return user;
-
-    console.log("calling getUser PAST guard");
 
     const userData = await fetchFromSpotify<any, UserType>({
       endpoint: "me",
@@ -54,21 +51,23 @@ export const createUserSlice: StateCreator<
 
     return userData;
   },
+
   getUserSavedTracks: async (offset = 0) => {
     const { user, getUser } = get();
 
     const currentUser = user || (await getUser());
 
     if (!currentUser?.username) {
-      console.warn("❌ No username. Skipping...");
-      return null;
+      throw new Error("❌ No username.. exiting with error...");
     }
 
+    // if there's a user,
+    console.log("❌🛜the fetch will happen now...");
     const result = await fetchFromSpotify<any, DetailedPlaylistType>({
       endpoint: "me/tracks",
       cacheName: `${currentUser?.username}s_saved_tracks_with_offset_of_${offset}`,
       // ! TEMPORARY LIMIT
-      offset: `?offset=${offset}&limit=10`,
+      offset: `?offset=${offset}&limit=50`,
       transformFn: (data) => {
         const newTracks = data.items.map(
           (item: any): TrackType => ({
@@ -92,6 +91,8 @@ export const createUserSlice: StateCreator<
         );
 
         const currentSaved = get().usersSavedTracks;
+        console.log("currentSaved", currentSaved);
+        // debugger;
         const mergedTracks =
           offset > 0 && currentSaved
             ? [...currentSaved.tracks, ...newTracks]
@@ -112,11 +113,13 @@ export const createUserSlice: StateCreator<
 
         // set updated tracks
         set({ usersSavedTracks: tracksToStore });
+        console.log("✅ users tracks saved");
 
         return tracksToStore;
       },
     });
     return result;
   },
+
   logoutUser: () => set({ user: null, usersSavedTracks: null }),
 });

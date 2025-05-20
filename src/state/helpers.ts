@@ -1,7 +1,7 @@
 import { ActionFunctionArgs } from "react-router";
 import { getFromLocalStorage } from "../features/auth/authHelpers";
 import { AccessTokenType } from "../features/auth/Auth";
-import { store } from "./store";
+// import { store } from "./store";
 
 export function createLoader<T>(
   nameOfData: string,
@@ -36,25 +36,26 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
   offset = "",
   onCacheFound,
   onDataReceived,
-  deviceId = "",
   method = "GET",
-  requestBody = null, // optional request body for POST requests
+  requestBody,
   bypassCache = false,
 }: {
   endpoint: string;
   offset?: string;
   cacheName?: string;
   method?: string;
-  deviceId?: string;
-  requestBody?: string | null;
+  requestBody?: string;
   bypassCache?: boolean;
   additionalHeaders?: Record<string, string>;
   transformFn?: (data: ResponseType) => Promise<ReturnType> | ReturnType;
   onCacheFound?: (data: ReturnType) => void;
   onDataReceived?: (data: ReturnType) => void;
-}): Promise<ReturnType | null> => {
+}): Promise<ReturnType> => {
   try {
-    await store.getState().waitForAuthentication();
+    console.log(`calling fetch ${endpoint} ${cacheName} `);
+
+    // debugger;
+    // await store.getState().waitForAuthentication();
 
     const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
     if (!accessToken) {
@@ -64,6 +65,7 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
     // Check local storage for cached data if cacheName is provided a is true
 
     if (cacheName && !bypassCache) {
+      console.log("inside Cached block");
       const cachedData = getFromLocalStorage<ReturnType>(cacheName);
       if (cachedData) {
         if (onCacheFound) onCacheFound(cachedData);
@@ -71,41 +73,33 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
       }
     }
 
-    if (cacheName && cacheName.includes("undefineds_saved_tracks")) {
-      console.log("escaping redunnt calls ..... ");
-
-      return null;
-    }
-
     // Fetch data from Spotify API
-    console.log(`🛜 Calling spotify API: ${endpoint} ${method} ${cacheName}`);
-    console.trace(); // <- this shows the call stack
-
-    const res = await fetch(
-      `https://api.spotify.com/v1/${endpoint}${offset}${deviceId}`,
-      {
-        method: method,
-        headers: {
-          Authorization: `Bearer ${accessToken.token}`,
-          "Content-Type": "application/json",
-        },
-        body: requestBody,
-      },
+    console.log(
+      `🛜 Calling spotify API: ${endpoint} ${method} ${cacheName} ${offset}`,
     );
 
+    const res = await fetch(`https://api.spotify.com/v1/${endpoint}${offset}`, {
+      method: method,
+      headers: {
+        Authorization: `Bearer ${accessToken.token}`,
+        "Content-Type": "application/json",
+      },
+      body: requestBody,
+    });
     if (!res.ok) {
       throw new Error(`API request failed: ${res.status} ${res.statusText}`);
     }
 
     // if it's not a get request
-    if (!transformFn) return null;
+    if (!transformFn) throw new Error("❌ Transform function not found..");
 
     const data: ResponseType = await res.json();
-    console.log(data);
+
     const transformedData: ReturnType = await transformFn(data);
 
     if (onDataReceived) onDataReceived(transformedData);
 
+    // const dataToStore = transformedData.
     // Store in localStorage if cacheName is provided
     if (cacheName) {
       localStorage.setItem(cacheName, JSON.stringify(transformedData));
@@ -114,6 +108,6 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
     return transformedData;
   } catch (err) {
     console.error("🛑 ❌", err);
-    return null;
+    throw err;
   }
 };

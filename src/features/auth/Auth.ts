@@ -247,17 +247,17 @@ export const createAuthSlice: StateCreator<
     set({ refreshInterval: interval });
   },
 
-  waitForAuthentication: async () => {
-    return new Promise((resolve) => {
-      const checkAuth = () => {
-        if (get().isAuthenticated) {
-          clearInterval(intervalId);
-          resolve(true);
-        }
-      };
-      const intervalId = setInterval(checkAuth, 500);
-    });
-  },
+  // waitForAuthentication: async () => {
+  //   return new Promise((resolve) => {
+  //     const checkAuth = () => {
+  //       if (get().isAuthenticated) {
+  //         clearInterval(intervalId);
+  //         resolve(true);
+  //       }
+  //     };
+  //     const intervalId = setInterval(checkAuth, 500);
+  //   });
+  // },
 
   // --- Public Action: Logout ---
   logout: () => {

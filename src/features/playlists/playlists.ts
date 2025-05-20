@@ -48,7 +48,7 @@ export interface PlaylistSlice {
   playlist: DetailedPlaylistType;
   playlistsFetched: boolean;
   setPlaylist: (playlist: DetailedPlaylistType) => void;
-  getUserPlaylists: () => Promise<UserPlaylistType[] | null>;
+  getUserPlaylists: () => Promise<UserPlaylistType[]>;
   getPlaylist: (
     id: string,
     offset?: number,
@@ -82,17 +82,19 @@ export const createPlaylistSlice: StateCreator<
   },
   getUserPlaylists: async () => {
     try {
+      console.log("1: getUserPlaylists running...");
       if (get().playlistsFetched) return get().playlists;
 
       if (get().user === null) {
         console.log("NO USER HERE WILL ESCAPE");
         return null;
-      } else console.log("user is defined....");
+      } else console.log("2: user is defined....");
 
       const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
       if (!accessToken)
         throw new Error("Access token expired or doesn't exist");
 
+      console.log("3: will try stored playlists...");
       const storedPlaylists = getFromLocalStorage<UserPlaylistType[]>(
         `${get().user?.username}_playlists`,
       );
@@ -113,9 +115,8 @@ export const createPlaylistSlice: StateCreator<
 
         if (likedSongs) {
           console.log(
-            "found cache and found likedSongs so will return cached..",
+            "4: found cache and found likedSongs so will return cached..",
           );
-
           set({ usersSavedTracks: likedSongs });
         } else {
           console.log(
@@ -124,7 +125,7 @@ export const createPlaylistSlice: StateCreator<
           set({ usersSavedTracks: await get().getUserSavedTracks(0) });
         }
         set({ playlistsFetched: true });
-
+        console.log("5: FINAL returning user playlists");
         return storedPlaylists;
       }
 
@@ -173,7 +174,7 @@ export const createPlaylistSlice: StateCreator<
 
       if (!get().user || get().user === null) {
         console.log("NO USER HERE");
-        return null;
+        throw new Error("🛑 no user found");
       }
 
       localStorage.setItem(
@@ -200,6 +201,8 @@ export const createPlaylistSlice: StateCreator<
   },
 
   getPlaylist: async (id, offset = 0, bypassCache = false) => {
+    console.log("getPlaylist running...");
+
     if (id === "liked_songs") {
       const usersSavedTracks = get().usersSavedTracks;
 

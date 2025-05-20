@@ -37,16 +37,21 @@ function App() {
       path: "/",
       element: <Root />,
       loader: initialLoader,
+      shouldRevalidate: () => false, // skip auto‑revalidation
+
       children: [
         {
           index: true,
           // auto redirect home
           loader: () => redirect("/home"),
+          shouldRevalidate: () => false, // skip auto‑revalidation
         },
         {
           path: "home",
           element: <Home />,
           loader: userStateLoader,
+          shouldRevalidate: () => false, // skip auto‑revalidation
+
           children: [
             {
               path: "playlist/:id",
