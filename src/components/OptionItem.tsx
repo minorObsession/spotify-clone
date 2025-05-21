@@ -35,7 +35,7 @@ function OptionItem({ option, menuFor }: OptionItemProps) {
     <li
       onClick={() => handleOptionClick(option)}
       key={option}
-      className="w-fit hover:cursor-pointer hover:underline"
+      className={`w-fit hover:cursor-pointer hover:underline`}
     >
       {option}
     </li>

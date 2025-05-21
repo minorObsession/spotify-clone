@@ -10,7 +10,7 @@ import { FaPlay } from "react-icons/fa";
 
 interface TrackProps {
   track: TopTrackType;
-  index: number;
+  index?: number;
 }
 
 function FPArtistTrackItem({ track, index }: TrackProps) {
@@ -48,8 +48,10 @@ function FPArtistTrackItem({ track, index }: TrackProps) {
                 size={12}
                 className="cursor-pointer"
               />
-            ) : (
+            ) : index ? (
               index + 1
+            ) : (
+              ""
             )}
           </span>
 
