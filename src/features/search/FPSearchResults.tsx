@@ -1,10 +1,16 @@
+import { useLoaderData } from "react-router";
+import { createLoader } from "../../state/helpers";
 import { useStateStore } from "../../state/store";
 import FPArtistTrackItem from "../artists/FPArtistTrackItem";
+import { SearchResultType } from "./search";
 
-function FPSeachResults() {
+function FPSearchResults() {
+  const data = useLoaderData() as SearchResultType;
+  console.log(data);
   const searchResults = useStateStore((store) => store.searchResults);
-  const searchFilters = useStateStore((store) => store.searchFilters);
   const topResult = useStateStore((store) => store.topResult);
+
+  if (!searchResults) return null;
 
   return (
     // ! whole search results container
@@ -15,8 +21,8 @@ function FPSeachResults() {
           {/* // ! top artist result */}
           <h3>Top result</h3>
           <div>
-            <img />
-            <h4>Name</h4>
+            <img src={topResult?.imageUrl} alt={topResult?.artistName} />
+            <h4>{topResult?.artistName}</h4>
             <p>Artist</p>
           </div>
         </article>
@@ -46,4 +52,8 @@ function FPSeachResults() {
   );
 }
 
-export default FPSeachResults;
+export default FPSearchResults;
+
+const search = useStateStore.getState().search;
+
+export const searchLoader = createLoader<SearchResultType>("search", search);

@@ -13,7 +13,7 @@ import MobileHeader from "./layouts/mobile/MobileHeader";
 import RecentlyPlayedMobile from "./layouts/mobile/RecentlyPlayedMobile";
 import RecentlyPlayedDesktop from "./layouts/desktop/RecentlyPlayedDesktop";
 import { useStateStore } from "./state/store";
-import SeachFilters from "./features/search/SeachFilters";
+import SearchFilters from "./features/search/SearchFilters";
 // import SuggestionsRow from "./components/SuggestionsRow";
 
 function Home() {
@@ -44,9 +44,9 @@ function Home() {
       <DesktopNav />
       <Sidebar />
       <main className="grid-main-l flex flex-col overflow-y-auto bg-blue-100 p-5">
+        <SearchFilters />
         {isHomepage ? (
           <>
-            <SeachFilters />
             <RecentlyPlayedDesktop />
             {/* <SuggestionsRow /> */}
             {/* // ! suggestions - albums by artist you follow */}

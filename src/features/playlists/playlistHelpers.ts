@@ -18,7 +18,10 @@ export const isTrackInLibrary = (id: string) => {
 
   const savedTracks = useStateStore.getState().usersSavedTracks;
   if (!savedTracks) throw new Error("no saved tracsk");
-  const idsFromLikedSongs = savedTracks.tracks.map((track) => track.id);
+
+  const idsFromLikedSongs = (savedTracks.tracks || [])
+    .filter((track): track is { id: string } => !!track?.id)
+    .map((track) => track.id);
 
   const idsFromUserPlaylists: string[] = useStateStore
     .getState()

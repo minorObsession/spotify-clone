@@ -4,17 +4,16 @@ import { SlHome } from "react-icons/sl";
 import { SlMagnifier } from "react-icons/sl";
 import UserAvatar from "../../components/UserAvatar";
 import { useNavigate } from "react-router";
-import { useStateStore } from "../../state/store";
 import { useState } from "react";
-// import { useInputChangeDebounce } from "../../hooks/useInputChangeDebounce(useState+useEffect)";
 
 function DesktopNav() {
   // ! automatically run getUser to get the photo WITH ROUTER LOADER
-  const search = useStateStore((store) => store.search);
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
 
-  // const debouncedQuery = useInputChangeDebounce(query, 500);
+  const handleSearch = () => {
+    navigate(`/home/search/${query}`);
+  };
 
   return (
     <menu
@@ -44,9 +43,7 @@ function DesktopNav() {
         />
         <button
           className="rounded-full bg-green-700 px-3 py-1 text-sm"
-          onClick={() => {
-            search(query);
-          }}
+          onClick={handleSearch}
         >
           GO
         </button>

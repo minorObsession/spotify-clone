@@ -15,6 +15,9 @@ import FullPreviewTrack, {
 import FullPreviewArtist, { artistLoader } from "./features/artists/FPArtist";
 
 import PageNotFound from "./components/PageNotFound";
+import FullPreviewSearchResults, {
+  searchLoader,
+} from "./features/search/FPSearchResults";
 
 // TODO:
 // test handleAddToLikedSongs with a random btn and random track
@@ -66,6 +69,11 @@ function App() {
               path: "artist/:id",
               element: <FullPreviewArtist />,
               loader: artistLoader,
+            },
+            {
+              path: "search/:query",
+              element: <FullPreviewSearchResults />,
+              loader: searchLoader,
             },
           ],
         },

@@ -5,16 +5,18 @@ import { AccessTokenType } from "../features/auth/Auth";
 
 export function createLoader<T>(
   nameOfData: string,
-  loadingFunction: (id: string) => Promise<T | null>,
+  loadingFunction: (id?: string, query?: string) => Promise<T | null>,
 ) {
   return async ({ params }: ActionFunctionArgs): Promise<T> => {
-    if (!params.id || typeof params.id !== "string") {
-      console.error(`🚨 ❌ Invalid ${nameOfData} ID:`, params.id);
-      throw new Response(`Invalid ${nameOfData} ID`, { status: 400 });
+    const param = params.id || params.query;
+
+    if (!param || typeof param !== "string") {
+      console.error(`🚨 ❌ Invalid ${nameOfData} param:`, param);
+      throw new Response(`Invalid ${nameOfData} param`, { status: 400 });
     }
 
     try {
-      const data = await loadingFunction(params.id);
+      const data = await loadingFunction(param);
       if (!data) {
         throw new Response(`${nameOfData} not found`, { status: 404 });
       }
