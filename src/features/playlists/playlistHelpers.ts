@@ -1,6 +1,7 @@
 import { flexibleMillisecondsConverter } from "../../helpers/helperFunctions";
 import { useStateStore } from "../../state/store";
 import { TrackType } from "../tracks/track";
+import { PlaylistNamesWithidsType } from "./playlists";
 
 export const getPlaylistLenght = (data: TrackType[]) => {
   return flexibleMillisecondsConverter(
@@ -19,9 +20,15 @@ export const isTrackInLibrary = (id: string) => {
   if (!savedTracks) throw new Error("no saved tracsk");
   const idsFromLikedSongs = savedTracks.tracks.map((track) => track.id);
 
-  const idsFromUserPlaylists = useStateStore
+  const idsFromUserPlaylists: string[] = useStateStore
     .getState()
-    .playlists.map((playlist) => playlist.id);
+    .playlistNamesWithids.reduce(
+      (acm: string[], p: PlaylistNamesWithidsType) => {
+        p.ids.forEach((id: string) => acm.push(id));
+        return acm;
+      },
+      [],
+    );
 
   const allIds = [...idsFromLikedSongs, ...idsFromUserPlaylists];
 

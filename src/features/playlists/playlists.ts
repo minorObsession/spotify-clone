@@ -11,6 +11,7 @@ export interface UserPlaylistType {
   id: string;
   image: string; // Extract only 1 image
   ownerName: string;
+  trackIds: string[];
 }
 export interface DetailedPlaylistType {
   id: string;
@@ -24,7 +25,10 @@ export interface DetailedPlaylistType {
   totalDurationMs: number;
   imageUrl: string;
 }
-
+export interface PlaylistNamesWithidsType {
+  name: string;
+  ids: string[];
+}
 export const initialEmptyPlaylist: DetailedPlaylistType = {
   id: "",
   name: "",
@@ -40,6 +44,8 @@ export const initialEmptyPlaylist: DetailedPlaylistType = {
 export interface PlaylistSlice {
   playlists: UserPlaylistType[];
   playlist: DetailedPlaylistType;
+  playlistNamesWithids: PlaylistNamesWithidsType[];
+  playlistsFetched: boolean;
   setPlaylist: (playlist: DetailedPlaylistType) => void;
   getUserPlaylists: () => Promise<UserPlaylistType[]>;
   getPlaylist: (
@@ -56,6 +62,7 @@ export interface PlaylistSlice {
     id: string,
     updatedPlaylist: PartialPlaylist,
   ) => Promise<void>;
+  addTrackToPlaylist: (id: string, trackId: string) => Promise<void>;
 }
 
 export const createPlaylistSlice: StateCreator<
@@ -66,18 +73,20 @@ export const createPlaylistSlice: StateCreator<
 > = (set, get) => ({
   playlists: [],
   playlist: initialEmptyPlaylist,
+  playlistNamesWithids: [],
+  playlistsFetched: false,
   setPlaylist: (playlist) => {
     set({ playlist });
     // update cache
     localStorage.setItem(`playlist${playlist.id}`, JSON.stringify(playlist));
   },
+
   // ! NEVER TRY TO FIT THIS INTO FETCHFROMSPOTIFY!! YOU FAILED 4 TIMES
   getUserPlaylists: async () => {
-    // 1st UserPlaylistType then DetailedPlaylistType
     try {
-      if (get().user === null) {
-        throw new Error("No user found in getUserPlaylists function");
-      } else console.log("2: user is defined....");
+      if (get().playlistsFetched) return get().playlists;
+
+      set({ playlistsFetched: true });
 
       const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
       if (!accessToken)
@@ -86,19 +95,26 @@ export const createPlaylistSlice: StateCreator<
       const storedPlaylists = getFromLocalStorage<UserPlaylistType[]>(
         `${get().user?.username}_playlists`,
       );
-
+      const storedPlaylistsWithids = getFromLocalStorage<
+        PlaylistNamesWithidsType[]
+      >(`${get().user?.username}_playlist_names_with_track_ids`);
       const likedSongs = getFromLocalStorage<DetailedPlaylistType>(
-        `${get().user?.username}s_saved_tracks_with_offset_of_0`,
+        `${get().user?.username}s_saved_tracks`,
       );
 
       if (storedPlaylists) {
         set({ playlists: storedPlaylists });
+
+        if (storedPlaylistsWithids) {
+          set({ playlistNamesWithids: storedPlaylistsWithids });
+        }
 
         if (likedSongs) {
           set({ usersSavedTracks: likedSongs });
         } else {
           set({ usersSavedTracks: await get().getUserSavedTracks(0) });
         }
+
         return storedPlaylists;
       }
 
@@ -117,6 +133,24 @@ export const createPlaylistSlice: StateCreator<
       if (!res.ok) throw new Error("No playlists or bad request");
 
       const { items } = await res.json();
+      console.log(items);
+
+      const playlistNamesWithids: PlaylistNamesWithidsType[] =
+        await Promise.all(
+          items.map(async (playlist: any) => {
+            const idsForCurrentP = (
+              await get().getPlaylist(playlist.id)
+            ).tracks.map((track: TrackType) => track.id);
+
+            return {
+              name: playlist.name,
+              ids: idsForCurrentP,
+            };
+          }),
+        );
+
+      console.log(playlistNamesWithids);
+      set({ playlistNamesWithids });
 
       const formattedPlaylists: UserPlaylistType[] = items.map(
         (playlist: any) => ({
@@ -127,17 +161,19 @@ export const createPlaylistSlice: StateCreator<
         }),
       );
 
-      if (!get().user || get().user === null) {
-        throw new Error("🛑 no user found");
-      }
-
       localStorage.setItem(
         `${get().user?.username}_playlists`,
         JSON.stringify(formattedPlaylists),
       );
+      localStorage.setItem(
+        `${get().user?.username}_playlist_names_with_track_ids`,
+        JSON.stringify(playlistNamesWithids),
+      );
 
       set({ playlists: formattedPlaylists });
       await get().getUserSavedTracks(0);
+
+      set({ playlistsFetched: true });
 
       return formattedPlaylists;
     } catch (err) {
@@ -236,12 +272,16 @@ export const createPlaylistSlice: StateCreator<
     });
   },
 
-  addTrackToPlaylist: async (id: string, trackId: string) => {
-    await fetchFromSpotify({
-      endpoint: `playlists/${id}/tracks`,
-      method: "POST",
-      requestBody: JSON.stringify({ uris: [trackId] }),
-    });
+  addTrackToPlaylist: async (id, trackId) => {
+    try {
+      await fetchFromSpotify({
+        endpoint: `playlists/${id}/tracks`,
+        method: "POST",
+        requestBody: JSON.stringify({ uris: [trackId], position: 0 }),
+      });
+    } catch (err) {
+      console.error(`❌🛑 Could not add track to playlist`, err);
+    }
   },
 
   // addToLikedSongs: async (trackId: string) => {}

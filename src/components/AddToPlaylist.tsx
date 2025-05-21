@@ -31,36 +31,16 @@ function AddToPlaylist({
 
   const playlists = useStateStore.getState().playlists;
   const playlistNames = playlists.map((playlist) => playlist.name);
+  const addTrackToPlaylist = useStateStore((store) => store.addTrackToPlaylist);
 
   const playlistMenuRef = useOutsideClick<HTMLUListElement>(
     () => setIsPlaylistSelectMenuOpen(false),
     undefined,
     true,
   ) as React.RefObject<HTMLUListElement>;
-  const handleAddToLikedSongs = (
-    e: React.MouseEvent<HTMLDivElement>,
-    id: string,
-  ) => {
+
+  const handleAddToLikedSongs = () => {
     // * optimistic update UI
-    // for testing
-    const testTrack = {
-      name: ` ${Math.random()} GANCI (Radio Edit)`,
-      id: Math.random().toString(),
-      imageUrl:
-        "https://i.scdn.co/image/ab67616d0000b27323933555145a05249a9e8042",
-      multipleArtists: false,
-      artists: [
-        {
-          name: "Remusic",
-          artistId: "6fm0ZVpyhf6bQZltcDl8yu",
-        },
-      ],
-      type: "track",
-      trackDuration: 276917,
-      releaseDate: "2024-07-12",
-      albumName: "Roma",
-      albumId: "5xmCzFYRqTRVjym8GbLinh",
-    };
 
     let usersSavedTracksVar: DetailedPlaylistType;
 
@@ -71,7 +51,7 @@ function AddToPlaylist({
         ...prevState,
         usersSavedTracks: {
           ...prevState.usersSavedTracks,
-          tracks: [testTrack, ...prevState.usersSavedTracks.tracks],
+          tracks: [track, ...prevState.usersSavedTracks.tracks],
         },
       };
       usersSavedTracksVar = newState.usersSavedTracks;
@@ -90,23 +70,25 @@ function AddToPlaylist({
 
   const handleAddToPlaylist = (
     e: React.MouseEvent<HTMLDivElement>,
-    id: string,
+    playlistId: string,
   ) => {
     e.stopPropagation();
     // * open options menu
     if (isPlaylistSelectMenuOpen) setIsPlaylistSelectMenuOpen(false);
 
     setTimeout(() => setIsPlaylistSelectMenuOpen(true), 0);
-    // * get all users playlists
-    //
+    // * get all users playlists (local)
+
+    // addTrackToPlaylist()
     // * call spotify api with post req
+
     // * optimistic update UI
   };
 
   // ! look for this ID in all playlists - make function that does this
 
   const isTheTrackInLibrary = isTrackInLibrary(id);
-  // console.log(isTheTrackInLibrary);
+
   return (
     // ! container
     <div
@@ -115,7 +97,7 @@ function AddToPlaylist({
       onClick={(e) =>
         isTheTrackInLibrary
           ? handleAddToPlaylist(e, id)
-          : handleAddToLikedSongs(e, id)
+          : handleAddToLikedSongs()
       }
       className="relative flex"
     >
