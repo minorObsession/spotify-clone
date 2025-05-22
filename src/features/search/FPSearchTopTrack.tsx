@@ -7,7 +7,7 @@ import { useTrackItem } from "../../hooks/useTrackItem";
 import AddToPlaylist from "../../components/AddToPlaylist";
 import { trackOptions } from "../../config/menuOptions";
 import { FaPlay } from "react-icons/fa";
-import { useNavigate } from "react-router";
+import ArtistList, { Artist } from "../../components/ArtistList";
 
 interface TrackProps {
   track: TopTrackType;
@@ -16,7 +16,7 @@ interface TrackProps {
 
 function FPSearchTopTrack({ track, index }: TrackProps) {
   const {
-    screenWidthRem,
+    // screenWidthRem,
     isTrackBoxSelected,
     setIsTrackBoxSelected,
     isTrackHovered,
@@ -26,11 +26,6 @@ function FPSearchTopTrack({ track, index }: TrackProps) {
     thumbnailUrl,
     handleTrackSelect,
   } = useTrackItem(track);
-  const navigate = useNavigate();
-
-  const handleArtistSelect = (id: string) => {
-    navigate(`/home/artist/${id}`);
-  };
 
   const id = track.id;
   return (
@@ -70,16 +65,10 @@ function FPSearchTopTrack({ track, index }: TrackProps) {
           {trackName}
         </span>
         <span className="text-2xs w-fit truncate md:text-sm">
-          {/* // ! loop artists, save id, print name */}
-          {track?.artists?.map((artist, i, array) => (
-            <span
-              key={artist.artistId + i}
-              onClick={() => handleArtistSelect(artist.artistId)}
-              className="cursor-pointer underline-offset-1 hover:underline"
-            >
-              {i + 1 === array.length ? artist.name : `${artist.name}, `}
-            </span>
-          ))}
+          <ArtistList
+            artists={track?.artists as Artist[]}
+            addClassName="text-2xs md:text-sm"
+          />
         </span>
       </div>
 

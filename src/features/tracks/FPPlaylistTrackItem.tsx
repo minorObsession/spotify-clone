@@ -1,14 +1,15 @@
 import { memo } from "react";
 import Thumbnail from "../../components/Thumbnail";
-import { useNavigate } from "react-router";
 import TrackOptions from "./TrackOptions";
 import { TrackType } from "./track";
 import { useTrackItem } from "../../hooks/useTrackItem";
 import AddToPlaylist from "../../components/AddToPlaylist";
 import { trackOptions } from "../../config/menuOptions";
+import ArtistList, { Artist } from "../../components/ArtistList";
 
 import TrackStatusOrIndex from "../../components/TrackStatusOrIndex";
 import { useStateStore } from "../../state/store";
+
 interface TrackProps {
   track: TrackType;
   index: number;
@@ -28,12 +29,6 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
     thumbnailUrl,
     handleTrackSelect,
   } = useTrackItem(track);
-
-  const navigate = useNavigate();
-
-  const handleArtistSelect = (id: string) => {
-    navigate(`/home/artist/${id}`);
-  };
 
   const id = track?.id;
   const album = track?.albumName;
@@ -70,21 +65,15 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
         <span
           onClick={handleTrackSelect}
           id={id}
-          className={`w-fittruncate max-w-fit cursor-pointer underline-offset-1 hover:underline ${isTrackCurrentlyQueued ? "text-green-700" : ""}`}
+          className={`w-fit max-w-fit cursor-pointer truncate underline-offset-1 hover:underline ${isTrackCurrentlyQueued ? "text-green-700" : ""}`}
         >
           {trackName}
         </span>
         <span className="text-2xs w-fit truncate md:text-sm">
-          {/* // ! loop artists, save id, print name */}
-          {track.artists.map((artist, i, array) => (
-            <span
-              key={artist.artistId + i}
-              onClick={() => handleArtistSelect(artist.artistId)}
-              className="cursor-pointer underline-offset-1 hover:underline"
-            >
-              {i + 1 === array.length ? artist.name : `${artist.name}, `}
-            </span>
-          ))}
+          <ArtistList
+            artists={track.artists as Artist[]}
+            addClassName="text-2xs md:text-sm"
+          />
         </span>
       </div>
 

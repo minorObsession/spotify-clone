@@ -5,13 +5,23 @@ import { SearchResultType } from "./search";
 import FPSearchTopTrack from "./FPSearchTopTrack";
 import ArtistCard from "./ArtistCard";
 import { useResponsiveCards1Row } from "../../hooks/useResponsiveCards1Row";
+import GenericCard from "./AlbumCard";
+import PlaylistCard from "./PlaylistCard";
+import PodcastCard from "./PodcastCard";
+import EpisodeCard from "./EpisodeCard";
+import AudiobookCard from "./AudiobookCard";
+import SearchResultSection from "../../components/SearchResultSection";
+import { useState } from "react";
+import { IoMdPlay } from "react-icons/io";
 
 function FPSearchResults() {
   const searchResults = useLoaderData() as SearchResultType;
   const topResult = useStateStore((store) => store.topResult);
-  const numArtistCards = useResponsiveCards1Row({
-    itemWidth: 178, // card width + gap
-    containerSelector: "main",
+  const [isTopArtistHovered, setIsTopArtistHovered] = useState(false);
+
+  const numCards = useResponsiveCards1Row({
+    itemWidth: 180 + 8, // card width + gap
+    containerSelector: "main", // relative to main el
   });
 
   if (!searchResults) return null;
@@ -22,21 +32,35 @@ function FPSearchResults() {
       {/* // ! TOP RESULT */}
       <article className="grid grid-cols-1 grid-rows-1 gap-4 lg:grid-cols-[1fr_1.5fr]">
         {/* // ! top result container */}
-        <article className="">
+        <article
+          onMouseEnter={() => setIsTopArtistHovered(true)}
+          onMouseLeave={() => setIsTopArtistHovered(false)}
+          className="relative grid grid-cols-1 grid-rows-[1fr_6fr]"
+        >
           {/* // ! top artist result */}
           <h3 className="text-2xl font-bold">Top result</h3>
-          <div className="flex flex-col bg-amber-400 p-5">
+          <div className="flex cursor-pointer flex-col rounded-xl p-5 hover:bg-amber-500">
             <img
-              className={`h-32 w-32 rounded-full`}
+              className={`mb-2 h-32 w-32 rounded-full`}
               src={topResult?.imageUrl}
               alt={topResult?.name}
             />
-            <h4 className="text-3xl font-bold">{topResult?.name}</h4>
+
+            <IoMdPlay
+              className={`green-play-pause-button absolute right-1/10 bottom-1/8 transform ${isTopArtistHovered ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"} transition-all duration-200`}
+              size={48}
+              // ! figure out what to play when clicked
+              onClick={() => {}}
+            />
+            <h4 className="text-3xl font-bold hover:underline">
+              {topResult?.name}
+            </h4>
             <p>Artist</p>
           </div>
         </article>
+
         {/* // ! top tracks container */}
-        <article className="">
+        <article className="grid grid-cols-1 grid-rows-[1fr_6fr]">
           <h3 className="text-2xl font-bold">Songs</h3>
           <div className="flex flex-col gap-0.5">
             {topResult?.topTracks
@@ -48,25 +72,45 @@ function FPSearchResults() {
         </article>
       </article>
 
-      {/* // ! ARTISTS */}
-      <article>
-        <h3 className="text-2xl font-bold">Artists</h3>
-        <div className="flex gap-2 overflow-hidden">
-          {searchResults?.artists
-            ?.slice(0, numArtistCards)
-            .map((artist) => <ArtistCard key={artist.id} artist={artist} />)}
-        </div>
-      </article>
-      {/* // ! ALBUMS */}
-      <article></article>
-      {/* // ! PLAYLISTS */}
-      <article></article>
-      {/* // ! PODCASTS / SHOWS*/}
-      <article></article>
-      {/* // ! EPISODES */}
-      <article></article>
-      {/* // ! AUDIOBOOKS */}
-      <article></article>
+      <SearchResultSection title="Artists">
+        {searchResults?.artists
+          ?.slice(0, numCards)
+          .map((artist) => <ArtistCard key={artist.id} artist={artist} />)}
+      </SearchResultSection>
+
+      <SearchResultSection title="Albums">
+        {searchResults?.albums
+          ?.slice(0, numCards)
+          .map((album, i) => <GenericCard key={i} album={album} />)}
+      </SearchResultSection>
+
+      <SearchResultSection title="Playlists">
+        {searchResults?.playlists
+          ?.slice(0, numCards)
+          .map((playlist) => (
+            <PlaylistCard key={playlist.id} playlist={playlist} />
+          ))}
+      </SearchResultSection>
+
+      <SearchResultSection title="Podcasts">
+        {searchResults?.podcasts
+          ?.slice(0, numCards)
+          .map((podcast) => <PodcastCard key={podcast.id} podcast={podcast} />)}
+      </SearchResultSection>
+
+      <SearchResultSection title="Episodes">
+        {searchResults?.episodes
+          ?.slice(0, numCards)
+          .map((episode) => <EpisodeCard key={episode.id} episode={episode} />)}
+      </SearchResultSection>
+
+      <SearchResultSection title="Audiobooks">
+        {searchResults?.audiobooks
+          ?.slice(0, numCards)
+          .map((audiobook) => (
+            <AudiobookCard key={audiobook.id} audiobook={audiobook} />
+          ))}
+      </SearchResultSection>
     </div>
   );
 }

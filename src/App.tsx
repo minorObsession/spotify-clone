@@ -21,7 +21,8 @@ import FullPreviewSearchResults, {
 
 // TODO:
 
-// ! check search fitlers -not currently applying!
+// ! liked songs - not working not opening
+// ! check search filters -not currently applying!
 // test handleAddToLikedSongs with a random btn and random track
 // ! implement search functionallity
 // think about better caching

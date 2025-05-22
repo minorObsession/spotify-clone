@@ -58,7 +58,7 @@ function FPControls({ previewType, item, options }: FPControlsProps) {
           onClick={togglePlayback}
           size={54}
           fill="black"
-          className="cursor-pointer rounded-[50%] bg-green-500 p-4 transition duration-150 hover:brightness-120"
+          className="green-play-pause-button"
         />
       ) : (
         // * not currently playing
@@ -66,7 +66,7 @@ function FPControls({ previewType, item, options }: FPControlsProps) {
           onClick={handlePlayTrack}
           size={54}
           fill="black"
-          className="cursor-pointer rounded-[50%] bg-green-500 p-4 transition duration-150 hover:brightness-120"
+          className="green-play-pause-button"
         />
       )}
       {previewType === "artist" && <button>Follow</button>}
