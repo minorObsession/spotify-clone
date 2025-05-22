@@ -20,6 +20,8 @@ import FullPreviewSearchResults, {
 } from "./features/search/FPSearchResults";
 
 // TODO:
+
+// ! check search fitlers -not currently applying!
 // test handleAddToLikedSongs with a random btn and random track
 // ! implement search functionallity
 // think about better caching

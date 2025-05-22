@@ -38,6 +38,7 @@ export const createArtistSlice: StateCreator<
   artist: null,
 
   getTopTracks: async (id: string) => {
+    console.log("calling getTopTracks");
     return await fetchFromSpotify<any, TopTrackType[]>({
       endpoint: `artists/${id}/top-tracks`,
       cacheName: `top_tracks_for_${id}`,
@@ -47,6 +48,10 @@ export const createArtistSlice: StateCreator<
           id: track.id,
           imageUrl: track.album.images[0].url,
           trackDuration: track.duration_ms,
+          artists: track.artists.map((artist: any) => ({
+            name: artist.name,
+            artistId: artist.id,
+          })),
         })),
     });
   },

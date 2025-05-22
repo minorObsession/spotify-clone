@@ -68,17 +68,17 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
     // Check local storage for cached data if cacheName is provided a is true
 
     if (cacheName && !bypassCache) {
-      console.log("inside Cached block");
       const cachedData = getFromLocalStorage<ReturnType>(cacheName);
       if (cachedData) {
         if (onCacheFound) onCacheFound(cachedData);
+        console.log("returning Cached data");
         return cachedData;
       }
     }
 
     // Fetch data from Spotify API
     console.log(
-      `🛜 Calling spotify API: ${endpoint} ${method} ${cacheName} ${offset}`,
+      `🛜 🛜 🛜 Calling spotify API: ${endpoint} ${method} ${cacheName} ${offset}`,
     );
 
     const res = await fetch(`https://api.spotify.com/v1/${endpoint}${offset}`, {

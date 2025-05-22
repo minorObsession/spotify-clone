@@ -3,11 +3,8 @@ import { StateStore } from "../../state/store";
 import { fetchFromSpotify } from "../../state/helpers";
 import { TopTrackType } from "../artists/artist";
 
-const searchAllIfNotFiltered =
-  "track,artist,album,playlist,show,episode,audiobook";
-
 export type SearchFiltersType =
-  | typeof searchAllIfNotFiltered
+  | "track,artist,album,playlist,show,episode,audiobook"
   | "track"
   | "artist"
   | "album"
@@ -16,13 +13,13 @@ export type SearchFiltersType =
   | "episode"
   | "audiobook";
 
-interface ShortArtistType {
+export interface ShortArtistType {
   name: string;
   imageUrl: string;
   id: string;
 }
 
-interface ShortAlbumType {
+export interface ShortAlbumType {
   name: string;
   imageUrl: string | undefined;
   releaseYear: string;
@@ -32,31 +29,31 @@ interface ShortAlbumType {
   }[];
 }
 
-interface ShortPlaylistType {
+export interface ShortPlaylistType {
   name: string;
   imageUrl: string;
   id: string;
 }
 
-interface ShortShowType {
+export interface ShortShowType {
   name: string;
   imageUrl: string;
   id: string;
 }
 
-interface ShortEpisodeType {
+export interface ShortEpisodeType {
   name: string;
   imageUrl: string;
   id: string;
   releaseDate: string;
 }
 
-interface ShortAuthorType {
+export interface ShortAuthorType {
   name: string;
   id: string;
 }
 
-interface ShortAudiobookType {
+export interface ShortAudiobookType {
   name: string;
   imageUrl: string;
   id: string;
@@ -1038,7 +1035,7 @@ export const createSearchSlice: StateCreator<
   SearchSlice
 > = (set, get) => ({
   searchResults: tempSearchResults,
-  searchFilters: searchAllIfNotFiltered,
+  searchFilters: "track,artist,album,playlist,show,episode,audiobook",
   setSearchFilters: (filterBy) => set({ searchFilters: filterBy }),
   topResult: tempTopResult as TopResultType,
   searchOffset: 0,
@@ -1046,11 +1043,12 @@ export const createSearchSlice: StateCreator<
   // ! implement debounced auto search for production
   search: async (query) => {
     try {
-      console.log("search callled... ");
-      const { searchOffset, searchLimit } = get();
+      const { searchOffset, searchLimit, searchFilters } = get();
 
       const result = await fetchFromSpotify<any, SearchResultType>({
-        endpoint: `search?q=${query}&type=${searchAllIfNotFiltered}&offset=${searchOffset}&limit=${searchLimit}`,
+        endpoint: `search?q=${query}&type=${searchFilters}&offset=${searchOffset}&limit=${searchLimit}`,
+        cacheName: `search_${query}`,
+        onCacheFound: (data) => set({ searchResults: data }),
         transformFn: (data: any) => ({
           artists: data.artists?.items
             .filter(
@@ -1144,19 +1142,23 @@ export const createSearchSlice: StateCreator<
         },
       });
 
-      // call top tracks for 1st artist
-      const topTracks = await get().getTopTracks(result.artists[0].id);
-      const searchResults = get().searchResults;
+      let topTracks;
+      if (result.artists.length > 0) {
+        // call top tracks for 1st artist
+        topTracks = await get().getTopTracks(result.artists[0].id);
+      }
+
       if (!topTracks) return result;
-      if (!searchResults) return result;
 
       const topResultToStore: TopResultType = {
-        imageUrl: searchResults.artists[0].imageUrl,
-        name: searchResults.artists[0].name,
-        id: searchResults.artists[0].id,
-        topTracks: topTracks,
+        imageUrl: result.artists[0].imageUrl,
+        name: result.artists[0].name,
+        id: result.artists[0].id,
+        topTracks,
       };
       set({ topResult: topResultToStore });
+      set({ searchResults: result });
+
       return result;
     } catch (err) {
       console.error("❌🛑 search error:", err);
