@@ -7,6 +7,7 @@ interface GenericCardProps {
   isPodcast?: boolean;
   footer: ReactNode;
   onPlayClick?: () => void;
+  onClick?: () => void;
 }
 
 function GenericCard({
@@ -14,6 +15,7 @@ function GenericCard({
   name,
   footer,
   onPlayClick,
+  onClick,
   isPodcast,
 }: GenericCardProps) {
   const [isCardHovered, setIsCardHovered] = useState(false);
@@ -23,6 +25,7 @@ function GenericCard({
       className="search-view-card relative"
       onMouseEnter={() => setIsCardHovered(true)}
       onMouseLeave={() => setIsCardHovered(false)}
+      onClick={onClick}
     >
       <img
         className={`h-40 w-40 rounded-xl ${

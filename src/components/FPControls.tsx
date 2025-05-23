@@ -12,10 +12,16 @@ import OptionsMenu from "./OptionsMenu";
 
 import { useStateStore } from "../state/store";
 import { useParams } from "react-router";
+import { AlbumType } from "../features/albums/album";
 
 interface FPControlsProps {
-  item: TrackType | TopTrackType | DetailedPlaylistType | ArtistType;
-  previewType: "artist" | "playlist" | "track";
+  item:
+    | TrackType
+    | TopTrackType
+    | DetailedPlaylistType
+    | ArtistType
+    | AlbumType;
+  previewType: "artist" | "playlist" | "track" | "album";
   options: string[];
 }
 

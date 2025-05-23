@@ -13,6 +13,7 @@ import AudiobookCard from "./AudiobookCard";
 import SearchResultSection from "../../components/SearchResultSection";
 import { useState } from "react";
 import { IoMdPlay } from "react-icons/io";
+import AlbumCard from "./AlbumCard";
 
 function FPSearchResults() {
   const searchResults = useLoaderData() as SearchResultType;
@@ -81,7 +82,7 @@ function FPSearchResults() {
       <SearchResultSection title="Albums">
         {searchResults?.albums
           ?.slice(0, numCards)
-          .map((album, i) => <GenericCard key={i} album={album} />)}
+          .map((album, i) => <AlbumCard key={i} album={album} />)}
       </SearchResultSection>
 
       <SearchResultSection title="Playlists">

@@ -18,15 +18,16 @@ import PageNotFound from "./components/PageNotFound";
 import FullPreviewSearchResults, {
   searchLoader,
 } from "./features/search/FPSearchResults";
+import FullPreviewAlbum, { albumLoader } from "./features/albums/FPAlbum";
 
 // TODO:
 
 // ! liked songs - not working not opening
 // ! check search filters -not currently applying!
 // test handleAddToLikedSongs with a random btn and random track
-// ! implement search functionallity
-// think about better caching
-//
+
+// * think about better caching
+// ! WHEN TRACK IS SHORTER THAN 1 MIN, COLON SHOULDN'T BE DISPLAYED
 
 // * DIFFERENT USER NOTES:
 
@@ -77,6 +78,11 @@ function App() {
               path: "search/:query",
               element: <FullPreviewSearchResults />,
               loader: searchLoader,
+            },
+            {
+              path: "album/:id",
+              element: <FullPreviewAlbum />,
+              loader: albumLoader,
             },
           ],
         },

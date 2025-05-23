@@ -1,19 +1,20 @@
 import { memo } from "react";
 import Thumbnail from "../../components/Thumbnail";
 
-import { TopTrackType } from "./artist";
 import TrackOptions from "../tracks/TrackOptions";
 import { useTrackItem } from "../../hooks/useTrackItem";
 import AddToPlaylist from "../../components/AddToPlaylist";
 import { trackOptions } from "../../config/menuOptions";
 import { FaPlay } from "react-icons/fa";
+import { TopTrackType } from "../artists/artist";
+import ArtistList, { Artist } from "../../components/ArtistList";
 
 interface TrackProps {
   track: TopTrackType;
   index?: number;
 }
 
-function FPArtistTrackItem({ track, index }: TrackProps) {
+function FPAlbumTrackItem({ track, index }: TrackProps) {
   const {
     screenWidthRem,
     isTrackBoxSelected,
@@ -25,7 +26,7 @@ function FPArtistTrackItem({ track, index }: TrackProps) {
     thumbnailUrl,
     handleTrackSelect,
   } = useTrackItem(track);
-
+  console.log(trackDurationFormatted);
   const id = track.id;
 
   return (
@@ -54,11 +55,6 @@ function FPArtistTrackItem({ track, index }: TrackProps) {
               ""
             )}
           </span>
-
-          <Thumbnail
-            additionalClasses="w-7 md:w-7.5 lg:w-8.5"
-            img={thumbnailUrl}
-          />
         </div>
         {/* // ! TRACK name */}
         <span
@@ -69,8 +65,15 @@ function FPArtistTrackItem({ track, index }: TrackProps) {
         >
           {trackName}
         </span>
+        <span className="text-2xs w-fit truncate md:text-sm">
+          <ArtistList
+            artists={track.artists as Artist[]}
+            addClassName="text-2xs md:text-sm"
+          />
+        </span>
       </div>
 
+      {/* // ! */}
       <div className="track-utilities">
         <AddToPlaylist
           id={id}
@@ -93,4 +96,4 @@ function FPArtistTrackItem({ track, index }: TrackProps) {
   );
 }
 
-export default memo(FPArtistTrackItem);
+export default memo(FPAlbumTrackItem);

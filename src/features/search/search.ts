@@ -20,6 +20,7 @@ export interface ShortArtistType {
 }
 
 export interface ShortAlbumType {
+  id: string;
   name: string;
   imageUrl: string | undefined;
   releaseYear: string;
@@ -96,11 +97,11 @@ export const createSearchSlice: StateCreator<
 > = (set, get) => ({
   searchResults: null,
   searchFilters: "track,artist,album,playlist,show,episode,audiobook",
-  setSearchFilters: (filterBy) => set({ searchFilters: filterBy }),
   topResult: null,
   searchOffset: 0,
   searchLimit: 20,
   // ! implement debounced auto search for production
+  setSearchFilters: (filterBy) => set({ searchFilters: filterBy }),
   search: async (query) => {
     try {
       const { searchOffset, searchLimit, searchFilters } = get();
@@ -126,6 +127,7 @@ export const createSearchSlice: StateCreator<
                 album && album.name && album.release_date && album.artists,
             )
             .map((album: any) => ({
+              id: album.id,
               name: album.name,
               imageUrl: album.images?.[0]?.url,
               releaseYear: album.release_date.split("-")[0],

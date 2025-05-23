@@ -15,7 +15,6 @@ function FPArtist() {
       <BackToHomeButton />
 
       <FPArtistOverview data={data} />
-      {/* <PlaylistPreviewHeader /> */}
       <FPArtistTracks tracks={data.topTracks} />
     </div>
   );

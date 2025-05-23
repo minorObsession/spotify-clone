@@ -17,12 +17,14 @@ import {
   SpotifyPlayerSlice,
 } from "../features/playback/spotifyPlayerSlice";
 import { SearchSlice, createSearchSlice } from "../features/search/search";
+import { AlbumSlice, createAlbumSlice } from "../features/albums/album";
 
 export type StateStore = AuthSlice &
   UserSlice &
   PlaylistSlice &
   TrackSlice &
   ArtistSlice &
+  AlbumSlice &
   PlaybackSlice &
   SpotifyPlayerSlice &
   SearchSlice;
@@ -36,6 +38,7 @@ export const useStateStore = create<StateStore>()(
     ...createPlaylistSlice(...args),
     ...createTrackSlice(...args),
     ...createArtistSlice(...args),
+    ...createAlbumSlice(...args),
     ...createPlaybackSlice(...args),
     ...createSpotifyPlayerSlice(...args),
     ...createSearchSlice(...args),

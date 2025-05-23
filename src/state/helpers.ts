@@ -3,6 +3,7 @@ import { getFromLocalStorage } from "../features/auth/authHelpers";
 import { AccessTokenType } from "../features/auth/Auth";
 // import { store } from "./store";
 
+// ! make at least 1 argument required!!!
 export function createLoader<T>(
   nameOfData: string,
   loadingFunction: (id?: string, query?: string) => Promise<T | null>,
@@ -97,7 +98,7 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
     if (!transformFn) throw new Error("❌ Transform function not found..");
 
     const data: ResponseType = await res.json();
-
+    console.log(data);
     const transformedData: ReturnType = await transformFn(data);
 
     if (onDataReceived) onDataReceived(transformedData);
