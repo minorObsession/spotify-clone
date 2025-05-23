@@ -13,6 +13,7 @@ import OptionsMenu from "./OptionsMenu";
 import { useStateStore } from "../state/store";
 import { useParams } from "react-router";
 import { AlbumType } from "../features/albums/album";
+import { PodcastType } from "../features/podcasts/podcast";
 
 interface FPControlsProps {
   item:
@@ -20,8 +21,9 @@ interface FPControlsProps {
     | TopTrackType
     | DetailedPlaylistType
     | ArtistType
-    | AlbumType;
-  previewType: "artist" | "playlist" | "track" | "album";
+    | AlbumType
+    | PodcastType;
+  previewType: "artist" | "playlist" | "track" | "album" | "podcast";
   options: string[];
 }
 
@@ -101,7 +103,7 @@ function FPControls({ previewType, item, options }: FPControlsProps) {
       />
       {/* // ! menu    */}
       <OptionsMenu
-        menuFor="playlist"
+        menuFor={previewType}
         ref={menuRef}
         areOptionsVisible={areOptionsVisible}
         options={options}

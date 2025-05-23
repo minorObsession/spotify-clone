@@ -19,6 +19,9 @@ import FullPreviewSearchResults, {
   searchLoader,
 } from "./features/search/FPSearchResults";
 import FullPreviewAlbum, { albumLoader } from "./features/albums/FPAlbum";
+import FullPreviewPodcast, {
+  podcastLoader,
+} from "./features/podcasts/FPPodcast";
 
 // TODO:
 
@@ -84,6 +87,21 @@ function App() {
               element: <FullPreviewAlbum />,
               loader: albumLoader,
             },
+            {
+              path: "podcast/:id",
+              element: <FullPreviewPodcast />,
+              loader: podcastLoader,
+            },
+            // {
+            //   path: "episode/:id",
+            //   element: <FullPreviewEpisode />,
+            //   loader: episodeLoader,
+            // },
+            // {
+            //   path: "audiobook/:id",
+            //   element: <FullPreviewAudiobook />,
+            //   loader: audiobookLoader,
+            // },
           ],
         },
       ],

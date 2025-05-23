@@ -1,7 +1,12 @@
 import useHoverTrackItem from "../hooks/useHoverTrackItem";
 import OptionItem from "./OptionItem";
 
-export type MenuFor = "userAvatar" | "playlist" | "track" | "addToPlaylist";
+export type MenuFor =
+  | "userAvatar"
+  | "playlist"
+  | "track"
+  | "addToPlaylist"
+  | "podcast";
 
 interface OptionsMenuProps {
   options: string[];

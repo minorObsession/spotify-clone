@@ -14,7 +14,7 @@ export interface PlaybackSlice {
   setVolume: (newValue: number) => Promise<void>;
   playTrack: (
     uri: string,
-    dataType: "artist" | "album" | "playlist" | "track",
+    dataType: "artist" | "album" | "playlist" | "track" | "podcast",
     trackIndex?: number,
   ) => Promise<void>;
   nextTrack: () => Promise<void>;

@@ -1,5 +1,4 @@
 import { memo } from "react";
-import Thumbnail from "../../components/Thumbnail";
 
 import TrackOptions from "../tracks/TrackOptions";
 import { useTrackItem } from "../../hooks/useTrackItem";
@@ -16,14 +15,12 @@ interface TrackProps {
 
 function FPAlbumTrackItem({ track, index }: TrackProps) {
   const {
-    screenWidthRem,
     isTrackBoxSelected,
     setIsTrackBoxSelected,
     isTrackHovered,
     setIsTrackHovered,
     trackName,
     trackDurationFormatted,
-    thumbnailUrl,
     handleTrackSelect,
   } = useTrackItem(track);
   console.log(trackDurationFormatted);

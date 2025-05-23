@@ -1,4 +1,4 @@
-import { useLoaderData } from "react-router";
+import { useLoaderData, useNavigate } from "react-router";
 import { createLoader } from "../../state/helpers";
 import { useStateStore } from "../../state/store";
 import { SearchResultType } from "./search";
@@ -19,7 +19,7 @@ function FPSearchResults() {
   const searchResults = useLoaderData() as SearchResultType;
   const topResult = useStateStore((store) => store.topResult);
   const [isTopArtistHovered, setIsTopArtistHovered] = useState(false);
-
+  const navigate = useNavigate();
   const numCards = useResponsiveCards1Row({
     itemWidth: 180 + 8, // card width + gap
     containerSelector: "main", // relative to main el
@@ -37,6 +37,9 @@ function FPSearchResults() {
           onMouseEnter={() => setIsTopArtistHovered(true)}
           onMouseLeave={() => setIsTopArtistHovered(false)}
           className="relative grid grid-cols-1 grid-rows-[1fr_6fr]"
+          onClick={() => {
+            navigate(`/home/artist/${topResult?.id}`);
+          }}
         >
           {/* // ! top artist result */}
           <h3 className="text-2xl font-bold">Top result</h3>
@@ -53,7 +56,12 @@ function FPSearchResults() {
               // ! figure out what to play when clicked
               onClick={() => {}}
             />
-            <h4 className="text-3xl font-bold hover:underline">
+            <h4
+              onClick={() => {
+                navigate(`/home/artist/${topResult?.id}`);
+              }}
+              className="text-3xl font-bold hover:underline"
+            >
               {topResult?.name}
             </h4>
             <p>Artist</p>

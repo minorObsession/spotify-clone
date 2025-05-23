@@ -18,6 +18,7 @@ import {
 } from "../features/playback/spotifyPlayerSlice";
 import { SearchSlice, createSearchSlice } from "../features/search/search";
 import { AlbumSlice, createAlbumSlice } from "../features/albums/album";
+import { createPodcastSlice, PodcastSlice } from "../features/podcasts/podcast";
 
 export type StateStore = AuthSlice &
   UserSlice &
@@ -27,7 +28,8 @@ export type StateStore = AuthSlice &
   AlbumSlice &
   PlaybackSlice &
   SpotifyPlayerSlice &
-  SearchSlice;
+  SearchSlice &
+  PodcastSlice;
 
 // RecommendationsSlice;
 
@@ -42,6 +44,7 @@ export const useStateStore = create<StateStore>()(
     ...createPlaybackSlice(...args),
     ...createSpotifyPlayerSlice(...args),
     ...createSearchSlice(...args),
+    ...createPodcastSlice(...args),
   })),
 );
 

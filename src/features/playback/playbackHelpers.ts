@@ -1,9 +1,9 @@
 export const makeRequestBody = (
   uri: string,
-  dataType: "artist" | "album" | "playlist" | "track",
+  dataType: "artist" | "album" | "playlist" | "track" | "podcast",
   trackIndex: number,
 ) => {
-  if (dataType === "track") {
+  if (dataType === "track" || dataType === "podcast") {
     return JSON.stringify({
       uris: [uri],
       position: 0,

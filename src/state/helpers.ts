@@ -98,7 +98,7 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
     if (!transformFn) throw new Error("❌ Transform function not found..");
 
     const data: ResponseType = await res.json();
-    console.log(data);
+
     const transformedData: ReturnType = await transformFn(data);
 
     if (onDataReceived) onDataReceived(transformedData);

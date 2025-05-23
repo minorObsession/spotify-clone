@@ -16,3 +16,5 @@ export const playlistOptions = [
 ];
 
 export const artistOptions = ["Follow", "Go to artist radio", "Share"];
+
+export const podcastOptions = ["Follow", "Share &rarr;"];
