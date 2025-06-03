@@ -1,7 +1,6 @@
-import { StateStore } from "../../state/store";
 import { StateCreator } from "zustand";
 import { fetchFromSpotify } from "../../state/helpers";
-import { getFromLocalStorage, saveToLocalStorage } from "../auth/authHelpers";
+// import { getFromLocalStorage } from "../auth/authHelpers";
 
 export interface PodcastEpisodeType {
   name: string;
@@ -26,33 +25,20 @@ export interface PodcastType {
 export interface PodcastSlice {
   podcast: PodcastType | null;
   likedEpisodes: PodcastEpisodeType[];
-  addEpisodeToLikedEpisodes: (episode: PodcastEpisodeType) => void;
   getPodcast: (id: string) => Promise<PodcastType>;
-  setPodcast: (podcast: PodcastType) => void;
-  isEpisodeSaved: (episodeId: string) => boolean;
-  initializeLikedEpisodes: () => void;
+  addEpisodeToLikedEpisodes: (episode: PodcastEpisodeType) => void;
   removeEpisodeFromLikedEpisodes: (episodeId: string) => void;
+  isEpisodeSaved: (episodeId: string) => boolean;
 }
 
 export const createPodcastSlice: StateCreator<
-  StateStore,
-  [["zustand/devtools", never]],
+  PodcastSlice,
+  [["zustand/devtools", never], ["zustand/persist", unknown]],
   [],
   PodcastSlice
 > = (set, get) => ({
   podcast: null,
   likedEpisodes: [],
-  setPodcast: (podcast: PodcastType) => set({ podcast }),
-  initializeLikedEpisodes: () => {
-    const user = get()?.user;
-    if (!user) return;
-
-    const data = getFromLocalStorage<PodcastEpisodeType[]>(
-      `${user?.username}s_liked_episodes`,
-    );
-    if (data === null) return;
-    set({ likedEpisodes: [...data] });
-  },
 
   getPodcast: async (id: string) => {
     try {
@@ -97,18 +83,13 @@ export const createPodcastSlice: StateCreator<
     );
 
     if (isEpisodeSaved) {
-      console.log("alredy saved!! returning..");
+      console.log("already saved!! returning..");
       return;
     }
 
     set((state) => ({
       likedEpisodes: [episode, ...state.likedEpisodes],
     }));
-
-    saveToLocalStorage(
-      `${get().user?.username}s_liked_episodes`,
-      get().likedEpisodes,
-    );
   },
   removeEpisodeFromLikedEpisodes: (episodeId: string) => {
     const episodeToRemove = get().likedEpisodes.find(
@@ -119,11 +100,6 @@ export const createPodcastSlice: StateCreator<
     set({
       likedEpisodes: get().likedEpisodes.filter((ep) => ep.id !== episodeId),
     });
-
-    saveToLocalStorage(
-      `${get().user?.username}s_liked_episodes`,
-      get().likedEpisodes,
-    );
   },
   isEpisodeSaved: (episodeId: string) => {
     return (

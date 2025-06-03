@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { devtools } from "zustand/middleware";
+import { devtools, persist } from "zustand/middleware";
 import { AuthSlice, createAuthSlice } from "../features/auth/Auth";
 import { createUserSlice, UserSlice } from "../features/user/user";
 import {
@@ -44,7 +44,12 @@ export const useStateStore = create<StateStore>()(
     ...createPlaybackSlice(...args),
     ...createSpotifyPlayerSlice(...args),
     ...createSearchSlice(...args),
-    ...createPodcastSlice(...args),
+    ...persist(createPodcastSlice, {
+      name: "podcast-storage",
+      partialize: (state: PodcastSlice) => ({
+        likedEpisodes: state.likedEpisodes,
+      }),
+    })(...args),
   })),
 );
 
