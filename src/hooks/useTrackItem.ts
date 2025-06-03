@@ -12,10 +12,10 @@ export function useTrackItem(track: TrackType | TopTrackType) {
   const [isTrackBoxSelected, setIsTrackBoxSelected] = useState(false);
   const [isTrackHovered, setIsTrackHovered] = useState(false);
 
-  const trackName = track.name;
+  const trackName = track?.name;
   const params = useParams();
   const trackDurationFormatted = flexibleMillisecondsConverter(
-    track.trackDuration,
+    track?.trackDuration,
   )
     .split("min")
     .map((el, i) => {
@@ -29,7 +29,7 @@ export function useTrackItem(track: TrackType | TopTrackType) {
 
   const { playTrack } = useStateStore.getState();
 
-  const thumbnailUrl = track.imageUrl;
+  const thumbnailUrl = track?.imageUrl;
 
   const handleTrackSelect = (
     e: React.MouseEvent<HTMLElement | SVGElement>,

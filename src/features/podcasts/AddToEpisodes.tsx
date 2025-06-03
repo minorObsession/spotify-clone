@@ -17,46 +17,45 @@ function AddToEpisodes({ episode, id, isEpisodeHovered }: AddToEpisodesProps) {
   const addEpisodeToLikedEpisodes = useStateStore(
     (store) => store.addEpisodeToLikedEpisodes,
   );
+  const removeEpisodeFromLikedEpisodes = useStateStore(
+    (store) => store.removeEpisodeFromLikedEpisodes,
+  );
   const isEpisodeSaved = useStateStore((store) => store.isEpisodeSaved(id));
 
   const handleAddToLikedEpisodes = () => {
     // updateZustand store - optimistic update UI
+
     addEpisodeToLikedEpisodes(episode);
 
     // update local storage
     saveToLocalStorage(
       `${useStateStore.getState().user?.username}s_liked_episodes`,
-      [episode],
+      episode,
     );
+  };
 
-    // localStorage.setItem(
-    //   `${useStateStore.getState().user?.username}s_liked_episodes`,
-    //   JSON.stringify([
-    //     episode,
-    //     ...JSON.parse(
-    //       localStorage.getItem(
-    //         `${useStateStore.getState().user?.username}s_liked_episodes`,
-    //       ) || "[]",
-    //     ),
-    //   ]),
-    // );
+  const handleRemoveFromLikedEpisodes = () => {
+    // updateZustand store - optimistic update UI
+    removeEpisodeFromLikedEpisodes(id);
   };
 
   return (
     <div
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onClick={handleAddToLikedEpisodes}
       className="relative flex"
     >
-      <Tooltip message="Save to Your Episodes" isVisible={isHovered} />
+      <Tooltip
+        message={`${isEpisodeSaved ? "Remove from" : "Save to"} Your Episodes`}
+        isVisible={isHovered}
+      />
 
       <button className="cursor-pointer">
         {isEpisodeSaved ? (
-          <FaCircleCheck fill="green" />
+          <FaCircleCheck fill="green" onClick={handleRemoveFromLikedEpisodes} />
         ) : (
           <span className={``}>
-            <BiPlusCircle />
+            <BiPlusCircle onClick={handleAddToLikedEpisodes} />
           </span>
         )}
       </button>

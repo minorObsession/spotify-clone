@@ -1,6 +1,7 @@
 import { ActionFunctionArgs } from "react-router";
 import { getFromLocalStorage } from "../features/auth/authHelpers";
 import { AccessTokenType } from "../features/auth/Auth";
+import { useStateStore } from "./store";
 // import { store } from "./store";
 
 // ! make at least 1 argument required!!!
@@ -59,7 +60,7 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
 
     // ! THIS CODE WAS CAUSING AN ISSUE
     // debugger;
-    // await store.getState().waitForAuthentication();
+    await useStateStore.getState().waitForAuthentication();
 
     const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
     if (!accessToken) {

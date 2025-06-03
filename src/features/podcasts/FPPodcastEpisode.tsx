@@ -1,5 +1,4 @@
 import AddToEpisodes from "./AddToEpisodes";
-import AddToPlaylist from "../../components/AddToPlaylist";
 import PlayButton from "../../components/PlayButton";
 import { useStateStore } from "../../state/store";
 import { PodcastEpisodeType } from "./podcast";
@@ -19,7 +18,6 @@ function FPPodcastEpisode({ episode }: FPPodcastEpisodeProps) {
     <div
       key={episode.id}
       className="flex cursor-pointer gap-6 rounded-md p-4 hover:bg-neutral-800"
-      onClick={() => handlePlayEpisode(episode.id)}
     >
       <img
         src={episode.imageUrl}
@@ -42,7 +40,7 @@ function FPPodcastEpisode({ episode }: FPPodcastEpisodeProps) {
               isEpisodeHovered={false}
             />
           </div>
-          <PlayButton />
+          <PlayButton onClick={() => handlePlayEpisode(episode.id)} />
         </div>
       </div>
     </div>

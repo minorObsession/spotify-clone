@@ -1,14 +1,7 @@
 // src/stores/authStore.ts
 import { StateCreator } from "zustand";
-import {
-  base64encode,
-  generateRandomString,
-  sha256,
-  getFromLocalStorage,
-  saveToLocalStorage,
-} from "./authHelpers";
+import { base64encode, generateRandomString, sha256 } from "./authHelpers";
 import { StateStore, useStateStore } from "../../state/store";
-import { AUTH_CONFIG } from "./config";
 
 // --- Configuration ---
 const AUTH_CONFIG = {
@@ -22,19 +15,21 @@ const AUTH_CONFIG = {
 
 // --- Types ---
 export interface AccessTokenType {
-  token: string;
   expiresAt: number;
-  expiresAtDate: string;
-  now: string;
+  token: string;
+  expiresAtDate?: string;
+  now?: string;
 }
 
 export interface AuthSlice {
   isAuthenticated: boolean;
   accessToken: AccessTokenType | null;
   refreshToken: string | null;
-  refreshInterval: NodeJS.Timer | null;
+  refreshInterval: NodeJS.Timeout | null;
   initAuth: () => Promise<void>;
   logout: () => void;
+  waitForAuthentication: () => Promise<boolean>;
+  requestAuthCodeAndRedirect: () => Promise<void>;
   requestToken: (authCode: string, codeVerifier: string) => Promise<void>;
   autoRefreshToken: () => Promise<void>;
 }
@@ -48,11 +43,11 @@ export const createAuthSlice: StateCreator<
   AuthSlice
 > = (set, get) => ({
   isAuthenticated: Boolean(
-    getFromLocalStorage("access_token") &&
+    localStorage.getItem("access_token") &&
       (() => {
         try {
           const token: AccessTokenType = JSON.parse(
-            getFromLocalStorage("access_token") || "{}",
+            localStorage.getItem("access_token") || "{}",
           );
           return token.expiresAt > Date.now();
         } catch {
@@ -60,12 +55,11 @@ export const createAuthSlice: StateCreator<
         }
       })(),
   ),
-  accessToken: getFromLocalStorage("access_token")
-    ? JSON.parse(getFromLocalStorage("access_token")!)
+  accessToken: localStorage.getItem("access_token")
+    ? JSON.parse(localStorage.getItem("access_token")!)
     : null,
-  refreshToken: getFromLocalStorage("refresh_token"),
+  refreshToken: localStorage.getItem("refresh_token"),
   refreshInterval: null,
-
   // --- Public Action: Initialize Auth Flow ---
   initAuth: async () => {
     if (hasFetchedToken) return;
@@ -73,8 +67,8 @@ export const createAuthSlice: StateCreator<
 
     console.log("initAuth called...passed the flag");
     // ! 1. Check localStorage for existing tokens
-    const storedAccessTokenString = getFromLocalStorage("access_token");
-    const storedRefreshToken = getFromLocalStorage("refresh_token");
+    const storedAccessTokenString = localStorage.getItem("access_token");
+    const storedRefreshToken = localStorage.getItem("refresh_token");
 
     if (storedAccessTokenString && storedRefreshToken) {
       try {
@@ -99,36 +93,43 @@ export const createAuthSlice: StateCreator<
     // 2. no tokens - Not authenticated: check if the URL contains an auth code
     const urlParams = new URLSearchParams(window.location.search);
     const authCode = urlParams.get("code");
-    const storedCodeVerifier = getFromLocalStorage("code_verifier");
+    const storedCodeVerifier = localStorage.getItem("code_verifier");
 
-    // ! 3. If we have an auth code and code verifier, request a token
     if (authCode && storedCodeVerifier) {
+      // Auth code exists, request tokens
       await get().requestToken(authCode, storedCodeVerifier);
-      // ! Clear the URL parameters
-      window.history.replaceState({}, "", window.location.pathname);
+      // Clean URL by removing auth code parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+      // 3. No auth code—initiate the auth request flow
+      await get().requestAuthCodeAndRedirect();
     }
   },
 
-  // --- Public Action: Start Auth Flow ---
-  startAuthFlow: async () => {
-    // ! 1. Generate code verifier and challenge
+  // --- Internal Action: Request Auth Code & Redirect ---
+  requestAuthCodeAndRedirect: async () => {
+    console.log("requestAuthCodeAndRedirect called");
+    // Generate a code verifier and store it for later use
     const codeVerifier = generateRandomString(64);
+    localStorage.setItem("code_verifier", codeVerifier);
+
+    // Create a code challenge from the verifier
     const hashed = await sha256(codeVerifier);
     const codeChallenge = base64encode(hashed);
 
-    // ! 2. Store code verifier for later use
-    saveToLocalStorage("code_verifier", codeVerifier);
-
-    // ! 3. Build authorization URL with code challenge
+    // Build the Spotify authorization URL with required parameters
     const authUrl = new URL(AUTH_CONFIG.authUrl);
-    authUrl.searchParams.append("client_id", AUTH_CONFIG.clientId);
-    authUrl.searchParams.append("response_type", "code");
-    authUrl.searchParams.append("redirect_uri", AUTH_CONFIG.redirectUri);
-    authUrl.searchParams.append("code_challenge_method", "S256");
-    authUrl.searchParams.append("code_challenge", codeChallenge);
-    authUrl.searchParams.append("scope", AUTH_CONFIG.scope);
+    const params = {
+      response_type: "code",
+      client_id: AUTH_CONFIG.clientId,
+      scope: AUTH_CONFIG.scope,
+      code_challenge_method: "S256",
+      code_challenge: codeChallenge,
+      redirect_uri: AUTH_CONFIG.redirectUri,
+    };
+    authUrl.search = new URLSearchParams(params).toString();
 
-    // ! 4. Redirect to authorization URL
+    // Redirect to Spotify login page
     window.location.href = authUrl.toString();
   },
 
@@ -158,8 +159,8 @@ export const createAuthSlice: StateCreator<
           now: new Date().toISOString(),
         };
         // Persist tokens in localStorage
-        saveToLocalStorage("access_token", newAccessToken);
-        saveToLocalStorage("refresh_token", data.refresh_token);
+        localStorage.setItem("access_token", JSON.stringify(newAccessToken));
+        localStorage.setItem("refresh_token", data.refresh_token);
         set({
           accessToken: newAccessToken,
           refreshToken: data.refresh_token,
@@ -215,10 +216,13 @@ export const createAuthSlice: StateCreator<
               ).toISOString(),
               now: new Date().toISOString(),
             };
-            saveToLocalStorage("access_token", newAccessToken);
+            localStorage.setItem(
+              "access_token",
+              JSON.stringify(newAccessToken),
+            );
             // Use the new refresh token if provided, otherwise keep the old one
             if (data.refresh_token) {
-              saveToLocalStorage("refresh_token", data.refresh_token);
+              localStorage.setItem("refresh_token", data.refresh_token);
               set({ refreshToken: data.refresh_token });
             }
             set({
@@ -243,18 +247,31 @@ export const createAuthSlice: StateCreator<
     set({ refreshInterval: interval });
   },
 
+  waitForAuthentication: async () => {
+    return new Promise((resolve) => {
+      const checkAuth = () => {
+        if (get().isAuthenticated) {
+          clearInterval(intervalId);
+          resolve(true);
+        }
+      };
+      const intervalId = setInterval(checkAuth, 500);
+    });
+  },
+
   // --- Public Action: Logout ---
   logout: () => {
     console.log("logout called");
-    const { cleanupPlayer, logoutUser } = useStateStore.getState();
-    cleanupPlayer();
-    logoutUser();
-    // Clear all auth-related data from localStorage
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("code_verifier");
+
     set({ accessToken: null, refreshToken: null, isAuthenticated: false });
+    const { cleanupPlayer, logoutUser } = useStateStore.getState();
+    cleanupPlayer();
+    logoutUser();
     // Optionally, redirect the user to a public page
     window.location.href = "/";
+    get().initAuth();
   },
 });

@@ -6,7 +6,7 @@ import { PlaylistNamesWithidsType } from "./playlists";
 export const getPlaylistLenght = (data: TrackType[]) => {
   return flexibleMillisecondsConverter(
     data.reduce((acc: number, track: TrackType) => {
-      acc += +track.trackDuration;
+      acc += +track?.trackDuration;
       return acc;
     }, 0),
   );

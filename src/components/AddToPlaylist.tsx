@@ -75,11 +75,11 @@ function AddToPlaylist({
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${accessToken?.token}`,
+            Authorization: `Bearer ${useStateStore.getState().accessToken?.token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            uris: [track.uri],
+            uris: [`spotify:track:${track.id}`],
           }),
         },
       );

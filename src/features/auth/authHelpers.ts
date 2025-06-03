@@ -26,17 +26,19 @@ export const getFromLocalStorage = <T>(key: string): T | null => {
   else return null;
 };
 
-export const saveToLocalStorage = <T>(key: string, data: T) => {
+export function saveToLocalStorage<T>(key: string, newData: T | T[]): void {
   try {
-    const existingData = getFromLocalStorage<T[]>(key) || [];
-    const updatedData = Array.isArray(data)
-      ? [...data, ...existingData]
-      : [data, ...existingData];
+    const existingData = getFromLocalStorage<T[]>(key) ?? [];
+    const normalizedNewData = Array.isArray(newData) ? newData : [newData];
+    const updatedData = [...normalizedNewData, ...existingData];
     localStorage.setItem(key, JSON.stringify(updatedData));
   } catch (error) {
-    console.error(`Error saving to localStorage for key ${key}:`, error);
+    console.error(
+      `Failed to save data to localStorage under key "${key}":`,
+      error,
+    );
   }
-};
+}
 
 const decodeToken = (token: string) => {
   try {

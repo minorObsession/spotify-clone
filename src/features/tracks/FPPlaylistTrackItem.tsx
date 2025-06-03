@@ -71,7 +71,7 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
         </span>
         <span className="text-2xs w-fit truncate md:text-sm">
           <ArtistList
-            artists={track.artists as Artist[]}
+            artists={track?.artists as unknown as Artist[]}
             addClassName="text-2xs md:text-sm"
           />
         </span>
