@@ -26,6 +26,18 @@ export const getFromLocalStorage = <T>(key: string): T | null => {
   else return null;
 };
 
+export const saveToLocalStorage = <T>(key: string, data: T) => {
+  try {
+    const existingData = getFromLocalStorage<T[]>(key) || [];
+    const updatedData = Array.isArray(data)
+      ? [...data, ...existingData]
+      : [data, ...existingData];
+    localStorage.setItem(key, JSON.stringify(updatedData));
+  } catch (error) {
+    console.error(`Error saving to localStorage for key ${key}:`, error);
+  }
+};
+
 const decodeToken = (token: string) => {
   try {
     return jwtDecode(token);

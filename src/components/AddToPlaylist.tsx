@@ -9,6 +9,10 @@ import OptionsMenu from "./OptionsMenu";
 import useOutsideClick from "../hooks/useOutsideClick";
 import { TrackType } from "../features/tracks/track";
 import { DetailedPlaylistType } from "../features/playlists/playlists";
+import {
+  getFromLocalStorage,
+  saveToLocalStorage,
+} from "../features/auth/authHelpers";
 
 interface AddToPlaylistProps {
   track: TrackType;
@@ -16,8 +20,6 @@ interface AddToPlaylistProps {
   isTrackHovered: boolean;
   isTrackBoxSelected: boolean;
 }
-
-// * put this back into the componnet
 
 function AddToPlaylist({
   track,
@@ -30,8 +32,7 @@ function AddToPlaylist({
     useState(false);
 
   const playlists = useStateStore.getState().playlists;
-  const playlistNames = playlists.map((playlist) => playlist.name);
-  const addTrackToPlaylist = useStateStore((store) => store.addTrackToPlaylist);
+  const playlistNames = playlists?.map((playlist) => playlist.name) || [];
 
   const playlistMenuRef = useOutsideClick<HTMLUListElement>(
     () => setIsPlaylistSelectMenuOpen(false),
@@ -41,7 +42,6 @@ function AddToPlaylist({
 
   const handleAddToLikedSongs = () => {
     // * optimistic update UI
-
     let usersSavedTracksVar: DetailedPlaylistType;
 
     // local store update
@@ -68,26 +68,50 @@ function AddToPlaylist({
     // * call spotify api with post req
   };
 
-  const handleAddToPlaylist = (
-    e: React.MouseEvent<HTMLDivElement>,
-    playlistId: string,
-  ) => {
-    e.stopPropagation();
-    // * open options menu
-    if (isPlaylistSelectMenuOpen) setIsPlaylistSelectMenuOpen(false);
+  const handleAddToPlaylist = async (playlistId: string) => {
+    try {
+      const response = await fetch(
+        `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken?.token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            uris: [track.uri],
+          }),
+        },
+      );
 
-    setTimeout(() => setIsPlaylistSelectMenuOpen(true), 0);
-    // * get all users playlists (local)
+      if (!response.ok) {
+        throw new Error("Failed to add track to playlist");
+      }
 
-    // addTrackToPlaylist()
-    // * call spotify api with post req
+      // Update local storage
+      const playlist = getFromLocalStorage(`playlist${playlistId}`);
+      if (playlist) {
+        const updatedPlaylist = {
+          ...playlist,
+          tracks: {
+            ...playlist.tracks,
+            items: [...playlist.tracks.items, { track }],
+          },
+        };
+        saveToLocalStorage(`playlist${playlistId}`, updatedPlaylist);
+      }
 
-    // * optimistic update UI
+      // * optimistic update UI
+    } catch (error) {
+      console.error("Error adding track to playlist:", error);
+    }
   };
 
   // ! look for this ID in all playlists - make function that does this
-
   const isTheTrackInLibrary = isTrackInLibrary(id);
+  const tooltipMessage = isTheTrackInLibrary
+    ? "Add to Playlist"
+    : "Add to Liked Songs";
 
   return (
     // ! container
@@ -95,15 +119,13 @@ function AddToPlaylist({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={(e) =>
-        isTheTrackInLibrary
-          ? handleAddToPlaylist(e, id)
-          : handleAddToLikedSongs()
+        isTheTrackInLibrary ? handleAddToPlaylist(id) : handleAddToLikedSongs()
       }
       className="relative flex"
     >
       {/* //!  Tooltip */}
       <Tooltip
-        message={`${isTheTrackInLibrary ? "Add to Playlist" : "Add to Liked Songs"}`}
+        message={tooltipMessage}
         isVisible={isHovered && !isPlaylistSelectMenuOpen}
       />
 
@@ -113,7 +135,7 @@ function AddToPlaylist({
         ) : isTrackBoxSelected || isTrackHovered ? (
           <BiPlusCircle />
         ) : (
-          <span className="invisible">
+          <span className={`${isTrackBoxSelected ? "visible" : "invisible"}`}>
             <BiPlusCircle />
           </span>
         )}

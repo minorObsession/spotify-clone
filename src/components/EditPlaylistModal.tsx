@@ -6,6 +6,10 @@ import FloatingLabel from "./FloatingLabel";
 import { useStateStore } from "../state/store";
 import { useKeyPress } from "../hooks/useKeyPress";
 import useOutsideClick from "../hooks/useOutsideClick";
+import {
+  getFromLocalStorage,
+  saveToLocalStorage,
+} from "../features/auth/authHelpers";
 
 export type PartialPlaylist = Pick<
   DetailedPlaylistType,
@@ -96,10 +100,7 @@ function EditPlaylistModal({
         }));
 
         // update cache for playlist
-        localStorage.setItem(
-          `playlist${playlist.id}`,
-          JSON.stringify(useStateStore.getState().playlist),
-        );
+        saveToLocalStorage(`playlist${playlist.id}`, updatedFields);
 
         // Optimistically update playlists
         useStateStore.setState((state) => ({
@@ -115,9 +116,9 @@ function EditPlaylistModal({
         }));
 
         // update cache for playlists
-        localStorage.setItem(
+        saveToLocalStorage(
           `${useStateStore.getState().user?.username}_playlists`,
-          JSON.stringify(useStateStore.getState().playlists),
+          useStateStore.getState().playlists,
         );
       }
     } catch (err) {

@@ -1,8 +1,5 @@
 import { useNavigate } from "react-router";
-
-type OneProp<T> = {
-  [P in keyof T]-?: Record<P, T[P]>;
-}[keyof T];
+import { RequireAtLeastOne } from "../types/requireAtLeastOneProp";
 
 export type Artist = {
   uri?: string;
@@ -11,8 +8,6 @@ export type Artist = {
   id: string;
   artistId: string;
 }>;
-
-type RequireAtLeastOne<T> = T & OneProp<T>;
 
 interface ArtistListProps {
   artists: Artist[];

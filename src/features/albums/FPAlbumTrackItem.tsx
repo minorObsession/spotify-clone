@@ -7,6 +7,7 @@ import { trackOptions } from "../../config/menuOptions";
 import { FaPlay } from "react-icons/fa";
 import { TopTrackType } from "../artists/artist";
 import ArtistList, { Artist } from "../../components/ArtistList";
+import { TrackType } from "../tracks/track";
 
 interface TrackProps {
   track: TopTrackType;
@@ -23,7 +24,6 @@ function FPAlbumTrackItem({ track, index }: TrackProps) {
     trackDurationFormatted,
     handleTrackSelect,
   } = useTrackItem(track);
-  console.log(trackDurationFormatted);
   const id = track.id;
 
   return (
@@ -73,6 +73,7 @@ function FPAlbumTrackItem({ track, index }: TrackProps) {
       {/* // ! */}
       <div className="track-utilities">
         <AddToPlaylist
+          track={track as TrackType}
           id={id}
           isTrackHovered={isTrackHovered}
           isTrackBoxSelected={isTrackBoxSelected}

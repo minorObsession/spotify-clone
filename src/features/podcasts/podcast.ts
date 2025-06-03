@@ -1,6 +1,7 @@
 import { StateStore } from "../../state/store";
 import { StateCreator } from "zustand";
 import { fetchFromSpotify } from "../../state/helpers";
+import { getFromLocalStorage } from "../auth/authHelpers";
 
 export interface PodcastEpisodeType {
   name: string;
@@ -23,21 +24,36 @@ export interface PodcastType {
 }
 
 export interface PodcastSlice {
-  podcast: PodcastType;
+  podcast: PodcastType | null;
+  likedEpisodes: PodcastEpisodeType[];
+  addEpisodeToLikedEpisodes: (episode: PodcastEpisodeType) => void;
   getPodcast: (id: string) => Promise<PodcastType>;
   setPodcast: (podcast: PodcastType) => void;
+  isEpisodeSaved: (episodeId: string) => boolean;
+  initializeLikedEpisodes: () => void;
 }
 
 export const createPodcastSlice: StateCreator<
   StateStore,
   [["zustand/devtools", never]],
   [],
-  podcastSlice
+  PodcastSlice
 > = (set, get) => ({
   podcast: null,
+  likedEpisodes: [],
   setPodcast: (podcast: PodcastType) => set({ podcast }),
+  initializeLikedEpisodes: () => {
+    const user = get()?.user;
+    if (!user) return;
+
+    const data = getFromLocalStorage<PodcastEpisodeType[]>(
+      `${user?.username}s_liked_episodes`,
+    );
+    if (data === null) return;
+    set({ likedEpisodes: [...data] });
+  },
+
   getPodcast: async (id: string) => {
-    console.log("get podcast called");
     try {
       const result = await fetchFromSpotify<any, PodcastType>({
         endpoint: `shows/${id}`,
@@ -73,5 +89,15 @@ export const createPodcastSlice: StateCreator<
       console.error("Error fetching podcast", error);
       throw error;
     }
+  },
+  addEpisodeToLikedEpisodes: (episode: PodcastEpisodeType) => {
+    set((state) => ({
+      likedEpisodes: [episode, ...state.likedEpisodes],
+    }));
+  },
+  isEpisodeSaved: (episodeId: string) => {
+    return (
+      get().likedEpisodes?.some((episode) => episode.id === episodeId) || false
+    );
   },
 });

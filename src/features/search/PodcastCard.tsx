@@ -9,9 +9,7 @@ interface PodcastCardProps {
 function PodcastCard({ podcast }: PodcastCardProps) {
   const navigate = useNavigate();
   // ! podcastFooter for bottom of the card
-  const podcastFooter = (
-    <p className="opacity-80">{podcast.publisher || "PLACEHOLDER"}</p>
-  );
+  const podcastFooter = <p className="opacity-80">{podcast.publisher}</p>;
 
   return (
     <GenericCard

@@ -4,10 +4,11 @@ import { createLoader } from "../../state/helpers";
 import { useStateStore } from "../../state/store";
 import BackToHomeButton from "../../components/BackToHomeButton";
 import FPControls from "../../components/FPControls";
-import { PodcastType } from "./types";
+import { PodcastType } from "./podcast";
 import { podcastOptions } from "../../config/menuOptions";
-import FPPodcastEpisodes from "./FPPodcastEpisode";
+import FPPodcastEpisodes from "./FPPodcastEpisodes";
 import FPPodcastOverview from "./FPPodcastOverview";
+import FPPodcastSummary from "./FPPodcastSummary";
 
 function FullPreviewPodcast() {
   const podcast = useLoaderData() as PodcastType;
@@ -21,7 +22,10 @@ function FullPreviewPodcast() {
         previewType="podcast"
         options={podcastOptions}
       />
-      <FPPodcastEpisodes episodes={podcast.episodes} />
+      <div className="flex gap-2">
+        <FPPodcastEpisodes episodes={podcast.episodes} />
+        <FPPodcastSummary podcast={podcast} />
+      </div>
     </div>
   );
 }

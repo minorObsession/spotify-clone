@@ -49,6 +49,9 @@ export const createUserSlice: StateCreator<
       },
     });
 
+    // initialize liked episodes
+    get().initializeLikedEpisodes();
+
     return userData;
   },
 

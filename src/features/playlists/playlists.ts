@@ -1,7 +1,7 @@
 import { StateCreator } from "zustand";
 import { StateStore } from "../../state/store";
 import { AccessTokenType } from "../auth/Auth";
-import { getFromLocalStorage } from "../auth/authHelpers";
+import { getFromLocalStorage, saveToLocalStorage } from "../auth/authHelpers";
 import { TrackType } from "../tracks/track";
 import { fetchFromSpotify } from "../../state/helpers";
 import { PartialPlaylist } from "../../components/EditPlaylistModal";
@@ -78,10 +78,9 @@ export const createPlaylistSlice: StateCreator<
   setPlaylist: (playlist) => {
     set({ playlist });
     // update cache
-    localStorage.setItem(`playlist${playlist.id}`, JSON.stringify(playlist));
+    saveToLocalStorage(`playlist${playlist.id}`, playlist);
   },
 
-  // ! NEVER TRY TO FIT THIS INTO FETCHFROMSPOTIFY!! YOU FAILED 4 TIMES
   getUserPlaylists: async () => {
     try {
       if (get().playlistsFetched) return get().playlists;
@@ -176,9 +175,9 @@ export const createPlaylistSlice: StateCreator<
       set({ playlistsFetched: true });
 
       return formattedPlaylists;
-    } catch (err) {
-      console.error("🛑 ❌", err);
-      return [];
+    } catch (error) {
+      console.error("Error fetching playlists:", error);
+      throw error;
     }
   },
 

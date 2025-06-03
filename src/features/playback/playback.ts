@@ -3,6 +3,7 @@ import { StateStore, store } from "../../state/store";
 import { fetchFromSpotify } from "../../state/helpers";
 // import { getSpotifyDeviceId } from "./spotifyPlayer";
 import { makeRequestBody } from "./playbackHelpers";
+import { getFromLocalStorage, saveToLocalStorage } from "../auth/authHelpers";
 
 // todo / ideas
 export interface PlaybackSlice {
@@ -27,7 +28,7 @@ export const createPlaybackSlice: StateCreator<
   [],
   PlaybackSlice
 > = (set) => ({
-  currVolume: +JSON.parse(localStorage.getItem("curr_volume") || "75"),
+  currVolume: +JSON.parse(getFromLocalStorage("curr_volume") || "75"),
 
   // ! to stay!!!!
 
@@ -43,7 +44,7 @@ export const createPlaybackSlice: StateCreator<
     const volume = await player.getVolume();
 
     // save into ls
-    localStorage.setItem("curr_volume", JSON.stringify(volume));
+    saveToLocalStorage("curr_volume", volume);
 
     set({ currVolume: volume });
   },
@@ -72,7 +73,6 @@ export const createPlaybackSlice: StateCreator<
       await fetchFromSpotify<any, any>({
         endpoint: "me/player/play",
         method: "PUT",
-        deviceId: `?device_id=${deviceId}`,
         requestBody: makeRequestBody(uri, dataType, trackIndex),
       });
 
