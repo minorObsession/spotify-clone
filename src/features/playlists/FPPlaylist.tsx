@@ -14,6 +14,7 @@ import { playlistOptions } from "../../config/menuOptions";
 
 function FullPreviewPlaylist() {
   const initialPlaylist = useLoaderData() as DetailedPlaylistType;
+  console.log("❌❌", initialPlaylist);
   const playlist = useStateStore((state) => state.playlist);
   const setPlaylist = useStateStore((state) => state.setPlaylist);
   const getPlaylist = useStateStore((state) => state.getPlaylist);
@@ -44,11 +45,7 @@ function FullPreviewPlaylist() {
       if (loadedTracks) {
         const allTracks = [...playlist.tracks, ...loadedTracks.tracks];
         const uniqueTracks = Array.from(
-          new Map(
-            allTracks
-              .filter((track) => track?.id)
-              .map((track) => [track.id, track]),
-          ).values(),
+          new Map(allTracks.map((track) => [track.id, track])).values(),
         );
 
         setPlaylist({
@@ -97,7 +94,7 @@ export const playlistLoader = createLoader<DetailedPlaylistType>(
 
     // ! following line fucks up caching!
     // playlist.tracks = playlist.tracks.slice(0, 50);
-    // useStateStore.getState().setPlaylist(playlist); // Hydrate Zustand
+    useStateStore.getState().setPlaylist(playlist); // Hydrate Zustand
     return playlist;
   },
 );
