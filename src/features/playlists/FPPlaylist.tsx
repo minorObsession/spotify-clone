@@ -14,7 +14,6 @@ import { playlistOptions } from "../../config/menuOptions";
 
 function FullPreviewPlaylist() {
   const initialPlaylist = useLoaderData() as DetailedPlaylistType;
-  console.log("❌❌", initialPlaylist);
   const playlist = useStateStore((state) => state.playlist);
   const setPlaylist = useStateStore((state) => state.setPlaylist);
   const getPlaylist = useStateStore((state) => state.getPlaylist);
@@ -88,6 +87,7 @@ export const playlistLoader = createLoader<DetailedPlaylistType>(
   async (id: string) => {
     playlistLoaderNumRUNS++;
     console.log("playlistLoaderNumRUNS:", playlistLoaderNumRUNS);
+    if (!id) throw new Error("No playlist ID provided");
 
     const playlist = await getPlaylist(id);
     // console.log("playlist", playlist);

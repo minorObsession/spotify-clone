@@ -1,6 +1,5 @@
 import { ActionFunctionArgs } from "react-router";
 import { getFromLocalStorage } from "../features/auth/authHelpers";
-import { AccessTokenType } from "../features/auth/Auth";
 import { useStateStore } from "./store";
 // import { store } from "./store";
 

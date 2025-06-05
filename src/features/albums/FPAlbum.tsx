@@ -29,4 +29,13 @@ export default memo(FullPreviewAlbum);
 
 const getAlbum = useStateStore.getState().getAlbum;
 
-export const albumLoader = createLoader<AlbumType>("album", getAlbum);
+export const albumLoader = createLoader<AlbumType>(
+  "album",
+  async (id: string) => {
+    if (!id) throw new Error("No album ID provided");
+
+    const album = await getAlbum(id);
+
+    return album;
+  },
+);

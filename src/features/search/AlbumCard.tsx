@@ -12,7 +12,7 @@ function AlbumCard({ album }: AlbumCardProps) {
   // ! album footer for bottom of the card
   const albumFooter = (
     <div className="flex items-center justify-center gap-0.5">
-      <p className="text-sm opacity-80">{album.releaseDate}</p>
+      <p className="text-sm opacity-80">{album.releaseYear}</p>
       <span className="text-xs"> &bull;</span>
       <span className="text-xs">
         <ArtistList
@@ -22,7 +22,7 @@ function AlbumCard({ album }: AlbumCardProps) {
       </span>
     </div>
   );
-
+  console.log(album.id, "FROM THE ALBUM CARD");
   return (
     <GenericCard
       imageUrl={album.imageUrl || ""}

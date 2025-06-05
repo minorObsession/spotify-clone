@@ -48,10 +48,12 @@ export const createAuthSlice: StateCreator<
     const persistedState = JSON.parse(
       localStorage.getItem("spotify-clone-state-storage") || "{}",
     );
+
     if (
       persistedState?.state?.isAuthenticated &&
       persistedState?.state?.accessToken
     ) {
+      console.log(persistedState.state.accessToken.expiresAt > Date.now());
       return persistedState.state.accessToken.expiresAt > Date.now();
     }
     return false;
@@ -75,6 +77,7 @@ export const createAuthSlice: StateCreator<
   refreshInterval: null,
   // --- Public Action: Initialize Auth Flow ---
   initAuth: async () => {
+    console.log("✅ initAuth called");
     if (hasFetchedToken) return;
     hasFetchedToken = true;
 
@@ -100,7 +103,7 @@ export const createAuthSlice: StateCreator<
             undefined,
             "auth/setAuthFromStorage",
           );
-          get().autoRefreshToken();
+          await get().autoRefreshToken();
         }
       } catch (error) {
         console.error("Error using stored access token", error);
@@ -180,6 +183,7 @@ export const createAuthSlice: StateCreator<
           "spotify-clone-state-storage",
           JSON.stringify({
             state: {
+              ...get(),
               accessToken: newAccessToken,
               refreshToken: data.refresh_token,
             },
@@ -340,6 +344,7 @@ export const createAuthSlice: StateCreator<
     // Clear other user-related state
     const { cleanupPlayer, logoutUser, requestAuthCodeAndRedirect } =
       useStateStore.getState();
+
     cleanupPlayer();
     logoutUser();
     requestAuthCodeAndRedirect();

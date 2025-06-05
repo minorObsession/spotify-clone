@@ -5,7 +5,7 @@ import { SearchResultType } from "./search";
 import FPSearchTopTrack from "./FPSearchTopTrack";
 import ArtistCard from "./ArtistCard";
 import { useResponsiveCards1Row } from "../../hooks/useResponsiveCards1Row";
-import GenericCard from "./AlbumCard";
+
 import PlaylistCard from "./PlaylistCard";
 import PodcastCard from "./PodcastCard";
 import EpisodeCard from "./EpisodeCard";

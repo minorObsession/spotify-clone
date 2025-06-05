@@ -132,71 +132,83 @@ export const createSearchSlice: StateCreator<
           ),
         transformFn: async (data) => {
           const transformedData: SearchResultType = {
-            tracks: data.tracks?.items.map((track: any) => ({
-              name: track.name,
-              id: track.id,
-              imageUrl: track.album.images[0].url,
-              multipleArtists: track.artists.length > 1,
-              artists: track.artists.map((artist: any) => ({
-                name: artist.name,
-                artistId: artist.id,
-              })),
-              type: track.type,
-              trackDuration: track.duration_ms,
-              releaseDate: track.album.release_date,
-              albumName: track.album.name,
-              albumId: track.album.id,
-            })),
-            artists: data.artists?.items.map((artist: any) => ({
-              name: artist.name,
-              id: artist.id,
-              imageUrl: artist.images[0].url,
-              type: artist.type,
-            })),
-            albums: data.albums?.items.map((album: any) => ({
-              name: album.name,
-              id: album.id,
-              imageUrl: album.images[0].url,
-              artists: album.artists.map((artist: any) => ({
-                name: artist.name,
-                id: artist.id,
-              })),
-              releaseDate: album.release_date,
-              totalTracks: album.total_tracks,
-            })),
-            playlists: data.playlists?.items.map((playlist: any) => ({
-              name: playlist.name,
-              id: playlist.id,
-              imageUrl: playlist.images[0].url,
-              ownerName: playlist.owner.display_name,
-              ownerId: playlist.owner.id,
-              type: playlist.type,
-            })),
-            shows: data.shows?.items.map((show: any) => ({
-              name: show.name,
-              id: show.id,
-              imageUrl: show.images[0].url,
-              publisher: show.publisher,
-              type: show.type,
-            })),
-            episodes: data.episodes?.items.map((episode: any) => ({
-              name: episode.name,
-              id: episode.id,
-              imageUrl: episode.images[0].url,
-              durationMs: episode.duration_ms,
-              releaseDate: episode.release_date,
-              type: episode.type,
-            })),
-            audiobooks: data.audiobooks?.items.map((audiobook: any) => ({
-              name: audiobook.name,
-              id: audiobook.id,
-              imageUrl: audiobook.images[0].url,
-              authors: audiobook.authors.map((author: any) => ({
-                name: author.name,
-                id: author.id,
-              })),
-              type: audiobook.type,
-            })),
+            tracks:
+              data.tracks?.items?.map((track: any) => ({
+                name: track?.name ?? "Unknown Track",
+                id: track?.id,
+                imageUrl: track?.album?.images?.[0]?.url ?? "",
+                multipleArtists:
+                  Array.isArray(track?.artists) && track?.artists?.length > 1,
+                artists: Array.isArray(track?.artists)
+                  ? track.artists.map((artist: any) => ({
+                      name: artist?.name ?? "Unknown Artist",
+                      artistId: artist?.id,
+                    }))
+                  : [],
+                type: track?.type ?? "track",
+                trackDuration: track?.duration_ms ?? 0,
+                releaseDate: track?.album?.release_date ?? "",
+                albumName: track?.album?.name ?? "Unknown Album",
+                albumId: track?.album?.id,
+              })) ?? [],
+            artists:
+              data.artists?.items?.map((artist: any) => ({
+                name: artist?.name ?? "Unknown Artist",
+                id: artist?.id,
+                imageUrl: artist?.images?.[0]?.url ?? "",
+                type: artist?.type ?? "artist",
+              })) ?? [],
+            albums:
+              data.albums?.items?.map((album: any) => ({
+                name: album?.name ?? "Unknown Album",
+                id: album?.id,
+                imageUrl: album?.images?.[0]?.url ?? "",
+                artists:
+                  album?.artists?.map((artist: any) => ({
+                    name: artist?.name ?? "Unknown Artist",
+                    id: artist?.id,
+                  })) ?? [],
+                releaseDate: album?.release_date ?? "",
+                totalTracks: album?.total_tracks ?? 0,
+              })) ?? [],
+            playlists:
+              data.playlists?.items?.map((playlist: any) => ({
+                name: playlist?.name ?? "Unknown Playlist",
+                id: playlist?.id,
+                imageUrl: playlist?.images?.[0]?.url ?? "",
+                ownerName: playlist?.owner?.display_name ?? "Unknown Owner",
+                ownerId: playlist?.owner?.id,
+                type: playlist?.type ?? "playlist",
+              })) ?? [],
+            shows:
+              data.shows?.items?.map((show: any) => ({
+                name: show?.name ?? "Unknown Show",
+                id: show?.id,
+                imageUrl: show?.images?.[0]?.url ?? "",
+                publisher: show?.publisher ?? "Unknown Publisher",
+                type: show?.type ?? "show",
+              })) ?? [],
+            episodes:
+              data.episodes?.items?.map((episode: any) => ({
+                name: episode?.name ?? "Unknown Episode",
+                id: episode?.id,
+                imageUrl: episode?.images?.[0]?.url ?? "",
+                durationMs: episode?.duration_ms ?? 0,
+                releaseDate: episode?.release_date ?? "",
+                type: episode?.type ?? "episode",
+              })) ?? [],
+            audiobooks:
+              data.audiobooks?.items?.map((audiobook: any) => ({
+                name: audiobook?.name ?? "Unknown Audiobook",
+                id: audiobook?.id,
+                imageUrl: audiobook?.images?.[0]?.url ?? "",
+                authors:
+                  audiobook?.authors?.map((author: any) => ({
+                    name: author?.name ?? "Unknown Author",
+                    id: author?.id,
+                  })) ?? [],
+                type: audiobook?.type ?? "audiobook",
+              })) ?? [],
           };
 
           // If we have an artist in the results, get their top tracks

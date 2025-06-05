@@ -12,15 +12,15 @@ function Root() {
   return <Outlet />;
 }
 
-const initAuth = store.getState().initAuth;
-const isAuthenticated = store.getState().isAuthenticated;
-const autoRefreshToken = store.getState().autoRefreshToken;
-
 export const initialLoader = async () => {
+  const isAuthenticated = useStateStore.getState().isAuthenticated;
+  const initAuth = useStateStore.getState().initAuth;
+  const autoRefreshToken = useStateStore.getState().autoRefreshToken;
+
   if (!isAuthenticated) await initAuth();
+
   // ! to start the auto refresh timer
-  autoRefreshToken();
-  console.log("initialLoader redirecting");
+  await autoRefreshToken();
 
   redirect("/home");
 

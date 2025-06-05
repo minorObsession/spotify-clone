@@ -7,7 +7,6 @@ import { TopTrackType } from "../artists/artist";
 export interface AlbumType {
   name: string;
   id: string;
-  // type: string;
   imageUrl: string;
   tracks: TopTrackType[];
   artists: ShortArtistType[];
@@ -19,7 +18,6 @@ export interface AlbumSlice {
   album: AlbumType | null;
   getAlbum: (id: string) => Promise<AlbumType>;
   // getAlbumTracks: (id: string) => Promise<AlbumTrackType[] | null>;
-  setAlbum: (album: AlbumType) => void;
 }
 
 export const createAlbumSlice: StateCreator<
@@ -29,7 +27,6 @@ export const createAlbumSlice: StateCreator<
   AlbumSlice
 > = (set, get) => ({
   album: null,
-  setAlbum: (album: AlbumType) => set({ album }, undefined, "album/setAlbum"),
   // getAlbumTracks: async (id: string) => {
   //   console.log("calling getAlbumTracks");
   //   return await fetchFromSpotify<any, AlbumTrackType[]>({
@@ -49,7 +46,7 @@ export const createAlbumSlice: StateCreator<
   // },
 
   getAlbum: async (id: string) => {
-    console.log("get album called");
+    console.trace("get album called");
     try {
       const result = await fetchFromSpotify<any, AlbumType>({
         endpoint: `albums/${id}`,
