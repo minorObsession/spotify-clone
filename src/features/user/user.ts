@@ -53,6 +53,7 @@ export const createUserSlice: StateCreator<
   },
 
   getUserSavedTracks: async (offset = 0) => {
+    console.log("calling getUserSavedTracks");
     const user = get().user;
     const getUser = get().getUser;
 
@@ -122,6 +123,7 @@ export const createUserSlice: StateCreator<
         return tracksToStore;
       },
     });
+    console.log("RETURNIGN SAVED TRACKS");
     return result;
   },
 

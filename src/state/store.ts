@@ -63,7 +63,6 @@ export const useStateStore = create<StateStore>()(
           // Playlists
           playlists: state.playlists,
           playlistNamesWithIds: state.playlistNamesWithIds,
-          playlistsFetched: state.playlistsFetched,
 
           // Podcasts (liked episodes)
           likedEpisodes: state.likedEpisodes,

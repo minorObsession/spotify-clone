@@ -45,7 +45,7 @@ export interface PlaylistSlice {
   playlists: UserPlaylistType[];
   playlist: DetailedPlaylistType;
   playlistNamesWithIds: playlistNamesWithIdsType[];
-  playlistsFetched: boolean;
+  // playlistsFetched: boolean;
   setPlaylist: (playlist: DetailedPlaylistType) => void;
   getUserPlaylists: () => Promise<UserPlaylistType[]>;
   getPlaylist: (
@@ -74,7 +74,7 @@ export const createPlaylistSlice: StateCreator<
   playlists: [],
   playlist: initialEmptyPlaylist,
   playlistNamesWithIds: [],
-  playlistsFetched: false,
+  // playlistsFetched: false,
   setPlaylist: (playlist) => {
     set({ playlist }, undefined, "playlist/setPlaylist");
     // Cache is now handled by persist middleware
@@ -82,17 +82,17 @@ export const createPlaylistSlice: StateCreator<
 
   getUserPlaylists: async () => {
     try {
-      const playlistsFetched = get().playlistsFetched;
-      if (playlistsFetched) {
-        const playlists = get().playlists;
-        return playlists;
-      }
+      // const playlistsFetched = get().playlistsFetched;
+      // if (playlistsFetched) {
+      //   const playlists = get().playlists;
+      //   return playlists;
+      // }
 
-      set(
-        { playlistsFetched: true },
-        undefined,
-        "playlist/setPlaylistsFetched",
-      );
+      // set(
+      //   { playlistsFetched: true },
+      //   undefined,
+      //   "playlist/setPlaylistsFetched",
+      // );
 
       const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
       if (!accessToken)
@@ -102,7 +102,7 @@ export const createPlaylistSlice: StateCreator<
       const playlists = get().playlists;
       const playlistNamesWithIds = get().playlistNamesWithIds;
       const usersSavedTracks = get().usersSavedTracks;
-
+      console.log(usersSavedTracks);
       if (playlists.length > 0) {
         set({ playlists }, undefined, "playlist/setPlaylistsFromCache");
 
@@ -110,11 +110,12 @@ export const createPlaylistSlice: StateCreator<
           set(
             { playlistNamesWithIds },
             undefined,
-            "playlist/setplaylistNamesWithIds",
+            "playlist/setPlaylistNamesWithIds",
           );
         }
 
         if (!usersSavedTracks) {
+          console.log("getting usersSavedTracks from API");
           set(
             { usersSavedTracks: await get().getUserSavedTracks(0) },
             undefined,
@@ -142,7 +143,7 @@ export const createPlaylistSlice: StateCreator<
       const { items } = await res.json();
       console.log(items);
 
-      const newplaylistNamesWithIds: playlistNamesWithIdsType[] =
+      const newPlaylistNamesWithIds: playlistNamesWithIdsType[] =
         await Promise.all(
           items.map(async (playlist: any) => {
             const idsForCurrentP = (
@@ -156,11 +157,10 @@ export const createPlaylistSlice: StateCreator<
           }),
         );
 
-      console.log(newplaylistNamesWithIds);
       set(
-        { playlistNamesWithIds: newplaylistNamesWithIds },
+        { playlistNamesWithIds: newPlaylistNamesWithIds },
         undefined,
-        "playlist/setplaylistNamesWithIds",
+        "playlist/setPlaylistNamesWithIds",
       );
 
       const formattedPlaylists: UserPlaylistType[] = items.map(
@@ -180,11 +180,11 @@ export const createPlaylistSlice: StateCreator<
       );
       await get().getUserSavedTracks(0);
 
-      set(
-        { playlistsFetched: true },
-        undefined,
-        "playlist/setPlaylistsFetchedComplete",
-      );
+      // set(
+      //   { playlistsFetched: true },
+      //   undefined,
+      //   "playlist/setPlaylistsFetchedComplete",
+      // );
 
       return formattedPlaylists;
     } catch (error) {
