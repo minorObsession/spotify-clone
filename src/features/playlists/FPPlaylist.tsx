@@ -97,7 +97,7 @@ export const playlistLoader = createLoader<DetailedPlaylistType>(
 
     // ! following line fucks up caching!
     // playlist.tracks = playlist.tracks.slice(0, 50);
-    useStateStore.getState().setPlaylist(playlist); // Hydrate Zustand
+    // useStateStore.getState().setPlaylist(playlist); // Hydrate Zustand
     return playlist;
   },
 );

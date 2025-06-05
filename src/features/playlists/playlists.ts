@@ -210,7 +210,7 @@ export const createPlaylistSlice: StateCreator<
           endpoint: `playlists/${id}`,
           cacheName: `playlist${id}`,
           offset: `?offset=${offset}&limit=5`,
-          bypassCache,
+          bypassCache: true,
           transformFn: (data) => ({
             name: data.name,
             id: data.id,

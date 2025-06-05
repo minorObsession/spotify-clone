@@ -6,10 +6,7 @@ import FloatingLabel from "./FloatingLabel";
 import { useStateStore } from "../state/store";
 import { useKeyPress } from "../hooks/useKeyPress";
 import useOutsideClick from "../hooks/useOutsideClick";
-import {
-  getFromLocalStorage,
-  saveToLocalStorage,
-} from "../features/auth/authHelpers";
+import { saveToLocalStorage } from "../features/auth/authHelpers";
 
 export type PartialPlaylist = Pick<
   DetailedPlaylistType,
