@@ -22,7 +22,6 @@ function AlbumCard({ album }: AlbumCardProps) {
       </span>
     </div>
   );
-  console.log(album.id, "FROM THE ALBUM CARD");
   return (
     <GenericCard
       imageUrl={album.imageUrl || ""}

@@ -131,84 +131,107 @@ export const createSearchSlice: StateCreator<
             "search/setSearchResultsFromAPI",
           ),
         transformFn: async (data) => {
+          console.log("🔍 Search API Response:", data);
+
           const transformedData: SearchResultType = {
             tracks:
-              data.tracks?.items?.map((track: any) => ({
-                name: track?.name ?? "Unknown Track",
-                id: track?.id,
-                imageUrl: track?.album?.images?.[0]?.url ?? "",
-                multipleArtists:
-                  Array.isArray(track?.artists) && track?.artists?.length > 1,
-                artists: Array.isArray(track?.artists)
-                  ? track.artists.map((artist: any) => ({
-                      name: artist?.name ?? "Unknown Artist",
-                      artistId: artist?.id,
-                    }))
-                  : [],
-                type: track?.type ?? "track",
-                trackDuration: track?.duration_ms ?? 0,
-                releaseDate: track?.album?.release_date ?? "",
-                albumName: track?.album?.name ?? "Unknown Album",
-                albumId: track?.album?.id,
-              })) ?? [],
+              data.tracks?.items?.map((track: any) => {
+                console.log("🎵 Track data:", track);
+                return {
+                  name: track?.name ?? "Unknown Track",
+                  id: track.id, // Spotify always provides IDs
+                  imageUrl: track?.album?.images?.[0]?.url ?? "",
+                  multipleArtists:
+                    Array.isArray(track?.artists) && track?.artists?.length > 1,
+                  artists: Array.isArray(track?.artists)
+                    ? track.artists.map((artist: any) => ({
+                        name: artist?.name ?? "Unknown Artist",
+                        artistId: artist.id, // Spotify always provides IDs
+                      }))
+                    : [],
+                  type: track?.type ?? "track",
+                  trackDuration: track?.duration_ms ?? 0,
+                  releaseDate: track?.album?.release_date ?? "",
+                  albumName: track?.album?.name ?? "Unknown Album",
+                  albumId: track?.album?.id, // Spotify always provides IDs
+                };
+              }) ?? [],
             artists:
-              data.artists?.items?.map((artist: any) => ({
-                name: artist?.name ?? "Unknown Artist",
-                id: artist?.id,
-                imageUrl: artist?.images?.[0]?.url ?? "",
-                type: artist?.type ?? "artist",
-              })) ?? [],
+              data.artists?.items?.map((artist: any) => {
+                console.log("👨‍🎤 Artist data:", artist);
+                return {
+                  name: artist?.name ?? "Unknown Artist",
+                  id: artist.id, // Spotify always provides IDs
+                  imageUrl: artist?.images?.[0]?.url ?? "",
+                  type: artist?.type ?? "artist",
+                };
+              }) ?? [],
             albums:
-              data.albums?.items?.map((album: any) => ({
-                name: album?.name ?? "Unknown Album",
-                id: album?.id,
-                imageUrl: album?.images?.[0]?.url ?? "",
-                artists:
-                  album?.artists?.map((artist: any) => ({
-                    name: artist?.name ?? "Unknown Artist",
-                    id: artist?.id,
-                  })) ?? [],
-                releaseDate: album?.release_date ?? "",
-                totalTracks: album?.total_tracks ?? 0,
-              })) ?? [],
+              data.albums?.items?.map((album: any) => {
+                console.log("💿 Album data:", album);
+                return {
+                  name: album?.name ?? "Unknown Album",
+                  id: album.id, // Spotify always provides IDs
+                  imageUrl: album?.images?.[0]?.url,
+                  artists:
+                    album?.artists?.map((artist: any) => ({
+                      name: artist?.name ?? "Unknown Artist",
+                      id: artist.id, // Spotify always provides IDs
+                    })) ?? [],
+                  releaseDate: album?.release_date ?? "",
+                  totalTracks: album?.total_tracks ?? 0,
+                };
+              }) ?? [],
             playlists:
-              data.playlists?.items?.map((playlist: any) => ({
-                name: playlist?.name ?? "Unknown Playlist",
-                id: playlist?.id,
-                imageUrl: playlist?.images?.[0]?.url ?? "",
-                ownerName: playlist?.owner?.display_name ?? "Unknown Owner",
-                ownerId: playlist?.owner?.id,
-                type: playlist?.type ?? "playlist",
-              })) ?? [],
+              data.playlists?.items?.map((playlist: any) => {
+                console.log("📋 Playlist data:", playlist);
+                return {
+                  name: playlist?.name ?? "Unknown Playlist",
+                  id: playlist.id, // Spotify always provides IDs
+                  imageUrl: playlist?.images?.[0]?.url ?? "",
+                  ownerName: playlist?.owner?.display_name ?? "Unknown Owner",
+                  ownerId: playlist?.owner?.id, // Spotify always provides IDs
+                  type: playlist?.type ?? "playlist",
+                };
+              }) ?? [],
             shows:
-              data.shows?.items?.map((show: any) => ({
-                name: show?.name ?? "Unknown Show",
-                id: show?.id,
-                imageUrl: show?.images?.[0]?.url ?? "",
-                publisher: show?.publisher ?? "Unknown Publisher",
-                type: show?.type ?? "show",
-              })) ?? [],
+              data.shows?.items?.map((show: any) => {
+                console.log("🎙️ Show data:", show);
+                return {
+                  name: show?.name ?? "Unknown Show",
+                  id: show.id, // Spotify always provides IDs
+                  imageUrl: show?.images?.[0]?.url ?? "",
+                  publisher: show?.publisher ?? "Unknown Publisher",
+                  type: show?.type ?? "show",
+                };
+              }) ?? [],
             episodes:
-              data.episodes?.items?.map((episode: any) => ({
-                name: episode?.name ?? "Unknown Episode",
-                id: episode?.id,
-                imageUrl: episode?.images?.[0]?.url ?? "",
-                durationMs: episode?.duration_ms ?? 0,
-                releaseDate: episode?.release_date ?? "",
-                type: episode?.type ?? "episode",
-              })) ?? [],
+              data.episodes?.items?.map((episode: any) => {
+                console.log("🎧 Episode data:", episode);
+                return {
+                  name: episode?.name ?? "Unknown Episode",
+                  id: episode.id, // Spotify always provides IDs
+                  imageUrl: episode?.images?.[0]?.url ?? "",
+                  durationMs: episode?.duration_ms ?? 0,
+                  releaseDate: episode?.release_date ?? "",
+                  type: episode?.type ?? "episode",
+                };
+              }) ?? [],
             audiobooks:
-              data.audiobooks?.items?.map((audiobook: any) => ({
-                name: audiobook?.name ?? "Unknown Audiobook",
-                id: audiobook?.id,
-                imageUrl: audiobook?.images?.[0]?.url ?? "",
-                authors:
-                  audiobook?.authors?.map((author: any) => ({
-                    name: author?.name ?? "Unknown Author",
-                    id: author?.id,
-                  })) ?? [],
-                type: audiobook?.type ?? "audiobook",
-              })) ?? [],
+              data.audiobooks?.items?.map((audiobook: any) => {
+                console.log("📚 Audiobook data:", audiobook);
+                return {
+                  name: audiobook?.name ?? "Unknown Audiobook",
+                  id: audiobook.id, // Spotify always provides IDs
+                  imageUrl: audiobook?.images?.[0]?.url ?? "",
+                  authors:
+                    audiobook?.authors?.map((author: any) => ({
+                      name: author?.name ?? "Unknown Author",
+                      id: author.id, // Spotify always provides IDs
+                    })) ?? [],
+                  type: audiobook?.type ?? "audiobook",
+                };
+              }) ?? [],
           };
 
           // If we have an artist in the results, get their top tracks

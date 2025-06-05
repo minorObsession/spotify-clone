@@ -14,6 +14,7 @@ interface TrackProps {
   index?: number;
 }
 
+// ! TO ADD IMG
 function FPAlbumTrackItem({ track, index }: TrackProps) {
   const {
     isTrackBoxSelected,
@@ -52,6 +53,12 @@ function FPAlbumTrackItem({ track, index }: TrackProps) {
               ""
             )}
           </span>
+          {/* // ! IMG */}
+          <img
+            src={track.imageUrl}
+            alt={track.name}
+            className="h-10 w-10 rounded-md"
+          />
         </div>
         {/* // ! TRACK name */}
         <span
