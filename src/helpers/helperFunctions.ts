@@ -1,5 +1,6 @@
 import { AccessTokenType } from "../features/auth/Auth";
 import { getFromLocalStorage } from "../features/auth/authHelpers";
+import { useStateStore } from "../state/store";
 
 export function flexibleMillisecondsConverter(ms: number) {
   const seconds = Math.floor(ms / 1000);
@@ -28,7 +29,8 @@ export const handleUploadToSpotify = async (
   playlistId: string,
   base64Image: string,
 ) => {
-  const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
+  const accessToken = useStateStore.getState().accessToken;
+
   if (!accessToken) throw new Error("Access token expired or doesn't exist");
 
   const response = await fetch(
@@ -39,7 +41,7 @@ export const handleUploadToSpotify = async (
       body: JSON.stringify({
         playlistId,
         base64Image,
-        accessToken: `${accessToken?.token}`,
+        accessToken: `${accessToken.token}`,
       }),
     },
   );

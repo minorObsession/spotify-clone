@@ -60,7 +60,7 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
 
     await useStateStore.getState().waitForAuthentication();
 
-    const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
+    const accessToken = useStateStore.getState().accessToken;
     if (!accessToken) {
       throw new Error("Access token expired or doesn't exist");
     }

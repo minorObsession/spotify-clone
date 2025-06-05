@@ -55,7 +55,7 @@ export const createSpotifyPlayerSlice: StateCreator<
   },
 
   initPlayer: () => {
-    const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
+    const accessToken = get().accessToken;
     if (!accessToken) {
       console.error("Access token missing");
       return;

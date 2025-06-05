@@ -45,7 +45,8 @@ export interface PlaylistSlice {
   playlists: UserPlaylistType[];
   playlist: DetailedPlaylistType;
   playlistNamesWithIds: playlistNamesWithIdsType[];
-  // playlistsFetched: boolean;
+  playlistsFetched: boolean;
+  accessToken: AccessTokenType | null;
   setPlaylist: (playlist: DetailedPlaylistType) => void;
   getUserPlaylists: () => Promise<UserPlaylistType[]>;
   getPlaylist: (
@@ -74,7 +75,8 @@ export const createPlaylistSlice: StateCreator<
   playlists: [],
   playlist: initialEmptyPlaylist,
   playlistNamesWithIds: [],
-  // playlistsFetched: false,
+  playlistsFetched: false,
+  accessToken: null,
   setPlaylist: (playlist) => {
     set({ playlist }, undefined, "playlist/setPlaylist");
     // Cache is now handled by persist middleware
@@ -82,21 +84,22 @@ export const createPlaylistSlice: StateCreator<
 
   getUserPlaylists: async () => {
     try {
-      // const playlistsFetched = get().playlistsFetched;
-      // if (playlistsFetched) {
-      //   const playlists = get().playlists;
-      //   return playlists;
-      // }
+      const playlistsFetched = get().playlistsFetched;
+      if (playlistsFetched) {
+        const playlists = get().playlists;
+        return playlists;
+      }
 
-      // set(
-      //   { playlistsFetched: true },
-      //   undefined,
-      //   "playlist/setPlaylistsFetched",
-      // );
+      set(
+        { playlistsFetched: true },
+        undefined,
+        "playlist/setPlaylistsFetched",
+      );
 
-      const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
-      if (!accessToken)
+      const accessToken = get().accessToken;
+      if (!accessToken) {
         throw new Error("Access token expired or doesn't exist");
+      }
 
       // Check persisted state first (handled automatically by persist middleware)
       const playlists = get().playlists;
@@ -180,12 +183,6 @@ export const createPlaylistSlice: StateCreator<
       );
       await get().getUserSavedTracks(0);
 
-      // set(
-      //   { playlistsFetched: true },
-      //   undefined,
-      //   "playlist/setPlaylistsFetchedComplete",
-      // );
-
       return formattedPlaylists;
     } catch (error) {
       console.error("Error fetching playlists:", error);
@@ -210,7 +207,7 @@ export const createPlaylistSlice: StateCreator<
           endpoint: `playlists/${id}`,
           cacheName: `playlist${id}`,
           offset: `?offset=${offset}&limit=5`,
-          bypassCache: true,
+          bypassCache,
           transformFn: (data) => ({
             name: data.name,
             id: data.id,

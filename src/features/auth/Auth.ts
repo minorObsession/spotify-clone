@@ -2,6 +2,7 @@
 import { StateCreator } from "zustand";
 import { base64encode, generateRandomString, sha256 } from "./authHelpers";
 import { StateStore, useStateStore } from "../../state/store";
+import { initialEmptyPlaylist } from "../playlists/playlists";
 
 // --- Configuration ---
 const AUTH_CONFIG = {
@@ -43,9 +44,9 @@ export const createAuthSlice: StateCreator<
   AuthSlice
 > = (set, get) => ({
   isAuthenticated: (() => {
-    // Check if token exists and is valid in spotify-clone-storage
+    // Check if token exists and is valid in spotify-clone-state-storage
     const persistedState = JSON.parse(
-      localStorage.getItem("spotify-clone-storage") || "{}",
+      localStorage.getItem("spotify-clone-state-storage") || "{}",
     );
     if (
       persistedState?.state?.isAuthenticated &&
@@ -59,15 +60,17 @@ export const createAuthSlice: StateCreator<
     const persistedState = get();
     if (persistedState?.accessToken) return persistedState.accessToken;
     // Fallback to localStorage
-    return JSON.parse(localStorage.getItem("spotify-clone-storage") || "{}")
-      ?.state?.accessToken?.token;
+    return JSON.parse(
+      localStorage.getItem("spotify-clone-state-storage") || "{}",
+    )?.state?.accessToken?.token;
   })(),
   refreshToken: (() => {
     const persistedState = get();
     if (persistedState?.refreshToken) return persistedState.refreshToken;
     // Fallback to localStorage
-    return JSON.parse(localStorage.getItem("spotify-clone-storage") || "{}")
-      ?.state?.refreshToken;
+    return JSON.parse(
+      localStorage.getItem("spotify-clone-state-storage") || "{}",
+    )?.state?.refreshToken;
   })(),
   refreshInterval: null,
   // --- Public Action: Initialize Auth Flow ---
@@ -79,7 +82,7 @@ export const createAuthSlice: StateCreator<
     // ! 1. Check localStorage for existing tokens
 
     const parsed = JSON.parse(
-      localStorage.getItem("spotify-clone-storage") || "{}",
+      localStorage.getItem("spotify-clone-state-storage") || "{}",
     );
     const storedAccessToken = parsed?.state?.accessToken;
     const storedRefreshToken = parsed?.state?.refreshToken;
@@ -174,7 +177,7 @@ export const createAuthSlice: StateCreator<
         };
         // Persist tokens in localStorage (for backwards compatibility) and Zustand persist
         localStorage.setItem(
-          "spotify-clone-storage",
+          "spotify-clone-state-storage",
           JSON.stringify({
             state: {
               accessToken: newAccessToken,
@@ -235,7 +238,9 @@ export const createAuthSlice: StateCreator<
                 client_id: AUTH_CONFIG.clientId,
               }),
             });
+
             const data = await response.json();
+
             if (response.ok) {
               const newAccessToken: AccessTokenType = {
                 token: data.access_token,
@@ -245,19 +250,16 @@ export const createAuthSlice: StateCreator<
                 ).toISOString(),
                 now: new Date().toISOString(),
               };
-              localStorage.setItem(
-                "access_token",
-                JSON.stringify(newAccessToken),
-              );
+
               // Use the new refresh token if provided, otherwise keep the old one
               if (data.refresh_token) {
-                localStorage.setItem("refresh_token", data.refresh_token);
                 set(
                   { refreshToken: data.refresh_token },
                   undefined,
                   "auth/updateRefreshToken",
                 );
               }
+
               set(
                 {
                   accessToken: newAccessToken,
@@ -320,20 +322,26 @@ export const createAuthSlice: StateCreator<
         player: null,
         deviceId: null,
         playerState: null,
+        isPlayerLoading: false,
         // Clear playlist state
         playlists: [],
         playlistNamesWithIds: [],
         playlistsFetched: false,
+        playlist: initialEmptyPlaylist,
         // Clear podcast state
         likedEpisodes: [],
+        // Clear search state
+        searchResults: null,
       },
       undefined,
       "auth/logout",
     );
 
     // Clear other user-related state
-    const { cleanupPlayer, logoutUser } = useStateStore.getState();
+    const { cleanupPlayer, logoutUser, requestAuthCodeAndRedirect } =
+      useStateStore.getState();
     cleanupPlayer();
     logoutUser();
+    requestAuthCodeAndRedirect();
   },
 });

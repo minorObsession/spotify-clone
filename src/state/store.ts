@@ -47,7 +47,7 @@ export const useStateStore = create<StateStore>()(
         ...createPodcastSlice(...args),
       }),
       {
-        name: "spotify-clone-storage",
+        name: "spotify-clone-state-storage",
         partialize: (state: StateStore) => ({
           // Auth state (tokens should persist)
           isAuthenticated: state.isAuthenticated,
@@ -74,7 +74,7 @@ export const useStateStore = create<StateStore>()(
       },
     ),
     {
-      name: "Spotify Clone Store",
+      name: "Spotify Clone State Storage",
     },
   ),
 );
