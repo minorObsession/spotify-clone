@@ -44,7 +44,11 @@ function FullPreviewPlaylist() {
       if (loadedTracks) {
         const allTracks = [...playlist.tracks, ...loadedTracks.tracks];
         const uniqueTracks = Array.from(
-          new Map(allTracks.map((track) => [track.id, track])).values(),
+          new Map(
+            allTracks
+              .filter((track) => track?.id)
+              .map((track) => [track.id, track]),
+          ).values(),
         );
 
         setPlaylist({
