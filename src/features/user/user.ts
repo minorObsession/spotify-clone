@@ -21,7 +21,7 @@ export interface UserSlice {
 
 export const createUserSlice: StateCreator<
   StateStore,
-  [["zustand/devtools", never]],
+  [["zustand/devtools", never], ["zustand/persist", unknown]],
   [],
   UserSlice
 > = (set, get) => ({
@@ -29,7 +29,7 @@ export const createUserSlice: StateCreator<
   usersSavedTracks: null,
 
   getUser: async () => {
-    const { user } = get(); // from Zustand
+    const user = get().user; // from Zustand
     if (user) return user;
 
     const userData = await fetchFromSpotify<any, UserType>({
@@ -53,7 +53,8 @@ export const createUserSlice: StateCreator<
   },
 
   getUserSavedTracks: async (offset = 0) => {
-    const { user, getUser } = get();
+    const user = get().user;
+    const getUser = get().getUser;
 
     const currentUser = user || (await getUser());
 
@@ -89,18 +90,20 @@ export const createUserSlice: StateCreator<
         );
 
         const currentSaved = get().usersSavedTracks;
-        // debugger;
         const mergedTracks =
           offset > 0 && currentSaved
             ? [...currentSaved.tracks, ...newTracks]
             : newTracks;
 
+        const user = get().user;
+        if (!user) throw new Error("User not found");
+
         const tracksToStore = {
           name: "Liked Songs",
           id: "liked_songs",
           type: "playlist",
-          ownerName: get().user!.username,
-          ownerId: get().user!.userID,
+          ownerName: user.username,
+          ownerId: user.userID,
           imageUrl:
             "https://cdn.prod.website-files.com/5e36e6f21212670638c0d63c/5e39d85cee05be53d238681a_likedSongs.png",
           tracks: mergedTracks,

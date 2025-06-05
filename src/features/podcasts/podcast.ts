@@ -1,4 +1,5 @@
 import { StateCreator } from "zustand";
+import { StateStore } from "../../state/store";
 import { fetchFromSpotify } from "../../state/helpers";
 
 export interface PodcastEpisodeType {
@@ -31,7 +32,7 @@ export interface PodcastSlice {
 }
 
 export const createPodcastSlice: StateCreator<
-  PodcastSlice,
+  StateStore,
   [["zustand/devtools", never], ["zustand/persist", unknown]],
   [],
   PodcastSlice
@@ -77,9 +78,8 @@ export const createPodcastSlice: StateCreator<
     }
   },
   addEpisodeToLikedEpisodes: (episode: PodcastEpisodeType) => {
-    const isEpisodeSaved = get().likedEpisodes.some(
-      (ep) => ep.id === episode.id,
-    );
+    const likedEpisodes = get().likedEpisodes;
+    const isEpisodeSaved = likedEpisodes.some((ep) => ep.id === episode.id);
 
     if (isEpisodeSaved) {
       console.log("already saved!! returning..");
@@ -95,22 +95,22 @@ export const createPodcastSlice: StateCreator<
     );
   },
   removeEpisodeFromLikedEpisodes: (episodeId: string) => {
-    const episodeToRemove = get().likedEpisodes.find(
+    const likedEpisodes = get().likedEpisodes;
+    const episodeToRemove = likedEpisodes.find(
       (episode) => episode.id === episodeId,
     );
     if (!episodeToRemove) return;
 
     set(
       {
-        likedEpisodes: get().likedEpisodes.filter((ep) => ep.id !== episodeId),
+        likedEpisodes: likedEpisodes.filter((ep) => ep.id !== episodeId),
       },
       undefined,
       "podcast/removeEpisodeFromLikedEpisodes",
     );
   },
   isEpisodeSaved: (episodeId: string) => {
-    return (
-      get().likedEpisodes?.some((episode) => episode?.id === episodeId) || false
-    );
+    const likedEpisodes = get().likedEpisodes;
+    return likedEpisodes?.some((episode) => episode?.id === episodeId) || false;
   },
 });

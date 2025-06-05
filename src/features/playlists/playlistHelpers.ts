@@ -1,7 +1,7 @@
 import { flexibleMillisecondsConverter } from "../../helpers/helperFunctions";
 import { useStateStore } from "../../state/store";
 import { TrackType } from "../tracks/track";
-import { PlaylistNamesWithidsType } from "./playlists";
+import { playlistNamesWithIdsType } from "./playlists";
 
 export const getPlaylistLenght = (data: TrackType[]) => {
   return flexibleMillisecondsConverter(
@@ -24,8 +24,8 @@ export const isTrackInLibrary = (id: string) => {
 
   const idsFromUserPlaylists: string[] = useStateStore
     .getState()
-    .playlistNamesWithids.reduce(
-      (acm: string[], p: PlaylistNamesWithidsType) => {
+    .playlistNamesWithIds.reduce(
+      (acm: string[], p: playlistNamesWithIdsType) => {
         p.ids.forEach((id: string) => acm.push(id));
         return acm;
       },

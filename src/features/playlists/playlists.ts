@@ -1,7 +1,7 @@
 import { StateCreator } from "zustand";
 import { StateStore } from "../../state/store";
 import { AccessTokenType } from "../auth/Auth";
-import { getFromLocalStorage, saveToLocalStorage } from "../auth/authHelpers";
+import { getFromLocalStorage } from "../auth/authHelpers";
 import { TrackType } from "../tracks/track";
 import { fetchFromSpotify } from "../../state/helpers";
 import { PartialPlaylist } from "../../components/EditPlaylistModal";
@@ -25,7 +25,7 @@ export interface DetailedPlaylistType {
   totalDurationMs: number;
   imageUrl: string;
 }
-export interface PlaylistNamesWithidsType {
+export interface playlistNamesWithIdsType {
   name: string;
   ids: string[];
 }
@@ -44,7 +44,7 @@ export const initialEmptyPlaylist: DetailedPlaylistType = {
 export interface PlaylistSlice {
   playlists: UserPlaylistType[];
   playlist: DetailedPlaylistType;
-  playlistNamesWithids: PlaylistNamesWithidsType[];
+  playlistNamesWithIds: playlistNamesWithIdsType[];
   playlistsFetched: boolean;
   setPlaylist: (playlist: DetailedPlaylistType) => void;
   getUserPlaylists: () => Promise<UserPlaylistType[]>;
@@ -67,23 +67,26 @@ export interface PlaylistSlice {
 
 export const createPlaylistSlice: StateCreator<
   StateStore,
-  [["zustand/devtools", never]],
+  [["zustand/devtools", never], ["zustand/persist", unknown]],
   [],
   PlaylistSlice
 > = (set, get) => ({
   playlists: [],
   playlist: initialEmptyPlaylist,
-  playlistNamesWithids: [],
+  playlistNamesWithIds: [],
   playlistsFetched: false,
   setPlaylist: (playlist) => {
     set({ playlist }, undefined, "playlist/setPlaylist");
-    // update cache
-    saveToLocalStorage(`playlist${playlist.id}`, playlist);
+    // Cache is now handled by persist middleware
   },
 
   getUserPlaylists: async () => {
     try {
-      if (get().playlistsFetched) return get().playlists;
+      const playlistsFetched = get().playlistsFetched;
+      if (playlistsFetched) {
+        const playlists = get().playlists;
+        return playlists;
+      }
 
       set(
         { playlistsFetched: true },
@@ -95,38 +98,23 @@ export const createPlaylistSlice: StateCreator<
       if (!accessToken)
         throw new Error("Access token expired or doesn't exist");
 
-      const storedPlaylists = getFromLocalStorage<UserPlaylistType[]>(
-        `${get().user?.username}_playlists`,
-      );
-      const storedPlaylistsWithids = getFromLocalStorage<
-        PlaylistNamesWithidsType[]
-      >(`${get().user?.username}_playlist_names_with_track_ids`);
-      const likedSongs = getFromLocalStorage<DetailedPlaylistType>(
-        `${get().user?.username}s_saved_tracks`,
-      );
+      // Check persisted state first (handled automatically by persist middleware)
+      const playlists = get().playlists;
+      const playlistNamesWithIds = get().playlistNamesWithIds;
+      const usersSavedTracks = get().usersSavedTracks;
 
-      if (storedPlaylists) {
-        set(
-          { playlists: storedPlaylists },
-          undefined,
-          "playlist/setPlaylistsFromCache",
-        );
+      if (playlists.length > 0) {
+        set({ playlists }, undefined, "playlist/setPlaylistsFromCache");
 
-        if (storedPlaylistsWithids) {
+        if (playlistNamesWithIds.length > 0) {
           set(
-            { playlistNamesWithids: storedPlaylistsWithids },
+            { playlistNamesWithIds },
             undefined,
-            "playlist/setPlaylistNamesWithIds",
+            "playlist/setplaylistNamesWithIds",
           );
         }
 
-        if (likedSongs) {
-          set(
-            { usersSavedTracks: likedSongs },
-            undefined,
-            "playlist/setUserSavedTracksFromCache",
-          );
-        } else {
+        if (!usersSavedTracks) {
           set(
             { usersSavedTracks: await get().getUserSavedTracks(0) },
             undefined,
@@ -134,7 +122,7 @@ export const createPlaylistSlice: StateCreator<
           );
         }
 
-        return storedPlaylists;
+        return playlists;
       }
 
       console.log("🛜 getUserPlaylists will call api...");
@@ -154,7 +142,7 @@ export const createPlaylistSlice: StateCreator<
       const { items } = await res.json();
       console.log(items);
 
-      const playlistNamesWithids: PlaylistNamesWithidsType[] =
+      const newplaylistNamesWithIds: playlistNamesWithIdsType[] =
         await Promise.all(
           items.map(async (playlist: any) => {
             const idsForCurrentP = (
@@ -168,11 +156,11 @@ export const createPlaylistSlice: StateCreator<
           }),
         );
 
-      console.log(playlistNamesWithids);
+      console.log(newplaylistNamesWithIds);
       set(
-        { playlistNamesWithids },
+        { playlistNamesWithIds: newplaylistNamesWithIds },
         undefined,
-        "playlist/setPlaylistNamesWithIds",
+        "playlist/setplaylistNamesWithIds",
       );
 
       const formattedPlaylists: UserPlaylistType[] = items.map(
@@ -184,15 +172,7 @@ export const createPlaylistSlice: StateCreator<
         }),
       );
 
-      localStorage.setItem(
-        `${get().user?.username}_playlists`,
-        JSON.stringify(formattedPlaylists),
-      );
-      localStorage.setItem(
-        `${get().user?.username}_playlist_names_with_track_ids`,
-        JSON.stringify(playlistNamesWithids),
-      );
-
+      // Data is now persisted automatically by persist middleware
       set(
         { playlists: formattedPlaylists },
         undefined,

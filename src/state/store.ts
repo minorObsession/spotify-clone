@@ -34,35 +34,52 @@ export type StateStore = AuthSlice &
 // RecommendationsSlice;
 
 export const useStateStore = create<StateStore>()(
-  devtools((...args) => ({
-    ...createAuthSlice(...args),
-    ...createUserSlice(...args),
-    ...createPlaylistSlice(...args),
-    ...createTrackSlice(...args),
-    ...createArtistSlice(...args),
-    ...createAlbumSlice(...args),
-    ...createPlaybackSlice(...args),
-    // ...createSpotifyPlayerSlice(...args),
-    ...persist(createSpotifyPlayerSlice, {})
-   
-    ...persist(createSearchSlice, {
-      name: "search-storage",
-      partialize: (state: SearchSlice) => ({
-        // add search state to be persisted
-        searchResults: state.searchResults,
-        searchFilters: state.searchFilters,
-        topResult: state.topResult,
-        searchOffset: state.searchOffset,
-        searchLimit: state.searchLimit,
+  devtools(
+    persist(
+      (...args) => ({
+        ...createAuthSlice(...args),
+        ...createUserSlice(...args),
+        ...createPlaylistSlice(...args),
+        ...createTrackSlice(...args),
+        ...createArtistSlice(...args),
+        ...createAlbumSlice(...args),
+        ...createPlaybackSlice(...args),
+        ...createSpotifyPlayerSlice(...args),
+        ...createSearchSlice(...args),
+        ...createPodcastSlice(...args),
       }),
-    })(...args),
-    ...persist(createPodcastSlice, {
-      name: "podcast-storage",
-      partialize: (state: PodcastSlice) => ({
-        likedEpisodes: state.likedEpisodes,
-      }),
-    })(...args),
-  })),
+      {
+        name: "spotify-clone-storage",
+        partialize: (state: StateStore) => ({
+          // Auth state (tokens should persist)
+          isAuthenticated: state.isAuthenticated,
+          accessToken: state.accessToken,
+          refreshToken: state.refreshToken,
+
+          // User data
+          user: state.user,
+          usersSavedTracks: state.usersSavedTracks,
+
+          // Playlists
+          playlists: state.playlists,
+          playlistNamesWithIds: state.playlistNamesWithIds,
+          playlistsFetched: state.playlistsFetched,
+
+          // Podcasts (liked episodes)
+          likedEpisodes: state.likedEpisodes,
+
+          // Playback settings
+          currVolume: state.currVolume,
+
+          // Search preferences
+          searchFilters: state.searchFilters,
+        }),
+      },
+    ),
+    {
+      name: "Spotify Clone Store",
+    },
+  ),
 );
 
 export const store = useStateStore;

@@ -24,7 +24,7 @@ export interface AlbumSlice {
 
 export const createAlbumSlice: StateCreator<
   StateStore,
-  [["zustand/devtools", never]],
+  [["zustand/devtools", never], ["zustand/persist", unknown]],
   [],
   AlbumSlice
 > = (set, get) => ({

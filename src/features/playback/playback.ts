@@ -3,7 +3,6 @@ import { StateStore, store } from "../../state/store";
 import { fetchFromSpotify } from "../../state/helpers";
 // import { getSpotifyDeviceId } from "./spotifyPlayer";
 import { makeRequestBody } from "./playbackHelpers";
-import { getFromLocalStorage, saveToLocalStorage } from "../auth/authHelpers";
 
 // todo / ideas
 export interface PlaybackSlice {
@@ -24,11 +23,15 @@ export interface PlaybackSlice {
 
 export const createPlaybackSlice: StateCreator<
   StateStore,
-  [["zustand/devtools", never]],
+  [["zustand/devtools", never], ["zustand/persist", unknown]],
   [],
   PlaybackSlice
-> = (set) => ({
-  currVolume: +JSON.parse(getFromLocalStorage("curr_volume") || "75"),
+> = (set, get) => ({
+  currVolume: (() => {
+    // Try to get from persisted state first, fallback to default
+    const persistedState = get();
+    return persistedState?.currVolume ?? 75;
+  })(),
 
   // ! to stay!!!!
 
@@ -43,9 +46,7 @@ export const createPlaybackSlice: StateCreator<
     await player.setVolume(newValue);
     const volume = await player.getVolume();
 
-    // save into ls
-    saveToLocalStorage("curr_volume", volume);
-
+    // Volume is now persisted automatically by persist middleware
     set({ currVolume: volume }, undefined, "playback/setVolume");
   },
 

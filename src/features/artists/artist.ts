@@ -31,7 +31,7 @@ export interface ArtistSlice {
 
 export const createArtistSlice: StateCreator<
   StateStore,
-  [["zustand/devtools", never]],
+  [["zustand/devtools", never], ["zustand/persist", unknown]],
   [],
   ArtistSlice
 > = (set, get) => ({

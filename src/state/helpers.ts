@@ -38,19 +38,19 @@ interface FetchFromSpotifyParams<ResponseType, ReturnType> {
   cacheName?: string;
   method?: string;
   requestBody?: string;
-  bypassCache?: boolean;
   additionalHeaders?: Record<string, string>;
   transformFn?: (data: ResponseType) => Promise<ReturnType> | ReturnType;
-  onCacheFound?: (data: ReturnType) => void;
   onDataReceived?: (data: ReturnType) => void;
+  onCacheFound?: (data: ReturnType) => void;
+  bypassCache?: boolean;
 }
 export const fetchFromSpotify = async <ResponseType, ReturnType>({
   endpoint,
   transformFn,
   cacheName,
   offset = "",
-  onCacheFound,
   onDataReceived,
+  onCacheFound,
   method = "GET",
   requestBody,
   bypassCache = false,
@@ -58,8 +58,6 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
   try {
     console.log(`calling fetch ${endpoint} ${cacheName} `);
 
-    // ! THIS CODE WAS CAUSING AN ISSUE
-    // debugger;
     await useStateStore.getState().waitForAuthentication();
 
     const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
@@ -67,13 +65,12 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
       throw new Error("Access token expired or doesn't exist");
     }
 
-    // Check local storage for cached data if cacheName is provided a is true
-
+    // Check cache first if cacheName is provided and not bypassing cache
     if (cacheName && !bypassCache) {
       const cachedData = getFromLocalStorage<ReturnType>(cacheName);
       if (cachedData) {
+        console.log("Found cached data, returning early");
         if (onCacheFound) onCacheFound(cachedData);
-        console.log("returning Cached data");
         return cachedData;
       }
     }
@@ -104,7 +101,6 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
 
     if (onDataReceived) onDataReceived(transformedData);
 
-    // const dataToStore = transformedData.
     // Store in localStorage if cacheName is provided
     if (cacheName) {
       localStorage.setItem(cacheName, JSON.stringify(transformedData));

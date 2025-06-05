@@ -29,7 +29,7 @@ export interface SpotifyPlayerSlice {
 
 export const createSpotifyPlayerSlice: StateCreator<
   StateStore,
-  [["zustand/devtools", never]],
+  [["zustand/devtools", never], ["zustand/persist", unknown]],
   [],
   SpotifyPlayerSlice
 > = (set, get) => ({
@@ -39,7 +39,7 @@ export const createSpotifyPlayerSlice: StateCreator<
   playerState: null,
 
   loadPlayer: () => {
-    const { player } = get();
+    const player = get().player;
     if (player) return;
 
     set({ isPlayerLoading: true }, undefined, "spotifyPlayer/setPlayerLoading");
@@ -74,7 +74,7 @@ export const createSpotifyPlayerSlice: StateCreator<
         "spotifyPlayer/playerReady",
       );
 
-      const { transferPlayback } = get();
+      const transferPlayback = get().transferPlayback;
       await transferPlayback(device_id);
     });
 
@@ -87,7 +87,7 @@ export const createSpotifyPlayerSlice: StateCreator<
     });
 
     player.addListener("player_state_changed", (newState) => {
-      const { setPlayerState } = get();
+      const setPlayerState = get().setPlayerState;
       setPlayerState(newState);
     });
   },
@@ -122,7 +122,7 @@ export const createSpotifyPlayerSlice: StateCreator<
       set(
         { player: null, deviceId: null, playerState: null },
         undefined,
-        "spotifyPlayer/cleanup",
+        "spotifyPlayer/disconnect",
       );
     }
   },

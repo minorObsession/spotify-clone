@@ -25,7 +25,7 @@ export interface TrackSlice {
 
 export const createTrackSlice: StateCreator<
   StateStore,
-  [["zustand/devtools", never]],
+  [["zustand/devtools", never], ["zustand/persist", unknown]],
   [],
   TrackSlice
 > = (set) => ({

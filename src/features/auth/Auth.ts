@@ -38,27 +38,37 @@ let hasFetchedToken = false;
 
 export const createAuthSlice: StateCreator<
   StateStore,
-  [["zustand/devtools", never]],
+  [["zustand/devtools", never], ["zustand/persist", unknown]],
   [],
   AuthSlice
 > = (set, get) => ({
-  isAuthenticated: Boolean(
-    localStorage.getItem("access_token") &&
-      (() => {
-        try {
-          const token: AccessTokenType = JSON.parse(
-            localStorage.getItem("access_token") || "{}",
-          );
-          return token.expiresAt > Date.now();
-        } catch {
-          return false;
-        }
-      })(),
-  ),
-  accessToken: localStorage.getItem("access_token")
-    ? JSON.parse(localStorage.getItem("access_token")!)
-    : null,
-  refreshToken: localStorage.getItem("refresh_token"),
+  isAuthenticated: (() => {
+    // Check if token exists and is valid in spotify-clone-storage
+    const persistedState = JSON.parse(
+      localStorage.getItem("spotify-clone-storage") || "{}",
+    );
+    if (
+      persistedState?.state?.isAuthenticated &&
+      persistedState?.state?.accessToken
+    ) {
+      return persistedState.state.accessToken.expiresAt > Date.now();
+    }
+    return false;
+  })(),
+  accessToken: (() => {
+    const persistedState = get();
+    if (persistedState?.accessToken) return persistedState.accessToken;
+    // Fallback to localStorage
+    return JSON.parse(localStorage.getItem("spotify-clone-storage") || "{}")
+      ?.state?.accessToken?.token;
+  })(),
+  refreshToken: (() => {
+    const persistedState = get();
+    if (persistedState?.refreshToken) return persistedState.refreshToken;
+    // Fallback to localStorage
+    return JSON.parse(localStorage.getItem("spotify-clone-storage") || "{}")
+      ?.state?.refreshToken;
+  })(),
   refreshInterval: null,
   // --- Public Action: Initialize Auth Flow ---
   initAuth: async () => {
@@ -67,30 +77,30 @@ export const createAuthSlice: StateCreator<
 
     console.log("initAuth called...passed the flag");
     // ! 1. Check localStorage for existing tokens
-    const storedAccessTokenString = localStorage.getItem("access_token");
-    const storedRefreshToken = localStorage.getItem("refresh_token");
 
-    if (storedAccessTokenString && storedRefreshToken) {
+    const parsed = JSON.parse(
+      localStorage.getItem("spotify-clone-storage") || "{}",
+    );
+    const storedAccessToken = parsed?.state?.accessToken;
+    const storedRefreshToken = parsed?.state?.refreshToken;
+
+    if (storedAccessToken && storedRefreshToken) {
       try {
-        const accessToken: AccessTokenType = JSON.parse(
-          storedAccessTokenString,
-        );
-        // ! Validate token expiry
-        if (Date.now() < accessToken.expiresAt) {
+        // Validate token expiry
+        if (Date.now() < storedAccessToken.expiresAt) {
           set(
             {
-              accessToken,
+              accessToken: storedAccessToken,
               refreshToken: storedRefreshToken,
               isAuthenticated: true,
             },
             undefined,
             "auth/setAuthFromStorage",
           );
-          // ! Start auto–refresh interval
           get().autoRefreshToken();
         }
       } catch (error) {
-        console.error("Error parsing stored access token", error);
+        console.error("Error using stored access token", error);
       }
     }
 
@@ -162,9 +172,16 @@ export const createAuthSlice: StateCreator<
           ).toISOString(),
           now: new Date().toISOString(),
         };
-        // Persist tokens in localStorage
-        localStorage.setItem("access_token", JSON.stringify(newAccessToken));
-        localStorage.setItem("refresh_token", data.refresh_token);
+        // Persist tokens in localStorage (for backwards compatibility) and Zustand persist
+        localStorage.setItem(
+          "spotify-clone-storage",
+          JSON.stringify({
+            state: {
+              accessToken: newAccessToken,
+              refreshToken: data.refresh_token,
+            },
+          }),
+        );
         set(
           {
             accessToken: newAccessToken,
@@ -187,7 +204,6 @@ export const createAuthSlice: StateCreator<
   // --- Internal Action: Auto–Refresh Token ---
   autoRefreshToken: async () => {
     let { refreshInterval } = get();
-
     if (refreshInterval) clearInterval(refreshInterval); // 🔁 prevent duplicate
 
     const interval = setInterval(
@@ -283,21 +299,41 @@ export const createAuthSlice: StateCreator<
 
   // --- Public Action: Logout ---
   logout: () => {
-    console.log("logout called");
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("code_verifier");
+    // Clear existing interval if any
+    const currentInterval = get().refreshInterval;
+    if (currentInterval) {
+      clearInterval(currentInterval);
+    }
 
+    // Clear auth state from Zustand persist
     set(
-      { accessToken: null, refreshToken: null, isAuthenticated: false },
+      {
+        // Clear auth state
+        accessToken: null,
+        refreshToken: null,
+        isAuthenticated: false,
+        refreshInterval: null,
+        // Clear user data
+        user: null,
+        usersSavedTracks: null,
+        // Clear playback state
+        player: null,
+        deviceId: null,
+        playerState: null,
+        // Clear playlist state
+        playlists: [],
+        playlistNamesWithIds: [],
+        playlistsFetched: false,
+        // Clear podcast state
+        likedEpisodes: [],
+      },
       undefined,
       "auth/logout",
     );
+
+    // Clear other user-related state
     const { cleanupPlayer, logoutUser } = useStateStore.getState();
     cleanupPlayer();
     logoutUser();
-    // Optionally, redirect the user to a public page
-    window.location.href = "/";
-    get().initAuth();
   },
 });
