@@ -42,8 +42,20 @@ export const useStateStore = create<StateStore>()(
     ...createArtistSlice(...args),
     ...createAlbumSlice(...args),
     ...createPlaybackSlice(...args),
-    ...createSpotifyPlayerSlice(...args),
-    ...createSearchSlice(...args),
+    // ...createSpotifyPlayerSlice(...args),
+    ...persist(createSpotifyPlayerSlice, {})
+   
+    ...persist(createSearchSlice, {
+      name: "search-storage",
+      partialize: (state: SearchSlice) => ({
+        // add search state to be persisted
+        searchResults: state.searchResults,
+        searchFilters: state.searchFilters,
+        topResult: state.topResult,
+        searchOffset: state.searchOffset,
+        searchLimit: state.searchLimit,
+      }),
+    })(...args),
     ...persist(createPodcastSlice, {
       name: "podcast-storage",
       partialize: (state: PodcastSlice) => ({

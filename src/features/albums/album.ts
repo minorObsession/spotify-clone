@@ -29,7 +29,7 @@ export const createAlbumSlice: StateCreator<
   AlbumSlice
 > = (set, get) => ({
   album: null,
-  setAlbum: (album: AlbumType) => set({ album }),
+  setAlbum: (album: AlbumType) => set({ album }, undefined, "album/setAlbum"),
   // getAlbumTracks: async (id: string) => {
   //   console.log("calling getAlbumTracks");
   //   return await fetchFromSpotify<any, AlbumTrackType[]>({
@@ -83,10 +83,10 @@ export const createAlbumSlice: StateCreator<
           };
         },
         onCacheFound: (data) => {
-          set({ album: data });
+          set({ album: data }, undefined, "album/setAlbumFromCache");
         },
         onDataReceived: (data) => {
-          set({ album: data });
+          set({ album: data }, undefined, "album/setAlbumFromAPI");
         },
       });
       return result;

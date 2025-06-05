@@ -77,11 +77,15 @@ export const createAuthSlice: StateCreator<
         );
         // ! Validate token expiry
         if (Date.now() < accessToken.expiresAt) {
-          set({
-            accessToken,
-            refreshToken: storedRefreshToken,
-            isAuthenticated: true,
-          });
+          set(
+            {
+              accessToken,
+              refreshToken: storedRefreshToken,
+              isAuthenticated: true,
+            },
+            undefined,
+            "auth/setAuthFromStorage",
+          );
           // ! Start auto–refresh interval
           get().autoRefreshToken();
         }
@@ -161,11 +165,15 @@ export const createAuthSlice: StateCreator<
         // Persist tokens in localStorage
         localStorage.setItem("access_token", JSON.stringify(newAccessToken));
         localStorage.setItem("refresh_token", data.refresh_token);
-        set({
-          accessToken: newAccessToken,
-          refreshToken: data.refresh_token,
-          isAuthenticated: true,
-        });
+        set(
+          {
+            accessToken: newAccessToken,
+            refreshToken: data.refresh_token,
+            isAuthenticated: true,
+          },
+          undefined,
+          "auth/setAuthFromTokenRequest",
+        );
 
         console.log("User authenticated successfully.");
         // Start auto–refresh interval
@@ -182,69 +190,83 @@ export const createAuthSlice: StateCreator<
 
     if (refreshInterval) clearInterval(refreshInterval); // 🔁 prevent duplicate
 
-    const interval = setInterval(async () => {
-      const { accessToken, refreshToken } = get();
-      if (!accessToken || !refreshToken) {
-        clearInterval(interval);
-        set({ refreshInterval: null });
-        return;
-      }
-
-      const safetyNetMinutes = 20; // refresh 20 minutes before expiry
-
-      // ! if safetuy net is reached - refresh token request
-      const minutesLeft = (+accessToken.expiresAt - Date.now()) / 1000 / 60;
-      console.log(`Token expires in ${minutesLeft.toFixed(2)} minutes.`);
-      if (minutesLeft <= safetyNetMinutes) {
-        try {
-          const response = await fetch(AUTH_CONFIG.tokenUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              grant_type: "refresh_token",
-              refresh_token: refreshToken,
-              client_id: AUTH_CONFIG.clientId,
-            }),
-          });
-          const data = await response.json();
-          if (response.ok) {
-            const newAccessToken: AccessTokenType = {
-              token: data.access_token,
-              expiresAt: Date.now() + data.expires_in * 1000,
-              expiresAtDate: new Date(
-                Date.now() + data.expires_in * 1000,
-              ).toISOString(),
-              now: new Date().toISOString(),
-            };
-            localStorage.setItem(
-              "access_token",
-              JSON.stringify(newAccessToken),
-            );
-            // Use the new refresh token if provided, otherwise keep the old one
-            if (data.refresh_token) {
-              localStorage.setItem("refresh_token", data.refresh_token);
-              set({ refreshToken: data.refresh_token });
-            }
-            set({
-              accessToken: newAccessToken,
-              refreshToken: data.refresh_token || refreshToken,
-              isAuthenticated: true,
-            });
-
-            console.log("token successfully refreshed!");
-          } else {
-            throw new Error("Refreshing token failed.");
-          }
-        } catch (error) {
-          console.error("Error refreshing token:", error);
-          // Optionally trigger a logout here on repeated failures
-          // get().logout();
+    const interval = setInterval(
+      async () => {
+        const { accessToken, refreshToken } = get();
+        if (!accessToken || !refreshToken) {
+          clearInterval(interval);
+          set(
+            { refreshInterval: null },
+            undefined,
+            "auth/clearRefreshInterval",
+          );
+          return;
         }
-      }
-    }, 60000 * 10); // ! Check every 10 minutes
 
-    // set refresh interval state
-    set({ refreshInterval: interval });
+        const safetyNetMinutes = 20; // refresh 20 minutes before expiry
+
+        // ! if safetuy net is reached - refresh token request
+        const minutesLeft = (+accessToken.expiresAt - Date.now()) / 1000 / 60;
+        console.log(`Token expires in ${minutesLeft.toFixed(2)} minutes.`);
+        if (minutesLeft <= safetyNetMinutes) {
+          try {
+            const response = await fetch(AUTH_CONFIG.tokenUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({
+                grant_type: "refresh_token",
+                refresh_token: refreshToken,
+                client_id: AUTH_CONFIG.clientId,
+              }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+              const newAccessToken: AccessTokenType = {
+                token: data.access_token,
+                expiresAt: Date.now() + data.expires_in * 1000,
+                expiresAtDate: new Date(
+                  Date.now() + data.expires_in * 1000,
+                ).toISOString(),
+                now: new Date().toISOString(),
+              };
+              localStorage.setItem(
+                "access_token",
+                JSON.stringify(newAccessToken),
+              );
+              // Use the new refresh token if provided, otherwise keep the old one
+              if (data.refresh_token) {
+                localStorage.setItem("refresh_token", data.refresh_token);
+                set(
+                  { refreshToken: data.refresh_token },
+                  undefined,
+                  "auth/updateRefreshToken",
+                );
+              }
+              set(
+                {
+                  accessToken: newAccessToken,
+                  refreshToken: data.refresh_token || refreshToken,
+                  isAuthenticated: true,
+                },
+                undefined,
+                "auth/refreshToken",
+              );
+
+              console.log("token successfully refreshed!");
+            } else {
+              throw new Error("Refreshing token failed.");
+            }
+          } catch (error) {
+            console.error("Error refreshing token:", error);
+            // Optionally trigger a logout here on repeated failures
+            // get().logout();
+          }
+        }
+      },
+      5 * 60 * 1000,
+    ); // Check every 5 minutes
+
+    set({ refreshInterval: interval }, undefined, "auth/setRefreshInterval");
   },
 
   waitForAuthentication: async () => {
@@ -266,7 +288,11 @@ export const createAuthSlice: StateCreator<
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("code_verifier");
 
-    set({ accessToken: null, refreshToken: null, isAuthenticated: false });
+    set(
+      { accessToken: null, refreshToken: null, isAuthenticated: false },
+      undefined,
+      "auth/logout",
+    );
     const { cleanupPlayer, logoutUser } = useStateStore.getState();
     cleanupPlayer();
     logoutUser();

@@ -4,7 +4,7 @@ import { useStateStore } from "../../state/store";
 import { ArtistType } from "./artist";
 import FPArtistOverview from "./FPArtistOverview";
 import { createLoader } from "../../state/helpers";
-import BackToHomeButton from "../../components/BackToHomeButton";
+import BackButton from "../../components/BackButton";
 import FPArtistTracks from "./FPArtistTracks";
 
 function FPArtist() {
@@ -12,7 +12,7 @@ function FPArtist() {
 
   return (
     <div className={`fullPreviewContainer`}>
-      <BackToHomeButton />
+      <BackButton />
 
       <FPArtistOverview data={data} />
       <FPArtistTracks tracks={data.topTracks} />

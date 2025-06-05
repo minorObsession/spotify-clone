@@ -2,7 +2,7 @@ import { memo } from "react";
 import { useLoaderData } from "react-router-dom";
 import { createLoader } from "../../state/helpers";
 import { useStateStore } from "../../state/store";
-import BackToHomeButton from "../../components/BackToHomeButton";
+import BackButton from "../../components/BackButton";
 import FPControls from "../../components/FPControls";
 import { PodcastType } from "./podcast";
 import { podcastOptions } from "../../config/menuOptions";
@@ -15,7 +15,7 @@ function FullPreviewPodcast() {
 
   return (
     <div className="fullPreviewContainer gap-6">
-      <BackToHomeButton />
+      <BackButton />
       <FPPodcastOverview data={podcast} />
       <FPControls
         item={podcast}

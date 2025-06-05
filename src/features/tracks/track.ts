@@ -51,10 +51,10 @@ export const createTrackSlice: StateCreator<
         albumId: data.album.id,
       }),
       onCacheFound: (data) => {
-        set({ track: data });
+        set({ track: data }, undefined, "track/setTrackFromCache");
       },
       onDataReceived: (data) => {
-        set({ track: data });
+        set({ track: data }, undefined, "track/setTrackFromAPI");
       },
     });
   },

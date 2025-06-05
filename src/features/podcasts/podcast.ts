@@ -1,6 +1,5 @@
 import { StateCreator } from "zustand";
 import { fetchFromSpotify } from "../../state/helpers";
-// import { getFromLocalStorage } from "../auth/authHelpers";
 
 export interface PodcastEpisodeType {
   name: string;
@@ -65,10 +64,10 @@ export const createPodcastSlice: StateCreator<
           };
         },
         onCacheFound: (data) => {
-          set({ podcast: data });
+          set({ podcast: data }, undefined, "podcast/setPodcastFromCache");
         },
         onDataReceived: (data) => {
-          set({ podcast: data });
+          set({ podcast: data }, undefined, "podcast/setPodcastFromAPI");
         },
       });
       return result;
@@ -87,9 +86,13 @@ export const createPodcastSlice: StateCreator<
       return;
     }
 
-    set((state) => ({
-      likedEpisodes: [episode, ...state.likedEpisodes],
-    }));
+    set(
+      (state) => ({
+        likedEpisodes: [episode, ...state.likedEpisodes],
+      }),
+      undefined,
+      "podcast/addEpisodeToLikedEpisodes",
+    );
   },
   removeEpisodeFromLikedEpisodes: (episodeId: string) => {
     const episodeToRemove = get().likedEpisodes.find(
@@ -97,9 +100,13 @@ export const createPodcastSlice: StateCreator<
     );
     if (!episodeToRemove) return;
 
-    set({
-      likedEpisodes: get().likedEpisodes.filter((ep) => ep.id !== episodeId),
-    });
+    set(
+      {
+        likedEpisodes: get().likedEpisodes.filter((ep) => ep.id !== episodeId),
+      },
+      undefined,
+      "podcast/removeEpisodeFromLikedEpisodes",
+    );
   },
   isEpisodeSaved: (episodeId: string) => {
     return (

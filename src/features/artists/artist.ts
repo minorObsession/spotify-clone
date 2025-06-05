@@ -78,10 +78,10 @@ export const createArtistSlice: StateCreator<
         };
       },
       onCacheFound: (data) => {
-        set({ artist: data });
+        set({ artist: data }, undefined, "artist/setArtistFromCache");
       },
       onDataReceived: (data) => {
-        set({ artist: data });
+        set({ artist: data }, undefined, "artist/setArtistFromAPI");
       },
     });
   },

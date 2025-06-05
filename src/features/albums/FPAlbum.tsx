@@ -1,5 +1,5 @@
 import { memo } from "react";
-import BackToHomeButton from "../../components/BackToHomeButton";
+import BackButton from "../../components/BackButton";
 import { useLoaderData } from "react-router-dom";
 import { createLoader } from "../../state/helpers";
 import FPControls from "../../components/FPControls";
@@ -14,7 +14,7 @@ function FullPreviewAlbum() {
 
   return (
     <div className={`fullPreviewContainer gap-3`}>
-      <BackToHomeButton />
+      <BackButton />
 
       <FPAlbumOverview data={album} />
 

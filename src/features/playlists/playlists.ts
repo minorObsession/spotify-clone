@@ -76,7 +76,7 @@ export const createPlaylistSlice: StateCreator<
   playlistNamesWithids: [],
   playlistsFetched: false,
   setPlaylist: (playlist) => {
-    set({ playlist });
+    set({ playlist }, undefined, "playlist/setPlaylist");
     // update cache
     saveToLocalStorage(`playlist${playlist.id}`, playlist);
   },
@@ -85,7 +85,11 @@ export const createPlaylistSlice: StateCreator<
     try {
       if (get().playlistsFetched) return get().playlists;
 
-      set({ playlistsFetched: true });
+      set(
+        { playlistsFetched: true },
+        undefined,
+        "playlist/setPlaylistsFetched",
+      );
 
       const accessToken = getFromLocalStorage<AccessTokenType>("access_token");
       if (!accessToken)
@@ -102,16 +106,32 @@ export const createPlaylistSlice: StateCreator<
       );
 
       if (storedPlaylists) {
-        set({ playlists: storedPlaylists });
+        set(
+          { playlists: storedPlaylists },
+          undefined,
+          "playlist/setPlaylistsFromCache",
+        );
 
         if (storedPlaylistsWithids) {
-          set({ playlistNamesWithids: storedPlaylistsWithids });
+          set(
+            { playlistNamesWithids: storedPlaylistsWithids },
+            undefined,
+            "playlist/setPlaylistNamesWithIds",
+          );
         }
 
         if (likedSongs) {
-          set({ usersSavedTracks: likedSongs });
+          set(
+            { usersSavedTracks: likedSongs },
+            undefined,
+            "playlist/setUserSavedTracksFromCache",
+          );
         } else {
-          set({ usersSavedTracks: await get().getUserSavedTracks(0) });
+          set(
+            { usersSavedTracks: await get().getUserSavedTracks(0) },
+            undefined,
+            "playlist/setUserSavedTracksFromAPI",
+          );
         }
 
         return storedPlaylists;
@@ -149,7 +169,11 @@ export const createPlaylistSlice: StateCreator<
         );
 
       console.log(playlistNamesWithids);
-      set({ playlistNamesWithids });
+      set(
+        { playlistNamesWithids },
+        undefined,
+        "playlist/setPlaylistNamesWithIds",
+      );
 
       const formattedPlaylists: UserPlaylistType[] = items.map(
         (playlist: any) => ({
@@ -169,10 +193,18 @@ export const createPlaylistSlice: StateCreator<
         JSON.stringify(playlistNamesWithids),
       );
 
-      set({ playlists: formattedPlaylists });
+      set(
+        { playlists: formattedPlaylists },
+        undefined,
+        "playlist/setPlaylists",
+      );
       await get().getUserSavedTracks(0);
 
-      set({ playlistsFetched: true });
+      set(
+        { playlistsFetched: true },
+        undefined,
+        "playlist/setPlaylistsFetchedComplete",
+      );
 
       return formattedPlaylists;
     } catch (error) {
@@ -231,8 +263,10 @@ export const createPlaylistSlice: StateCreator<
             ownerName: data.owner.display_name,
             ownerId: data.owner.id,
           }),
-          onCacheFound: (data) => set({ playlist: data }),
-          onDataReceived: (data) => set({ playlist: data }),
+          onCacheFound: (data) =>
+            set({ playlist: data }, undefined, "playlist/setPlaylistFromCache"),
+          onDataReceived: (data) =>
+            set({ playlist: data }, undefined, "playlist/setPlaylistFromAPI"),
         },
       );
 

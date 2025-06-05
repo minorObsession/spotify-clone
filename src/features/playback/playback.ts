@@ -46,7 +46,7 @@ export const createPlaybackSlice: StateCreator<
     // save into ls
     saveToLocalStorage("curr_volume", volume);
 
-    set({ currVolume: volume });
+    set({ currVolume: volume }, undefined, "playback/setVolume");
   },
 
   seekToPosition: async (positionMs: number) => {

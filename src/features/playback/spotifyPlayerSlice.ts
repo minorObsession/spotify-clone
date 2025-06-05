@@ -42,7 +42,7 @@ export const createSpotifyPlayerSlice: StateCreator<
     const { player } = get();
     if (player) return;
 
-    set({ isPlayerLoading: true });
+    set({ isPlayerLoading: true }, undefined, "spotifyPlayer/setPlayerLoading");
 
     // Always call initPlayer if Spotify SDK is already loaded
     if (window.Spotify && typeof window.Spotify.Player === "function") {
@@ -68,7 +68,11 @@ export const createSpotifyPlayerSlice: StateCreator<
     });
 
     player.addListener("ready", async ({ device_id }) => {
-      set({ deviceId: device_id, player, isPlayerLoading: false });
+      set(
+        { deviceId: device_id, player, isPlayerLoading: false },
+        undefined,
+        "spotifyPlayer/playerReady",
+      );
 
       const { transferPlayback } = get();
       await transferPlayback(device_id);
@@ -102,16 +106,24 @@ export const createSpotifyPlayerSlice: StateCreator<
   setPlayerState: (
     updater: Spotify.PlaybackState | ((state: Spotify.PlaybackState) => any),
   ) =>
-    set((state) => ({
-      playerState:
-        typeof updater === "function" ? updater(state.playerState!) : updater,
-    })),
+    set(
+      (state) => ({
+        playerState:
+          typeof updater === "function" ? updater(state.playerState!) : updater,
+      }),
+      undefined,
+      "spotifyPlayer/setPlayerState",
+    ),
 
   cleanupPlayer: () => {
     const { player } = get();
     if (player) {
       player.disconnect();
-      set({ player: null, deviceId: null, playerState: null });
+      set(
+        { player: null, deviceId: null, playerState: null },
+        undefined,
+        "spotifyPlayer/cleanup",
+      );
     }
   },
 });

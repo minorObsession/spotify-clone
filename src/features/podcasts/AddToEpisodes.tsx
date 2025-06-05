@@ -4,7 +4,6 @@ import Tooltip from "../../components/Tooltip";
 import { PodcastEpisodeType } from "./podcast";
 import { useStateStore } from "../../state/store";
 import { FaCircleCheck } from "react-icons/fa6";
-import { saveToLocalStorage } from "../auth/authHelpers";
 
 interface AddToEpisodesProps {
   episode: PodcastEpisodeType;
@@ -22,23 +21,6 @@ function AddToEpisodes({ episode, id, isEpisodeHovered }: AddToEpisodesProps) {
   );
   const isEpisodeSaved = useStateStore((store) => store.isEpisodeSaved(id));
 
-  const handleAddToLikedEpisodes = () => {
-    // updateZustand store - optimistic update UI
-
-    addEpisodeToLikedEpisodes(episode);
-
-    // update local storage
-    saveToLocalStorage(
-      `${useStateStore.getState().user?.username}s_liked_episodes`,
-      episode,
-    );
-  };
-
-  const handleRemoveFromLikedEpisodes = () => {
-    // updateZustand store - optimistic update UI
-    removeEpisodeFromLikedEpisodes(id);
-  };
-
   return (
     <div
       onMouseEnter={handleMouseEnter}
@@ -52,10 +34,13 @@ function AddToEpisodes({ episode, id, isEpisodeHovered }: AddToEpisodesProps) {
 
       <button className="cursor-pointer">
         {isEpisodeSaved ? (
-          <FaCircleCheck fill="green" onClick={handleRemoveFromLikedEpisodes} />
+          <FaCircleCheck
+            fill="green"
+            onClick={() => removeEpisodeFromLikedEpisodes(id)}
+          />
         ) : (
           <span className={``}>
-            <BiPlusCircle onClick={handleAddToLikedEpisodes} />
+            <BiPlusCircle onClick={() => addEpisodeToLikedEpisodes(episode)} />
           </span>
         )}
       </button>

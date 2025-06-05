@@ -1,5 +1,4 @@
 import { StateCreator } from "zustand";
-import { StateStore } from "../../state/store";
 import { fetchFromSpotify } from "../../state/helpers";
 import { TopTrackType } from "../artists/artist";
 
@@ -90,8 +89,8 @@ export interface SearchSlice {
 }
 
 export const createSearchSlice: StateCreator<
-  StateStore,
-  [["zustand/devtools", never]],
+  SearchSlice,
+  [["zustand/devtools", never], ["zustand/persist", unknown]],
   [],
   SearchSlice
 > = (set, get) => ({
@@ -101,7 +100,8 @@ export const createSearchSlice: StateCreator<
   searchOffset: 0,
   searchLimit: 20,
   // ! implement debounced auto search for production
-  setSearchFilters: (filterBy) => set({ searchFilters: filterBy }),
+  setSearchFilters: (filterBy) =>
+    set({ searchFilters: filterBy }, undefined, "search/setSearchFilters"),
   search: async (query) => {
     try {
       const { searchOffset, searchLimit, searchFilters } = get();
@@ -109,7 +109,12 @@ export const createSearchSlice: StateCreator<
       const result = await fetchFromSpotify<any, SearchResultType>({
         endpoint: `search?q=${query}&type=${searchFilters}&offset=${searchOffset}&limit=${searchLimit}`,
         cacheName: `search_${query}`,
-        onCacheFound: (data) => set({ searchResults: data }),
+        onCacheFound: (data) =>
+          set(
+            { searchResults: data },
+            undefined,
+            "search/setSearchResultsFromCache",
+          ),
         transformFn: (data: any) => ({
           artists: data.artists?.items
             .filter(
@@ -201,7 +206,11 @@ export const createSearchSlice: StateCreator<
             })),
         }),
         onDataReceived: (data) => {
-          set({ searchResults: data });
+          set(
+            { searchResults: data },
+            undefined,
+            "search/setSearchResultsFromAPI",
+          );
         },
       });
 
@@ -219,8 +228,8 @@ export const createSearchSlice: StateCreator<
         id: result.artists[0].id,
         topTracks,
       };
-      set({ topResult: topResultToStore });
-      set({ searchResults: result });
+      set({ topResult: topResultToStore }, undefined, "search/setTopResult");
+      set({ searchResults: result }, undefined, "search/setSearchResults");
 
       return result;
     } catch (err) {

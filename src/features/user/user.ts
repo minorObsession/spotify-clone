@@ -42,10 +42,10 @@ export const createUserSlice: StateCreator<
         email: data.email,
       }),
       onDataReceived: (data) => {
-        set({ user: data });
+        set({ user: data }, undefined, "user/setUserFromAPI");
       },
       onCacheFound: (data) => {
-        set({ user: data });
+        set({ user: data }, undefined, "user/setUserFromCache");
       },
     });
 
@@ -109,7 +109,11 @@ export const createUserSlice: StateCreator<
         };
 
         // set updated tracks
-        set({ usersSavedTracks: tracksToStore });
+        set(
+          { usersSavedTracks: tracksToStore },
+          undefined,
+          "user/setUserSavedTracks",
+        );
         console.log("✅ users tracks saved");
 
         return tracksToStore;
@@ -118,5 +122,6 @@ export const createUserSlice: StateCreator<
     return result;
   },
 
-  logoutUser: () => set({ user: null, usersSavedTracks: null }),
+  logoutUser: () =>
+    set({ user: null, usersSavedTracks: null }, undefined, "user/logoutUser"),
 });
