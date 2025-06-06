@@ -92,6 +92,7 @@ export const createSpotifyPlayerSlice: StateCreator<
     });
   },
 
+  // ! THIS WILL ALWAYS THROW ERROR BECAUSE OF fetchFromSpotify!!!!!
   transferPlayback: async (deviceId: string) => {
     return await fetchFromSpotify<any, any>({
       endpoint: "me/player",

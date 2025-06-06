@@ -165,7 +165,7 @@ export const createPlaylistSlice: StateCreator<
 
     // Data is now persisted automatically by persist middleware
     set({ playlists: formattedPlaylists }, undefined, "playlist/setPlaylists");
-    await get().getUserSavedTracks(0);
+    await get().getUserSavedTracks();
 
     return formattedPlaylists;
   },
@@ -181,7 +181,7 @@ export const createPlaylistSlice: StateCreator<
       else return usersSavedTracks as DetailedPlaylistType;
     }
 
-    const fetchedPlaylist = await fetchFromSpotify<any, DetailedPlaylistType>({
+    return await fetchFromSpotify<any, DetailedPlaylistType>({
       endpoint: `playlists/${id}`,
       cacheName: `playlist${id}`,
       offset: `?offset=${offset}&limit=5`,
@@ -223,9 +223,6 @@ export const createPlaylistSlice: StateCreator<
       onDataReceived: (data) =>
         set({ playlist: data }, undefined, "playlist/setPlaylistFromAPI"),
     });
-
-    if (!fetchedPlaylist) throw new Error("Couldn't fetch playlist");
-    return fetchedPlaylist;
   },
 
   uploadNewPlaylistImage: async (id, base64ImageUrl) => {

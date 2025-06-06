@@ -15,7 +15,7 @@ export interface UserSlice {
   user: UserType | null;
   usersSavedTracks: DetailedPlaylistType | null;
   getUser: () => Promise<UserType>;
-  getUserSavedTracks(offset: number): Promise<DetailedPlaylistType>;
+  getUserSavedTracks(offset?: number): Promise<DetailedPlaylistType>;
   logoutUser: () => void;
 }
 
@@ -55,7 +55,6 @@ export const createUserSlice: StateCreator<
   getUserSavedTracks: async (offset = 0) => {
     console.log("✅ calling getUserSavedTracks");
     console.trace("getUserSavedTracks called from:");
-    debugger;
     const user = get().user;
     const getUser = get().getUser;
 
@@ -64,7 +63,6 @@ export const createUserSlice: StateCreator<
     if (!currentUser?.username) {
       throw new Error("❌ No username.. exiting with error...");
     }
-
     return await fetchFromSpotify<any, DetailedPlaylistType>({
       endpoint: "me/tracks",
       cacheName: `${currentUser?.username}s_saved_tracks_with_offset_of_${offset}`,
@@ -93,7 +91,7 @@ export const createUserSlice: StateCreator<
         );
 
         const currentSaved = get().usersSavedTracks;
-        const mergedTracks =
+        const mergedTracks: TrackType[] =
           offset > 0 && currentSaved
             ? [...currentSaved.tracks, ...newTracks]
             : newTracks;
@@ -111,7 +109,7 @@ export const createUserSlice: StateCreator<
             "https://cdn.prod.website-files.com/5e36e6f21212670638c0d63c/5e39d85cee05be53d238681a_likedSongs.png",
           tracks: mergedTracks,
           totalDurationMs: 1000000, // can update if needed
-          numTracks: data.total,
+          numTracks: data.total as number,
         };
 
         // set updated tracks
@@ -123,6 +121,13 @@ export const createUserSlice: StateCreator<
         console.log("✅ users tracks saved");
 
         return tracksToStore;
+      },
+      onCacheFound: (data) => {
+        set(
+          { usersSavedTracks: data },
+          undefined,
+          "user/setUserSavedTracksFromCache",
+        );
       },
     });
   },

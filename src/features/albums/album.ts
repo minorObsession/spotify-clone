@@ -25,7 +25,7 @@ export const createAlbumSlice: StateCreator<
   [["zustand/devtools", never], ["zustand/persist", unknown]],
   [],
   AlbumSlice
-> = (set, get) => ({
+> = (set) => ({
   album: null,
   // getAlbumTracks: async (id: string) => {
   //   console.log("calling getAlbumTracks");

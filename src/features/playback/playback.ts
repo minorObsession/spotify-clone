@@ -61,6 +61,9 @@ export const createPlaybackSlice: StateCreator<
     await player.seek(positionMs);
   },
 
+  // ! THIS WILL ALWAYS THROW ERROR BECAUSE OF fetchFromSpotify!!!!!
+  // ! THIS WILL ALWAYS THROW ERROR BECAUSE OF fetchFromSpotify!!!!!
+  // ! THIS WILL ALWAYS THROW ERROR BECAUSE OF fetchFromSpotify!!!!!
   playTrack: async (uri, dataType, trackIndex = 0) => {
     console.log(uri, dataType, trackIndex);
     try {
