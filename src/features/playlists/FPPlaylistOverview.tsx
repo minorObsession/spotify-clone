@@ -1,4 +1,4 @@
-import { getPlaylistLenght } from "./playlistHelpers";
+import { getPlaylistLength } from "./playlistHelpers";
 import { useStateStore } from "../../state/store";
 import UserAvatar from "../../components/UserAvatar";
 import { DetailedPlaylistType } from "./playlists";
@@ -56,7 +56,7 @@ function FPPlaylistOverview({
 
           {/* // ! LENGTH of Playlist */}
           <span className="underline-offset-1 hover:cursor-pointer hover:underline">
-            {getPlaylistLenght(playlist.tracks)}
+            {getPlaylistLength(playlist.tracks)}
           </span>
         </div>
       </div>

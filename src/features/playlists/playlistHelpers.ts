@@ -3,7 +3,7 @@ import { useStateStore } from "../../state/store";
 import { TrackType } from "../tracks/track";
 import { playlistNamesWithIdsType } from "./playlists";
 
-export const getPlaylistLenght = (data: TrackType[]) => {
+export const getPlaylistLength = (data: TrackType[]) => {
   return flexibleMillisecondsConverter(
     data.reduce((acc: number, track: TrackType) => {
       acc += +track?.trackDuration;

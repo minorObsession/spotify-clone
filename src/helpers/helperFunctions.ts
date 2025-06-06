@@ -1,5 +1,3 @@
-import { AccessTokenType } from "../features/auth/Auth";
-import { getFromLocalStorage } from "../features/auth/authHelpers";
 import { useStateStore } from "../state/store";
 
 export function flexibleMillisecondsConverter(ms: number) {

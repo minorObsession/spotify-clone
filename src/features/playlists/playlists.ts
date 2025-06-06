@@ -4,6 +4,7 @@ import { AccessTokenType } from "../auth/Auth";
 import { TrackType } from "../tracks/track";
 import { fetchFromSpotify } from "../../state/helpers";
 import { PartialPlaylist } from "../../components/EditPlaylistModal";
+import { AsyncResult, wrapPromiseResult } from "../../types/reusableTypes";
 
 export interface UserPlaylistType {
   name: string;
@@ -47,22 +48,25 @@ export interface PlaylistSlice {
   playlistsFetched: boolean;
   accessToken: AccessTokenType | null;
   setPlaylist: (playlist: DetailedPlaylistType) => void;
-  getUserPlaylists: () => Promise<UserPlaylistType[]>;
+  getUserPlaylists: () => Promise<AsyncResult<UserPlaylistType[]>>;
   getPlaylist: (
     id: string,
     offset?: number,
     bypassCache?: boolean,
     type?: "playlists" | "shows" | "albums",
-  ) => Promise<DetailedPlaylistType>;
+  ) => Promise<AsyncResult<DetailedPlaylistType>>;
   uploadNewPlaylistImage: (
     id: string,
     base64ImageUrl: string,
-  ) => Promise<boolean>;
+  ) => Promise<AsyncResult<boolean>>;
   updatePlaylistDetails: (
     id: string,
     updatedPlaylist: PartialPlaylist,
-  ) => Promise<void>;
-  addTrackToPlaylist: (id: string, trackId: string) => Promise<void>;
+  ) => Promise<AsyncResult<void>>;
+  addTrackToPlaylist: (
+    id: string,
+    trackId: string,
+  ) => Promise<AsyncResult<void>>;
 }
 
 export const createPlaylistSlice: StateCreator<
@@ -85,7 +89,7 @@ export const createPlaylistSlice: StateCreator<
     const playlistsFetched = get().playlistsFetched;
     if (playlistsFetched) {
       const playlists = get().playlists;
-      return playlists;
+      return { success: true, data: playlists };
     }
 
     set({ playlistsFetched: true }, undefined, "playlist/setPlaylistsFetched");
@@ -117,7 +121,7 @@ export const createPlaylistSlice: StateCreator<
         );
       }
 
-      return playlists;
+      return { success: true, data: playlists };
     }
 
     console.log("🛜 getUserPlaylists will call api...");
@@ -134,16 +138,23 @@ export const createPlaylistSlice: StateCreator<
     const { items } = await res.json();
     console.log(items);
 
+    // ! FIGURE OUT WHY THIS IS NOT WORKING (PROBLEM IN PLAULISTHELPERS)
+    // ! FIGURE OUT WHY THIS IS NOT WORKING
+    // ! FIGURE OUT WHY THIS IS NOT WORKING
+    // ! FIGURE OUT WHY THIS IS NOT WORKING
+    // ! FIGURE OUT WHY THIS IS NOT WORKING
     const newPlaylistNamesWithIds: playlistNamesWithIdsType[] =
       await Promise.all(
         items.map(async (playlist: any) => {
-          const idsForCurrentP = (
-            await get().getPlaylist(playlist.id)
-          ).tracks.map((track: TrackType) => track.id);
+          const idsForCurrentP = await get().getPlaylist(playlist.id);
+
+          if (!idsForCurrentP.success) throw new Error("No playlist found");
 
           return {
             name: playlist.name,
-            ids: idsForCurrentP,
+            ids: idsForCurrentP.data?.tracks.map(
+              (track: TrackType) => track.id,
+            ),
           };
         }),
       );
@@ -167,7 +178,7 @@ export const createPlaylistSlice: StateCreator<
     set({ playlists: formattedPlaylists }, undefined, "playlist/setPlaylists");
     await get().getUserSavedTracks();
 
-    return formattedPlaylists;
+    return { success: true, data: formattedPlaylists };
   },
 
   getPlaylist: async (id, offset = 0, bypassCache = false) => {
@@ -175,90 +186,90 @@ export const createPlaylistSlice: StateCreator<
 
     if (id === "liked_songs") {
       const usersSavedTracks = get().usersSavedTracks;
-
-      if (!usersSavedTracks)
-        return (await get().getUserSavedTracks(0)) as DetailedPlaylistType;
-      else return usersSavedTracks as DetailedPlaylistType;
+      if (!usersSavedTracks) {
+        const result = await get().getUserSavedTracks(0);
+        return { success: true, data: result as DetailedPlaylistType };
+      }
+      return { success: true, data: usersSavedTracks as DetailedPlaylistType };
     }
 
-    return await fetchFromSpotify<any, DetailedPlaylistType>({
-      endpoint: `playlists/${id}`,
-      cacheName: `playlist${id}`,
-      offset: `?offset=${offset}&limit=5`,
-      bypassCache,
-      transformFn: (data) => ({
-        name: data.name,
-        id: data.id,
-        type: data.type,
-        tracks: data.tracks.items
-          .filter((tra: any) => tra.track !== null)
-          .map(
-            (track: any): TrackType => ({
-              name: track.track.name,
-              id: track.track.id,
-              imageUrl: track.track.album.images[0]?.url || null,
-              multipleArtists: track.track.artists.length > 1,
-              artists: track.track.artists.map((artist: any) => ({
-                name: artist.name,
-                artistId: artist.id,
-              })),
-              type: track.track.type,
-              trackDuration: track.track.duration_ms,
-              releaseDate: track.track.album.release_date,
-              albumName: track.track.album.name,
-              albumId: track.track.album.id,
-            }),
+    return await wrapPromiseResult(
+      fetchFromSpotify<any, DetailedPlaylistType>({
+        endpoint: `playlists/${id}`,
+        cacheName: `playlist${id}`,
+        offset: `?offset=${offset}&limit=5`,
+        bypassCache,
+        transformFn: (data) => ({
+          name: data.name,
+          id: data.id,
+          type: data.type,
+          tracks: data.tracks.items
+            .filter((tra: any) => tra.track !== null)
+            .map(
+              (track: any): TrackType => ({
+                name: track.track.name,
+                id: track.track.id,
+                imageUrl: track.track.album.images[0]?.url || null,
+                multipleArtists: track.track.artists.length > 1,
+                artists: track.track.artists.map((artist: any) => ({
+                  name: artist.name,
+                  artistId: artist.id,
+                })),
+                type: track.track.type,
+                trackDuration: track.track.duration_ms,
+                releaseDate: track.track.album.release_date,
+                albumName: track.track.album.name,
+                albumId: track.track.album.id,
+              }),
+            ),
+          numTracks: data.tracks.items.length,
+          totalDurationMs: data.tracks.items.reduce(
+            (sum: number, item: any) => sum + (item.track?.duration_ms || 0),
+            0,
           ),
-        numTracks: data.tracks.items.length,
-        totalDurationMs: data.tracks.items.reduce(
-          (sum: number, item: any) => sum + (item.track?.duration_ms || 0),
-          0,
-        ),
-        imageUrl: data.images?.[0]?.url || "",
-        ownerName: data.owner.display_name,
-        ownerId: data.owner.id,
+          imageUrl: data.images?.[0]?.url || "",
+          ownerName: data.owner.display_name,
+          ownerId: data.owner.id,
+        }),
+        onCacheFound: (data) =>
+          set({ playlist: data }, undefined, "playlist/setPlaylistFromCache"),
+        onDataReceived: (data) =>
+          set({ playlist: data }, undefined, "playlist/setPlaylistFromAPI"),
       }),
-      onCacheFound: (data) =>
-        set({ playlist: data }, undefined, "playlist/setPlaylistFromCache"),
-      onDataReceived: (data) =>
-        set({ playlist: data }, undefined, "playlist/setPlaylistFromAPI"),
-    });
+    );
   },
 
   uploadNewPlaylistImage: async (id, base64ImageUrl) => {
-    // needs to return boolean so needs try / catch
-    try {
-      await fetchFromSpotify({
+    return await wrapPromiseResult(
+      fetchFromSpotify({
         endpoint: `playlists/${id}/images`,
         method: "PUT",
         requestBody: base64ImageUrl,
-      });
-
-      return true;
-    } catch (err) {
-      console.error("🛑 ❌ Couldn't upload new image:", err);
-      return false;
-    }
+      }).then(() => true),
+    );
   },
 
-  // upgrade this method to suppurt tracks updating
   updatePlaylistDetails: async (id, updatedFields) => {
-    await fetchFromSpotify({
-      endpoint: `playlists/${id}`,
-      method: "PUT",
-      requestBody: JSON.stringify({
-        name: updatedFields.name,
-        description: updatedFields.description || "",
+    return await wrapPromiseResult(
+      fetchFromSpotify({
+        endpoint: `playlists/${id}`,
+        method: "PUT",
+        requestBody: JSON.stringify({
+          name: updatedFields.name,
+          description: updatedFields.description || "",
+        }),
       }),
-    });
+    );
   },
 
   addTrackToPlaylist: async (id, trackId) => {
-    await fetchFromSpotify({
-      endpoint: `playlists/${id}/tracks`,
-      method: "POST",
-      requestBody: JSON.stringify({ uris: [trackId], position: 0 }),
-    });
+    return await wrapPromiseResult(
+      fetchFromSpotify({
+        endpoint: `playlists/${id}/tracks`,
+        method: "POST",
+        requestBody: JSON.stringify({ uris: [trackId], position: 0 }),
+      }),
+    );
   },
 
   // addToLikedSongs: async (trackId: string) => {}
