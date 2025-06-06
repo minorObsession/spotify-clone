@@ -9,7 +9,7 @@ import { AsyncResult, wrapPromiseResult } from "../../types/reusableTypes";
 export interface UserPlaylistType {
   name: string;
   id: string;
-  image: string; // Extract only 1 image
+  imageUrl: string; // Extract only 1 image
   ownerName: string;
   trackIds: string[];
 }
@@ -138,11 +138,6 @@ export const createPlaylistSlice: StateCreator<
     const { items } = await res.json();
     console.log(items);
 
-    // ! FIGURE OUT WHY THIS IS NOT WORKING (PROBLEM IN PLAULISTHELPERS)
-    // ! FIGURE OUT WHY THIS IS NOT WORKING
-    // ! FIGURE OUT WHY THIS IS NOT WORKING
-    // ! FIGURE OUT WHY THIS IS NOT WORKING
-    // ! FIGURE OUT WHY THIS IS NOT WORKING
     const newPlaylistNamesWithIds: playlistNamesWithIdsType[] =
       await Promise.all(
         items.map(async (playlist: any) => {
@@ -169,7 +164,7 @@ export const createPlaylistSlice: StateCreator<
       (playlist: any) => ({
         name: playlist.name,
         id: playlist.id,
-        image: playlist.images?.[0]?.url,
+        imageUrl: playlist.images?.[0]?.url,
         ownerName: playlist.owner?.display_name || "",
       }),
     );
@@ -187,10 +182,10 @@ export const createPlaylistSlice: StateCreator<
     if (id === "liked_songs") {
       const usersSavedTracks = get().usersSavedTracks;
       if (!usersSavedTracks) {
-        const result = await get().getUserSavedTracks(0);
-        return { success: true, data: result as DetailedPlaylistType };
+        const result = await get().getUserSavedTracks();
+        return { success: true, data: result };
       }
-      return { success: true, data: usersSavedTracks as DetailedPlaylistType };
+      return { success: true, data: usersSavedTracks };
     }
 
     return await wrapPromiseResult(

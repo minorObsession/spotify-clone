@@ -9,7 +9,7 @@ export interface PodcastEpisodeType {
   imageUrl: string;
   durationMs: number;
   releaseDate: string;
-  audioPreviewUrl: string;
+  audioPreviewUrl: string | null;
 }
 
 export interface PodcastType {

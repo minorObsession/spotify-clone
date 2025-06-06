@@ -19,7 +19,7 @@ function FullPreviewPlaylist() {
   const getPlaylist = useStateStore((state) => state.getPlaylist);
   const getUserSavedTracks = useStateStore((state) => state.getUserSavedTracks);
   const isFetching = useRef(false);
-  const hasMoreToLoad = playlist.tracks?.length < (playlist.numTracks || 0);
+  const hasMoreToLoad = playlist?.tracks?.length < (playlist?.numTracks || 0);
   const currPlaylist = useStateStore((state) =>
     state.playlist?.id === "liked_songs"
       ? (state.usersSavedTracks as DetailedPlaylistType)
@@ -33,15 +33,11 @@ function FullPreviewPlaylist() {
   // wrap into useCallback
   const handleLoadMore = async () => {
     console.log("calling HLM");
-    if (!hasMoreToLoad) return;
+    if (!hasMoreToLoad || !playlist) return;
     isFetching.current = true;
     try {
-      const loadedTracks =
-        playlist.id === "liked_songs"
-          ? await getUserSavedTracks(playlist.tracks.length)
-          : await getPlaylist(playlist.id, playlist.tracks.length);
-
-      if (loadedTracks) {
+      if (playlist.id === "liked_songs") {
+        const loadedTracks = await getUserSavedTracks(playlist.tracks.length);
         const allTracks = [...playlist.tracks, ...loadedTracks.tracks];
         const uniqueTracks = Array.from(
           new Map(allTracks.map((track) => [track.id, track])).values(),
@@ -51,6 +47,19 @@ function FullPreviewPlaylist() {
           ...playlist,
           tracks: uniqueTracks,
         });
+      } else {
+        const result = await getPlaylist(playlist.id, playlist.tracks.length);
+        if (result.success && result.data) {
+          const allTracks = [...playlist.tracks, ...result.data.tracks];
+          const uniqueTracks = Array.from(
+            new Map(allTracks.map((track) => [track.id, track])).values(),
+          );
+
+          setPlaylist({
+            ...playlist,
+            tracks: uniqueTracks,
+          });
+        }
       }
     } finally {
       isFetching.current = false;
@@ -59,12 +68,11 @@ function FullPreviewPlaylist() {
 
   const sentinelRef = useLoadMoreTracksOnScroll(handleLoadMore);
 
+  if (!playlist) return null;
+
   return (
     <div className={`fullPreviewContainer gap-3`}>
-      <FPPlaylistOverview
-        playlist={playlist}
-        // refetchPlaylist={refetchPlaylist}
-      />
+      <FPPlaylistOverview playlist={playlist} />
       <PlaylistPreviewHeader />
       <FPControls
         item={playlist}
@@ -72,30 +80,28 @@ function FullPreviewPlaylist() {
         options={playlistOptions}
       />
       <FPPlaylistTracks
-        tracks={currPlaylist.tracks}
+        tracks={currPlaylist?.tracks || []}
         sentinelRef={sentinelRef}
       />
     </div>
   );
 }
 
-let playlistLoaderNumRUNS = 0;
-
-const getPlaylist = useStateStore.getState().getPlaylist;
 export const playlistLoader = createLoader<DetailedPlaylistType>(
   "playlist",
-  async (id: string) => {
-    playlistLoaderNumRUNS++;
-    console.log("playlistLoaderNumRUNS:", playlistLoaderNumRUNS);
+  async (id?: string) => {
+    const getPlaylist = useStateStore.getState().getPlaylist;
+
     if (!id) throw new Error("No playlist ID provided");
 
-    const playlist = await getPlaylist(id);
-    // console.log("playlist", playlist);
+    const result = await getPlaylist(id);
 
-    // ! following line fucks up caching!
-    // playlist.tracks = playlist.tracks.slice(0, 50);
-    useStateStore.getState().setPlaylist(playlist); // Hydrate Zustand
-    return playlist;
+    if (!result.success) {
+      throw new Error(result.error?.message || "Failed to load playlist");
+    }
+
+    useStateStore.getState().setPlaylist(result.data); // Hydrate Zustand
+    return result.data;
   },
 );
 

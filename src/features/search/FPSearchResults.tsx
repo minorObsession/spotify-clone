@@ -102,7 +102,7 @@ function FPSearchResults() {
       </SearchResultSection>
 
       <SearchResultSection title="Podcasts">
-        {searchResults?.podcasts
+        {searchResults?.shows
           ?.slice(0, numCards)
           .map((podcast) => <PodcastCard key={podcast.id} podcast={podcast} />)}
       </SearchResultSection>
@@ -128,4 +128,12 @@ export default FPSearchResults;
 
 const search = useStateStore.getState().search;
 
-export const searchLoader = createLoader<SearchResultType>("search", search);
+export const searchLoader = createLoader<SearchResultType>(
+  "search",
+  async (query?: string) => {
+    if (!query) return null;
+    const searchResults = await search(query);
+    if (!searchResults.success) return null;
+    return searchResults.data;
+  },
+);
