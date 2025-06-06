@@ -1,7 +1,6 @@
 import { StateCreator } from "zustand";
 import { StateStore } from "../../state/store";
 import { AccessTokenType } from "../auth/Auth";
-import { getFromLocalStorage } from "../auth/authHelpers";
 import { TrackType } from "../tracks/track";
 import { fetchFromSpotify } from "../../state/helpers";
 import { PartialPlaylist } from "../../components/EditPlaylistModal";
@@ -83,179 +82,154 @@ export const createPlaylistSlice: StateCreator<
   },
 
   getUserPlaylists: async () => {
-    try {
-      const playlistsFetched = get().playlistsFetched;
-      if (playlistsFetched) {
-        const playlists = get().playlists;
-        return playlists;
-      }
-
-      set(
-        { playlistsFetched: true },
-        undefined,
-        "playlist/setPlaylistsFetched",
-      );
-
-      const accessToken = get().accessToken;
-      if (!accessToken) {
-        throw new Error("Access token expired or doesn't exist");
-      }
-
-      // Check persisted state first (handled automatically by persist middleware)
+    const playlistsFetched = get().playlistsFetched;
+    if (playlistsFetched) {
       const playlists = get().playlists;
-      const playlistNamesWithIds = get().playlistNamesWithIds;
-      const usersSavedTracks = get().usersSavedTracks;
-      console.log(usersSavedTracks);
-      if (playlists.length > 0) {
-        set({ playlists }, undefined, "playlist/setPlaylistsFromCache");
+      return playlists;
+    }
 
-        if (playlistNamesWithIds.length > 0) {
-          set(
-            { playlistNamesWithIds },
-            undefined,
-            "playlist/setPlaylistNamesWithIds",
-          );
-        }
+    set({ playlistsFetched: true }, undefined, "playlist/setPlaylistsFetched");
 
-        if (!usersSavedTracks) {
-          console.log("getting usersSavedTracks from API");
-          set(
-            { usersSavedTracks: await get().getUserSavedTracks(0) },
-            undefined,
-            "playlist/setUserSavedTracksFromAPI",
-          );
-        }
+    const accessToken = get().accessToken;
+    if (!accessToken) throw new Error("Access token expired or doesn't exist");
 
-        return playlists;
+    // Check persisted state first (handled automatically by persist middleware)
+    const playlists = get().playlists;
+    const playlistNamesWithIds = get().playlistNamesWithIds;
+    const usersSavedTracks = get().usersSavedTracks;
+    if (playlists.length > 0) {
+      set({ playlists }, undefined, "playlist/setPlaylistsFromCache");
+
+      if (playlistNamesWithIds.length > 0) {
+        set(
+          { playlistNamesWithIds },
+          undefined,
+          "playlist/setPlaylistNamesWithIds",
+        );
       }
 
-      console.log("🛜 getUserPlaylists will call api...");
-
-      const res = await fetch(
-        `https://api.spotify.com/v1/me/playlists?limit=5`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken?.token}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-      if (!res.ok) throw new Error("No playlists or bad request");
-
-      const { items } = await res.json();
-      console.log(items);
-
-      const newPlaylistNamesWithIds: playlistNamesWithIdsType[] =
-        await Promise.all(
-          items.map(async (playlist: any) => {
-            const idsForCurrentP = (
-              await get().getPlaylist(playlist.id)
-            ).tracks.map((track: TrackType) => track.id);
-
-            return {
-              name: playlist.name,
-              ids: idsForCurrentP,
-            };
-          }),
+      if (!usersSavedTracks) {
+        console.log("getting usersSavedTracks from API");
+        set(
+          { usersSavedTracks: await get().getUserSavedTracks(0) },
+          undefined,
+          "playlist/setUserSavedTracksFromAPI",
         );
+      }
 
-      set(
-        { playlistNamesWithIds: newPlaylistNamesWithIds },
-        undefined,
-        "playlist/setPlaylistNamesWithIds",
-      );
+      return playlists;
+    }
 
-      const formattedPlaylists: UserPlaylistType[] = items.map(
-        (playlist: any) => ({
-          name: playlist.name,
-          id: playlist.id,
-          image: playlist.images?.[0]?.url,
-          ownerName: playlist.owner?.display_name || "",
+    console.log("🛜 getUserPlaylists will call api...");
+
+    const res = await fetch(`https://api.spotify.com/v1/me/playlists?limit=5`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken?.token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    if (!res.ok) throw new Error("No playlists or bad request");
+
+    const { items } = await res.json();
+    console.log(items);
+
+    const newPlaylistNamesWithIds: playlistNamesWithIdsType[] =
+      await Promise.all(
+        items.map(async (playlist: any) => {
+          const idsForCurrentP = (
+            await get().getPlaylist(playlist.id)
+          ).tracks.map((track: TrackType) => track.id);
+
+          return {
+            name: playlist.name,
+            ids: idsForCurrentP,
+          };
         }),
       );
 
-      // Data is now persisted automatically by persist middleware
-      set(
-        { playlists: formattedPlaylists },
-        undefined,
-        "playlist/setPlaylists",
-      );
-      await get().getUserSavedTracks(0);
+    set(
+      { playlistNamesWithIds: newPlaylistNamesWithIds },
+      undefined,
+      "playlist/setPlaylistNamesWithIds",
+    );
 
-      return formattedPlaylists;
-    } catch (error) {
-      console.error("Error fetching playlists:", error);
-      throw error;
-    }
+    const formattedPlaylists: UserPlaylistType[] = items.map(
+      (playlist: any) => ({
+        name: playlist.name,
+        id: playlist.id,
+        image: playlist.images?.[0]?.url,
+        ownerName: playlist.owner?.display_name || "",
+      }),
+    );
+
+    // Data is now persisted automatically by persist middleware
+    set({ playlists: formattedPlaylists }, undefined, "playlist/setPlaylists");
+    await get().getUserSavedTracks(0);
+
+    return formattedPlaylists;
   },
 
   getPlaylist: async (id, offset = 0, bypassCache = false) => {
-    try {
-      console.log("getPlaylist running...");
+    console.log("getPlaylist running...");
 
-      if (id === "liked_songs") {
-        const usersSavedTracks = get().usersSavedTracks;
+    if (id === "liked_songs") {
+      const usersSavedTracks = get().usersSavedTracks;
 
-        if (!usersSavedTracks)
-          return (await get().getUserSavedTracks(0)) as DetailedPlaylistType;
-        else return usersSavedTracks as DetailedPlaylistType;
-      }
-
-      const fetchedPlaylist = await fetchFromSpotify<any, DetailedPlaylistType>(
-        {
-          endpoint: `playlists/${id}`,
-          cacheName: `playlist${id}`,
-          offset: `?offset=${offset}&limit=5`,
-          bypassCache,
-          transformFn: (data) => ({
-            name: data.name,
-            id: data.id,
-            type: data.type,
-            tracks: data.tracks.items
-              .filter((tra: any) => tra.track !== null)
-              .map(
-                (track: any): TrackType => ({
-                  name: track.track.name,
-                  id: track.track.id,
-                  imageUrl: track.track.album.images[0]?.url || null,
-                  multipleArtists: track.track.artists.length > 1,
-                  artists: track.track.artists.map((artist: any) => ({
-                    name: artist.name,
-                    artistId: artist.id,
-                  })),
-                  type: track.track.type,
-                  trackDuration: track.track.duration_ms,
-                  releaseDate: track.track.album.release_date,
-                  albumName: track.track.album.name,
-                  albumId: track.track.album.id,
-                }),
-              ),
-            numTracks: data.tracks.items.length,
-            totalDurationMs: data.tracks.items.reduce(
-              (sum: number, item: any) => sum + (item.track?.duration_ms || 0),
-              0,
-            ),
-            imageUrl: data.images?.[0]?.url || "",
-            ownerName: data.owner.display_name,
-            ownerId: data.owner.id,
-          }),
-          onCacheFound: (data) =>
-            set({ playlist: data }, undefined, "playlist/setPlaylistFromCache"),
-          onDataReceived: (data) =>
-            set({ playlist: data }, undefined, "playlist/setPlaylistFromAPI"),
-        },
-      );
-
-      if (!fetchedPlaylist) throw new Error("Couldn't fetch playlist");
-      return fetchedPlaylist;
-    } catch (err) {
-      console.error("🛑 ❌ Couldn't fetch playlist", err);
-      throw err;
+      if (!usersSavedTracks)
+        return (await get().getUserSavedTracks(0)) as DetailedPlaylistType;
+      else return usersSavedTracks as DetailedPlaylistType;
     }
+
+    const fetchedPlaylist = await fetchFromSpotify<any, DetailedPlaylistType>({
+      endpoint: `playlists/${id}`,
+      cacheName: `playlist${id}`,
+      offset: `?offset=${offset}&limit=5`,
+      bypassCache,
+      transformFn: (data) => ({
+        name: data.name,
+        id: data.id,
+        type: data.type,
+        tracks: data.tracks.items
+          .filter((tra: any) => tra.track !== null)
+          .map(
+            (track: any): TrackType => ({
+              name: track.track.name,
+              id: track.track.id,
+              imageUrl: track.track.album.images[0]?.url || null,
+              multipleArtists: track.track.artists.length > 1,
+              artists: track.track.artists.map((artist: any) => ({
+                name: artist.name,
+                artistId: artist.id,
+              })),
+              type: track.track.type,
+              trackDuration: track.track.duration_ms,
+              releaseDate: track.track.album.release_date,
+              albumName: track.track.album.name,
+              albumId: track.track.album.id,
+            }),
+          ),
+        numTracks: data.tracks.items.length,
+        totalDurationMs: data.tracks.items.reduce(
+          (sum: number, item: any) => sum + (item.track?.duration_ms || 0),
+          0,
+        ),
+        imageUrl: data.images?.[0]?.url || "",
+        ownerName: data.owner.display_name,
+        ownerId: data.owner.id,
+      }),
+      onCacheFound: (data) =>
+        set({ playlist: data }, undefined, "playlist/setPlaylistFromCache"),
+      onDataReceived: (data) =>
+        set({ playlist: data }, undefined, "playlist/setPlaylistFromAPI"),
+    });
+
+    if (!fetchedPlaylist) throw new Error("Couldn't fetch playlist");
+    return fetchedPlaylist;
   },
 
   uploadNewPlaylistImage: async (id, base64ImageUrl) => {
+    // needs to return boolean so needs try / catch
     try {
       await fetchFromSpotify({
         endpoint: `playlists/${id}/images`,
@@ -283,15 +257,11 @@ export const createPlaylistSlice: StateCreator<
   },
 
   addTrackToPlaylist: async (id, trackId) => {
-    try {
-      await fetchFromSpotify({
-        endpoint: `playlists/${id}/tracks`,
-        method: "POST",
-        requestBody: JSON.stringify({ uris: [trackId], position: 0 }),
-      });
-    } catch (err) {
-      console.error(`❌🛑 Could not add track to playlist`, err);
-    }
+    await fetchFromSpotify({
+      endpoint: `playlists/${id}/tracks`,
+      method: "POST",
+      requestBody: JSON.stringify({ uris: [trackId], position: 0 }),
+    });
   },
 
   // addToLikedSongs: async (trackId: string) => {}

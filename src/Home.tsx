@@ -74,6 +74,17 @@ function Home() {
   );
 }
 
+// ! WAS HERE - FIGURING OUT WHY GETUSERPLAYLISTS ISN'T CALLED RIGHT AWAY - TAKES A RELOAD
+// ! WAS HERE - FIGURING OUT WHY GETUSERPLAYLISTS ISN'T CALLED RIGHT AWAY - TAKES A RELOAD
+// ! WAS HERE - FIGURING OUT WHY GETUSERPLAYLISTS ISN'T CALLED RIGHT AWAY - TAKES A RELOAD
+// ! WAS HERE - FIGURING OUT WHY GETUSERPLAYLISTS ISN'T CALLED RIGHT AWAY - TAKES A RELOAD
+// ! WAS HERE - FIGURING OUT WHY GETUSERPLAYLISTS ISN'T CALLED RIGHT AWAY - TAKES A RELOAD
+// ! WAS HERE - FIGURING OUT WHY GETUSERPLAYLISTS ISN'T CALLED RIGHT AWAY - TAKES A RELOAD
+// ! WAS HERE - FIGURING OUT WHY GETUSERPLAYLISTS ISN'T CALLED RIGHT AWAY - TAKES A RELOAD
+// ! WAS HERE - FIGURING OUT WHY GETUSERPLAYLISTS ISN'T CALLED RIGHT AWAY - TAKES A RELOAD
+// ! WAS HERE - FIGURING OUT WHY GETUSERPLAYLISTS ISN'T CALLED RIGHT AWAY - TAKES A RELOAD
+// ! WAS HERE - FIGURING OUT WHY GETUSERPLAYLISTS ISN'T CALLED RIGHT AWAY - TAKES A RELOAD
+
 export default memo(Home);
 
 // ! synthetic solution - forcing only 1 execution of the loader... NOT GOOD LONG TERM!! MAYBE WORKS HERE BUT NOT FOR PLAYLISTS...
@@ -87,18 +98,12 @@ export const userStateLoader = async () => {
   }
   homeLoaderNumOfRuns++;
 
-  console.log("HOME LOADER RUNNING");
   const getUserPlaylists = useStateStore.getState().getUserPlaylists;
   const getUser = useStateStore.getState().getUser;
   const user = await getUser();
 
-  console.log("👤 User from getUser():", user);
-  if (!user) {
-    console.error("❌ User is still null.. even after getUser() call");
-    return null;
-  } else {
-    await getUserPlaylists();
-  }
+  if (!user) console.error("❌ User is still null.. even after getUser() call");
+  else return await getUserPlaylists();
 
   return null;
 };

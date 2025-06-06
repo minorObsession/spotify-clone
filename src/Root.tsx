@@ -1,6 +1,6 @@
 import { Outlet, redirect } from "react-router";
 import { memo, useEffect } from "react";
-import { store, useStateStore } from "./state/store";
+import { useStateStore } from "./state/store";
 
 function Root() {
   const { isAuthenticated, loadPlayer } = useStateStore((store) => store);
