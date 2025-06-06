@@ -81,15 +81,13 @@ export const useStateStore = create<StateStore>()(
 
 export const store = useStateStore;
 
-// albums
+// // albums
 // artist slice
-//  albums slice
-//  playlists slice
-//  shows slice
-//  episodes slice
-//  tracks slice
-// podcasts
+// albums slice
+// playlists slice
+// tracks slice
 // search
 // user
-// playback
+// podcasts
 // spotify player
+// shows slice

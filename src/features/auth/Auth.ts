@@ -53,7 +53,6 @@ export const createAuthSlice: StateCreator<
       persistedState?.state?.isAuthenticated &&
       persistedState?.state?.accessToken
     ) {
-      console.log(persistedState.state.accessToken.expiresAt > Date.now());
       return persistedState.state.accessToken.expiresAt > Date.now();
     }
     return false;
@@ -228,7 +227,7 @@ export const createAuthSlice: StateCreator<
 
         const safetyNetMinutes = 20; // refresh 20 minutes before expiry
 
-        // ! if safetuy net is reached - refresh token request
+        // ! if safety net is reached - refresh token request
         const minutesLeft = (+accessToken.expiresAt - Date.now()) / 1000 / 60;
         console.log(`Token expires in ${minutesLeft.toFixed(2)} minutes.`);
         if (minutesLeft <= safetyNetMinutes) {
@@ -245,39 +244,37 @@ export const createAuthSlice: StateCreator<
 
             const data = await response.json();
 
-            if (response.ok) {
-              const newAccessToken: AccessTokenType = {
-                token: data.access_token,
-                expiresAt: Date.now() + data.expires_in * 1000,
-                expiresAtDate: new Date(
-                  Date.now() + data.expires_in * 1000,
-                ).toISOString(),
-                now: new Date().toISOString(),
-              };
+            if (!response.ok) throw new Error("Refreshing token failed.");
 
-              // Use the new refresh token if provided, otherwise keep the old one
-              if (data.refresh_token) {
-                set(
-                  { refreshToken: data.refresh_token },
-                  undefined,
-                  "auth/updateRefreshToken",
-                );
-              }
+            const newAccessToken: AccessTokenType = {
+              token: data.access_token,
+              expiresAt: Date.now() + data.expires_in * 1000,
+              expiresAtDate: new Date(
+                Date.now() + data.expires_in * 1000,
+              ).toISOString(),
+              now: new Date().toISOString(),
+            };
 
+            // Use the new refresh token if provided, otherwise keep the old one
+            if (data.refresh_token) {
               set(
-                {
-                  accessToken: newAccessToken,
-                  refreshToken: data.refresh_token || refreshToken,
-                  isAuthenticated: true,
-                },
+                { refreshToken: data.refresh_token },
                 undefined,
-                "auth/refreshToken",
+                "auth/updateRefreshToken",
               );
-
-              console.log("token successfully refreshed!");
-            } else {
-              throw new Error("Refreshing token failed.");
             }
+
+            set(
+              {
+                accessToken: newAccessToken,
+                refreshToken: data.refresh_token || refreshToken,
+                isAuthenticated: true,
+              },
+              undefined,
+              "auth/refreshToken",
+            );
+
+            console.log("token successfully refreshed!");
           } catch (error) {
             console.error("Error refreshing token:", error);
             // Optionally trigger a logout here on repeated failures

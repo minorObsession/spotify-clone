@@ -76,7 +76,7 @@ function Home() {
 
 export default memo(Home);
 
-// ! syntetic solution - forcing only 1 execution of the loader... NOT GOOD LONG TERM!! MAYBE WORKS HERE BUT NOT FOR PLAYLISTS...
+// ! synthetic solution - forcing only 1 execution of the loader... NOT GOOD LONG TERM!! MAYBE WORKS HERE BUT NOT FOR PLAYLISTS...
 let homeLoaderNumOfRuns = 0;
 const MAX_ALLOWED_CALLS = 1;
 
