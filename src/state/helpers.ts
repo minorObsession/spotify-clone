@@ -91,7 +91,7 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
       throw new Error(`API request failed: ${res.status} ${res.statusText}`);
     }
 
-    // if it's not a get request
+    // basically bellow code runs if it's NOT a GET request
     if (!transformFn) throw new Error("❌ Transform function not found..");
 
     const data: ResponseType = await res.json();

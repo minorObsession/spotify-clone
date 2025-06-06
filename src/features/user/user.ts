@@ -129,6 +129,13 @@ export const createUserSlice: StateCreator<
           "user/setUserSavedTracksFromCache",
         );
       },
+      onDataReceived: (data) => {
+        set(
+          { usersSavedTracks: data },
+          undefined,
+          "user/setUserSavedTracksFromAPI",
+        );
+      },
     });
   },
 

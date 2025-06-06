@@ -76,18 +76,16 @@ export const createAuthSlice: StateCreator<
   refreshInterval: null,
   // --- Public Action: Initialize Auth Flow ---
   initAuth: async () => {
-    console.log("✅ initAuth called");
     if (hasFetchedToken) return;
     hasFetchedToken = true;
 
-    console.log("initAuth called...passed the flag");
     // ! 1. Check localStorage for existing tokens
 
-    const parsed = JSON.parse(
+    const parsedStateCache = JSON.parse(
       localStorage.getItem("spotify-clone-state-storage") || "{}",
     );
-    const storedAccessToken = parsed?.state?.accessToken;
-    const storedRefreshToken = parsed?.state?.refreshToken;
+    const storedAccessToken = parsedStateCache?.state?.accessToken;
+    const storedRefreshToken = parsedStateCache?.state?.refreshToken;
 
     if (storedAccessToken && storedRefreshToken) {
       try {
@@ -127,29 +125,32 @@ export const createAuthSlice: StateCreator<
 
   // --- Internal Action: Request Auth Code & Redirect ---
   requestAuthCodeAndRedirect: async () => {
-    console.log("requestAuthCodeAndRedirect called");
-    // Generate a code verifier and store it for later use
-    const codeVerifier = generateRandomString(64);
-    localStorage.setItem("code_verifier", codeVerifier);
+    try {
+      // Generate a code verifier and store it for later use
+      const codeVerifier = generateRandomString(64);
+      localStorage.setItem("code_verifier", codeVerifier);
 
-    // Create a code challenge from the verifier
-    const hashed = await sha256(codeVerifier);
-    const codeChallenge = base64encode(hashed);
+      // Create a code challenge from the verifier
+      const hashed = await sha256(codeVerifier);
+      const codeChallenge = base64encode(hashed);
 
-    // Build the Spotify authorization URL with required parameters
-    const authUrl = new URL(AUTH_CONFIG.authUrl);
-    const params = {
-      response_type: "code",
-      client_id: AUTH_CONFIG.clientId,
-      scope: AUTH_CONFIG.scope,
-      code_challenge_method: "S256",
-      code_challenge: codeChallenge,
-      redirect_uri: AUTH_CONFIG.redirectUri,
-    };
-    authUrl.search = new URLSearchParams(params).toString();
+      // Build the Spotify authorization URL with required parameters
+      const authUrl = new URL(AUTH_CONFIG.authUrl);
+      const params = {
+        response_type: "code",
+        client_id: AUTH_CONFIG.clientId,
+        scope: AUTH_CONFIG.scope,
+        code_challenge_method: "S256",
+        code_challenge: codeChallenge,
+        redirect_uri: AUTH_CONFIG.redirectUri,
+      };
+      authUrl.search = new URLSearchParams(params).toString();
 
-    // Redirect to Spotify login page
-    window.location.href = authUrl.toString();
+      // Redirect to Spotify login page
+      window.location.href = authUrl.toString();
+    } catch (error) {
+      console.error("Error requesting auth code and redirecting", error);
+    }
   },
 
   // --- Internal Action: Request Token Using Auth Code ---
