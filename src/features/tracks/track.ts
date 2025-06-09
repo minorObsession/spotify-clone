@@ -1,8 +1,8 @@
 import { StateCreator } from "zustand";
-// import { getFromLocalStorage } from "../auth/authHelpers";
-// import { AccessTokenType } from "../auth/Auth";
+
 import { StateStore } from "../../state/store";
 import { fetchFromSpotify } from "../../state/helpers";
+import { AsyncResult, wrapPromiseResult } from "../../types/reusableTypes";
 
 export interface TrackType {
   name: string;
@@ -20,7 +20,7 @@ export interface TrackType {
 export interface TrackSlice {
   // ! get partial types
   track: TrackType | null;
-  getTrack: (id: string) => Promise<TrackType | null>;
+  getTrack: (id: string) => Promise<AsyncResult<TrackType>>;
 }
 
 export const createTrackSlice: StateCreator<
@@ -31,31 +31,34 @@ export const createTrackSlice: StateCreator<
 > = (set) => ({
   track: null,
   getTrack: async (id: string) => {
-    return await fetchFromSpotify<any, TrackType>({
-      endpoint: `tracks/${id}`,
-      cacheName: `track_${id}`,
-      transformFn: (data) => ({
-        // uri: data.uri,
-        name: data.name,
-        type: data.type,
-        id: data.id,
-        imageUrl: data.album.images[0].url,
-        multipleArtists: data.artists.length > 1,
-        artists: data.artists.map((artist: any) => ({
-          name: artist.name,
-          id: artist.id,
-        })),
-        trackDuration: data.duration_ms,
-        releaseDate: data.album.release_date,
-        albumName: data.album.name,
-        albumId: data.album.id,
+    return await wrapPromiseResult<TrackType>(
+      fetchFromSpotify<SpotifyApi.TrackObjectFull, TrackType>({
+        endpoint: `tracks/${id}`,
+        cacheName: `track_${id}`,
+        transformFn: (data) => ({
+          name: data.name,
+          type: data.type,
+          id: data.id,
+          imageUrl: data.album.images[0].url,
+          multipleArtists: data.artists.length > 1,
+          artists: data.artists.map(
+            (artist: SpotifyApi.ArtistObjectSimplified) => ({
+              name: artist.name ?? "",
+              id: artist.id ?? "",
+            }),
+          ),
+          trackDuration: data.duration_ms,
+          releaseDate: data.album.release_date,
+          albumName: data.album.name,
+          albumId: data.album.id,
+        }),
+        onCacheFound: (data) => {
+          set({ track: data }, undefined, "track/setTrackFromCache");
+        },
+        onDataReceived: (data) => {
+          set({ track: data }, undefined, "track/setTrackFromAPI");
+        },
       }),
-      onCacheFound: (data) => {
-        set({ track: data }, undefined, "track/setTrackFromCache");
-      },
-      onDataReceived: (data) => {
-        set({ track: data }, undefined, "track/setTrackFromAPI");
-      },
-    });
+    );
   },
 });

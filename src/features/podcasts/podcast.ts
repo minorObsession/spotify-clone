@@ -1,6 +1,7 @@
 import { StateCreator } from "zustand";
 import { StateStore } from "../../state/store";
 import { fetchFromSpotify } from "../../state/helpers";
+import { AsyncResult, wrapPromiseResult } from "../../types/reusableTypes";
 
 export interface PodcastEpisodeType {
   name: string;
@@ -25,7 +26,7 @@ export interface PodcastType {
 export interface PodcastSlice {
   podcast: PodcastType | null;
   likedEpisodes: PodcastEpisodeType[];
-  getPodcast: (id: string) => Promise<PodcastType>;
+  getPodcast: (id: string) => Promise<AsyncResult<PodcastType>>;
   addEpisodeToLikedEpisodes: (episode: PodcastEpisodeType) => void;
   removeEpisodeFromLikedEpisodes: (episodeId: string) => void;
   isEpisodeSaved: (episodeId: string) => boolean;
@@ -41,27 +42,29 @@ export const createPodcastSlice: StateCreator<
   likedEpisodes: [],
 
   getPodcast: async (id: string) => {
-    try {
-      const result = await fetchFromSpotify<any, PodcastType>({
+    return await wrapPromiseResult<PodcastType>(
+      fetchFromSpotify<SpotifyApi.ShowObjectFull, PodcastType>({
         endpoint: `shows/${id}`,
         cacheName: `podcast_${id}`,
         transformFn: async (data) => {
           return {
             name: data.name,
             id: data.id,
-            description: data.description,
-            imageUrl: data.images[0].url,
-            publisher: data.publisher,
-            totalEpisodes: data.total_episodes,
-            episodes: data.episodes.items.map((episode: any) => ({
-              name: episode.name,
-              id: episode.id,
-              description: episode.description,
-              imageUrl: episode.images[0].url,
-              durationMs: episode.duration_ms,
-              releaseDate: episode.release_date,
-              audioPreviewUrl: episode.audio_preview_url,
-            })),
+            description: data.description ?? "",
+            imageUrl: data.images?.[0]?.url ?? "",
+            publisher: data.publisher ?? "",
+            totalEpisodes: data.total_episodes ?? 0,
+            episodes: data.episodes.items.map(
+              (episode: SpotifyApi.EpisodeObjectSimplified) => ({
+                name: episode.name ?? "",
+                id: episode.id ?? "",
+                description: episode.description ?? "",
+                imageUrl: episode.images?.[0]?.url ?? "",
+                durationMs: episode.duration_ms ?? 0,
+                releaseDate: episode.release_date ?? "",
+                audioPreviewUrl: episode.audio_preview_url ?? "",
+              }),
+            ),
           };
         },
         onCacheFound: (data) => {
@@ -70,12 +73,8 @@ export const createPodcastSlice: StateCreator<
         onDataReceived: (data) => {
           set({ podcast: data }, undefined, "podcast/setPodcastFromAPI");
         },
-      });
-      return result;
-    } catch (error) {
-      console.error("Error fetching podcast", error);
-      throw error;
-    }
+      }),
+    );
   },
   addEpisodeToLikedEpisodes: (episode: PodcastEpisodeType) => {
     const likedEpisodes = get().likedEpisodes;

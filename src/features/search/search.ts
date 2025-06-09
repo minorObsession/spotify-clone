@@ -271,9 +271,8 @@ export const createSearchSlice: StateCreator<
           if (data.artists?.items && data.artists.items.length > 0) {
             const getTopTracks = get().getTopTracks;
             const topTracks = await getTopTracks(data.artists.items[0].id);
-            if (!topTracks) throw new Error("Couldn't fetch top tracks");
-
-            transformedData.topTracks = topTracks;
+            if (!topTracks.success) return transformedData;
+            if (topTracks.data) transformedData.topTracks = topTracks.data;
           }
 
           return transformedData;
@@ -285,7 +284,7 @@ export const createSearchSlice: StateCreator<
           imageUrl: result.artists[0].imageUrl,
           name: result.artists[0].name,
           id: result.artists[0].id,
-          topTracks: result.topTracks || [],
+          topTracks: result.topTracks,
         };
         set({ topResult: topResultToStore }, undefined, "search/setTopResult");
         set({ searchResults: result }, undefined, "search/setSearchResults");

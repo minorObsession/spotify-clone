@@ -52,10 +52,7 @@ export const createUserSlice: StateCreator<
           set({ user: data }, undefined, "user/setUserFromCache");
         },
       }),
-    ).catch((error) => {
-      console.error("Error fetching user:", error);
-      return { success: false, error: error };
-    });
+    );
   },
 
   getUserSavedTracks: async (offset = 0) => {
@@ -156,10 +153,7 @@ export const createUserSlice: StateCreator<
           );
         },
       }),
-    ).catch((error) => {
-      console.error("Error fetching user saved tracks:", error);
-      return { success: false, error: error };
-    });
+    );
   },
 
   logoutUser: () =>
