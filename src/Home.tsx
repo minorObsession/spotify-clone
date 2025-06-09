@@ -74,7 +74,6 @@ function Home() {
   );
 }
 
-
 export default memo(Home);
 
 // ! synthetic solution - forcing only 1 execution of the loader... NOT GOOD LONG TERM!! MAYBE WORKS HERE BUT NOT FOR PLAYLISTS...
@@ -93,7 +92,7 @@ export const userStateLoader = async () => {
   const user = await getUser();
 
   if (!user) console.error("❌ User is still null.. even after getUser() call");
-  else return await getUserPlaylists();
+  else await getUserPlaylists();
 
   return null;
 };

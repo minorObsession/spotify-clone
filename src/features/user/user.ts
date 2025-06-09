@@ -3,6 +3,7 @@ import { StateStore } from "../../state/store";
 import { fetchFromSpotify } from "../../state/helpers";
 import { DetailedPlaylistType } from "../playlists/playlists";
 import { TrackType } from "../tracks/track";
+import { AsyncResult, wrapPromiseResult } from "../../types/reusableTypes";
 
 export interface UserType {
   username: string;
@@ -14,8 +15,10 @@ export interface UserSlice {
   // ! get partial types
   user: UserType | null;
   usersSavedTracks: DetailedPlaylistType | null;
-  getUser: () => Promise<UserType>;
-  getUserSavedTracks(offset?: number): Promise<DetailedPlaylistType>;
+  getUser: () => Promise<AsyncResult<UserType>>;
+  getUserSavedTracks(
+    offset?: number,
+  ): Promise<AsyncResult<DetailedPlaylistType>>;
   logoutUser: () => void;
 }
 
@@ -29,113 +32,133 @@ export const createUserSlice: StateCreator<
   usersSavedTracks: null,
 
   getUser: async () => {
-    const user = get().user; // from Zustand
-    if (user) return user;
+    const user = get().user;
+    if (user) return { success: true, data: user };
 
-    const userData = await fetchFromSpotify<any, UserType>({
-      endpoint: "me",
-      cacheName: `user_me`, // Static key, not `user_${user?.username}` (which is undefined now)
-      transformFn: (data) => ({
-        username: data.display_name,
-        photo: data.images?.[0]?.url || "",
-        userID: data.id,
-        email: data.email,
+    return await wrapPromiseResult<UserType>(
+      fetchFromSpotify<SpotifyApi.CurrentUsersProfileResponse, UserType>({
+        endpoint: "me",
+        cacheName: `user_me`,
+        transformFn: (data) => ({
+          username: data.display_name ?? "",
+          photo: data.images?.[0]?.url || "",
+          userID: data.id,
+          email: data.email,
+        }),
+        onDataReceived: (data) => {
+          set({ user: data }, undefined, "user/setUserFromAPI");
+        },
+        onCacheFound: (data) => {
+          set({ user: data }, undefined, "user/setUserFromCache");
+        },
       }),
-      onDataReceived: (data) => {
-        set({ user: data }, undefined, "user/setUserFromAPI");
-      },
-      onCacheFound: (data) => {
-        set({ user: data }, undefined, "user/setUserFromCache");
-      },
+    ).catch((error) => {
+      console.error("Error fetching user:", error);
+      return { success: false, error: error };
     });
-
-    return userData;
   },
 
   getUserSavedTracks: async (offset = 0) => {
-    console.log("✅ calling getUserSavedTracks");
-    console.trace("getUserSavedTracks called from:");
     const user = get().user;
     const getUser = get().getUser;
 
-    const currentUser = user || (await getUser());
+    const currentUser =
+      user ||
+      (await getUser().then((user) => {
+        if (user.success) return user.data;
+      }));
 
-    if (!currentUser?.username) {
-      throw new Error("❌ No username.. exiting with error...");
-    }
-    return await fetchFromSpotify<any, DetailedPlaylistType>({
-      endpoint: "me/tracks",
-      cacheName: `${currentUser?.username}s_saved_tracks_with_offset_of_${offset}`,
-      // ! TEMPORARY LIMIT
-      offset: `?offset=${offset}&limit=50`,
-      transformFn: (data) => {
-        const newTracks = data.items.map(
-          (item: any): TrackType => ({
-            name: item.track.name,
-            id: item.track.id,
+    return await wrapPromiseResult<DetailedPlaylistType>(
+      fetchFromSpotify<
+        SpotifyApi.UsersSavedTracksResponse,
+        DetailedPlaylistType
+      >({
+        endpoint: "me/tracks",
+        cacheName: `${currentUser?.username}s_saved_tracks_with_offset_of_${offset}`,
+        // ! TEMPORARY LIMIT
+        offset: `?offset=${offset}&limit=50`,
+        transformFn: (data) => {
+          const newTracks = data.items.map(
+            (item: SpotifyApi.SavedTrackObject): TrackType => ({
+              name: item.track?.name ?? "",
+              id: item.track?.id ?? "",
+              imageUrl:
+                item.track?.album.images.length > 0
+                  ? item.track.album.images[0].url
+                  : "",
+              multipleArtists:
+                item.track?.artists?.length && item.track?.artists?.length > 1
+                  ? true
+                  : false,
+              artists:
+                item.track?.artists?.map(
+                  (artist: SpotifyApi.ArtistObjectSimplified) => ({
+                    name: artist.name ?? "",
+                    artistId: artist.id ?? "",
+                  }),
+                ) ?? [],
+              type: item.track.type,
+              trackDuration: item.track.duration_ms,
+              releaseDate: item.track.album.release_date,
+              albumName: item.track.album.name,
+              albumId: item.track.album.id,
+            }),
+          );
+
+          const currentSaved = get().usersSavedTracks;
+          const mergedTracks: TrackType[] =
+            offset > 0 && currentSaved
+              ? [...currentSaved.tracks, ...newTracks]
+              : newTracks;
+
+          const user = get().user;
+          if (!user) throw Error("User not found");
+
+          const tracksToStore = {
+            name: "Liked Songs",
+            id: "liked_songs",
+            type: "playlist",
+            ownerName: user.username,
+            ownerId: user.userID,
             imageUrl:
-              item.track.album.images.length > 0
-                ? item.track.album.images[0].url
-                : "",
-            multipleArtists: item.track.artists.length > 1,
-            artists: item.track.artists.map((artist: any) => ({
-              name: artist.name,
-              artistId: artist.id,
-            })),
-            type: item.track.type,
-            trackDuration: item.track.duration_ms,
-            releaseDate: item.track.album.release_date,
-            albumName: item.track.album.name,
-            albumId: item.track.album.id,
-          }),
-        );
+              "https://cdn.prod.website-files.com/5e36e6f21212670638c0d63c/5e39d85cee05be53d238681a_likedSongs.png",
+            tracks: mergedTracks,
+            totalDurationMs: data.items.reduce(
+              (sum: number, item: SpotifyApi.SavedTrackObject) =>
+                sum + (item.track?.duration_ms ?? 0),
+              0,
+            ),
+            numTracks: data.total,
+          };
 
-        const currentSaved = get().usersSavedTracks;
-        const mergedTracks: TrackType[] =
-          offset > 0 && currentSaved
-            ? [...currentSaved.tracks, ...newTracks]
-            : newTracks;
+          // set updated tracks
+          set(
+            { usersSavedTracks: tracksToStore },
+            undefined,
+            "user/setUserSavedTracks",
+          );
+          console.log("✅ users tracks saved");
 
-        const user = get().user;
-        if (!user) throw new Error("User not found");
-
-        const tracksToStore = {
-          name: "Liked Songs",
-          id: "liked_songs",
-          type: "playlist",
-          ownerName: user.username,
-          ownerId: user.userID,
-          imageUrl:
-            "https://cdn.prod.website-files.com/5e36e6f21212670638c0d63c/5e39d85cee05be53d238681a_likedSongs.png",
-          tracks: mergedTracks,
-          totalDurationMs: 1000000, // can update if needed
-          numTracks: data.total as number,
-        };
-
-        // set updated tracks
-        set(
-          { usersSavedTracks: tracksToStore },
-          undefined,
-          "user/setUserSavedTracks",
-        );
-        console.log("✅ users tracks saved");
-
-        return tracksToStore;
-      },
-      onCacheFound: (data) => {
-        set(
-          { usersSavedTracks: data },
-          undefined,
-          "user/setUserSavedTracksFromCache",
-        );
-      },
-      onDataReceived: (data) => {
-        set(
-          { usersSavedTracks: data },
-          undefined,
-          "user/setUserSavedTracksFromAPI",
-        );
-      },
+          return tracksToStore;
+        },
+        onCacheFound: (data) => {
+          set(
+            { usersSavedTracks: data },
+            undefined,
+            "user/setUserSavedTracksFromCache",
+          );
+        },
+        onDataReceived: (data) => {
+          set(
+            { usersSavedTracks: data },
+            undefined,
+            "user/setUserSavedTracksFromAPI",
+          );
+        },
+      }),
+    ).catch((error) => {
+      console.error("Error fetching user saved tracks:", error);
+      return { success: false, error: error };
     });
   },
 

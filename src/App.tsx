@@ -36,10 +36,6 @@ import FullPreviewPodcast, {
 
 // ! consolidate all icons in 1 place
 
-// every loader running 4 times
-//!  getUser and getUserPlaylists running normally - rendering 2 times
-// it's not the useEffect in Home.tsx
-
 function App() {
   const router = createBrowserRouter([
     {

@@ -74,7 +74,7 @@ export interface SearchResultType {
   artists: ShortArtistType[];
   albums: AlbumType[];
   playlists: UserPlaylistType[];
-  shows: PodcastType[];
+  podcasts: PodcastType[];
   episodes: PodcastEpisodeType[];
   audiobooks: AudiobookType[];
   topTracks: TopTrackType[];
@@ -116,7 +116,7 @@ export const createSearchSlice: StateCreator<
     const searchLimit = get().searchLimit;
     const searchFilters = get().searchFilters;
 
-    return await wrapPromiseResult(
+    return await wrapPromiseResult<SearchResultType>(
       fetchFromSpotify<SpotifyApi.SearchResponse, SearchResultType>({
         endpoint: `search?q=${query}&type=${searchFilters}&offset=${searchOffset}&limit=${searchLimit}`,
         cacheName: `search_${query}`,
@@ -133,14 +133,6 @@ export const createSearchSlice: StateCreator<
             "search/setSearchResultsFromAPI",
           ),
         transformFn: async (data: SpotifyApi.SearchResponse) => {
-          console.log("🔍 Search API Response:", data);
-
-          // ! I WAS HERE!!
-          // ! I WAS HERE!!
-          // ! I WAS HERE!!
-          // ! I WAS HERE!!
-          // ! I WAS HERE!!
-          console.log("PLAYLSUT DATA", data.playlists?.items[0].images);
           const transformedData: SearchResultType = {
             tracks:
               data.tracks?.items
@@ -217,7 +209,7 @@ export const createSearchSlice: StateCreator<
                     trackIds: [], // We'll need to fetch tracks separately
                   };
                 }) ?? [],
-            shows:
+            podcasts:
               data.shows?.items
                 ?.filter((show): show is SpotifyApi.ShowObject => show !== null)
                 .map((show) => {
@@ -272,25 +264,22 @@ export const createSearchSlice: StateCreator<
                     totalTracks: 0, // We'll need to fetch total tracks separately
                   };
                 }) ?? [],
+            topTracks: [],
           };
 
           // If we have an artist in the results, get their top tracks
           if (data.artists?.items && data.artists.items.length > 0) {
             const getTopTracks = get().getTopTracks;
             const topTracks = await getTopTracks(data.artists.items[0].id);
-            if (topTracks) {
-              transformedData.topTracks = topTracks;
-            }
+            if (!topTracks) throw new Error("Couldn't fetch top tracks");
+
+            transformedData.topTracks = topTracks;
           }
 
           return transformedData;
         },
       }).then(async (result) => {
         if (!result) throw new Error("Couldn't fetch search results");
-
-        if (!result.artists || result.artists.length === 0) {
-          return result;
-        }
 
         const topResultToStore: TopResultType = {
           imageUrl: result.artists[0].imageUrl,

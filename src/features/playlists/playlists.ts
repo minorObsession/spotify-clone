@@ -1,6 +1,5 @@
 import { StateCreator } from "zustand";
 import { StateStore } from "../../state/store";
-import { AccessTokenType } from "../auth/Auth";
 import { TrackType } from "../tracks/track";
 import { fetchFromSpotify } from "../../state/helpers";
 import { PartialPlaylist } from "../../components/EditPlaylistModal";
@@ -46,7 +45,6 @@ export interface PlaylistSlice {
   playlist: DetailedPlaylistType;
   playlistNamesWithIds: playlistNamesWithIdsType[];
   playlistsFetched: boolean;
-  accessToken: AccessTokenType | null;
   setPlaylist: (playlist: DetailedPlaylistType) => void;
   getUserPlaylists: () => Promise<AsyncResult<UserPlaylistType[]>>;
   getPlaylist: (
@@ -78,8 +76,8 @@ export const createPlaylistSlice: StateCreator<
   playlists: [],
   playlist: initialEmptyPlaylist,
   playlistNamesWithIds: [],
+  // ! CONSIDER REMOVING THIS STATE COMPLETELY
   playlistsFetched: false,
-  accessToken: null,
   setPlaylist: (playlist) => {
     set({ playlist }, undefined, "playlist/setPlaylist");
     // Cache is now handled by persist middleware
@@ -114,8 +112,10 @@ export const createPlaylistSlice: StateCreator<
 
       if (!usersSavedTracks) {
         console.log("getting usersSavedTracks from API");
+        const result = await get().getUserSavedTracks(0);
+        if (!result.success) return result;
         set(
-          { usersSavedTracks: await get().getUserSavedTracks(0) },
+          { usersSavedTracks: result.data },
           undefined,
           "playlist/setUserSavedTracksFromAPI",
         );
@@ -126,13 +126,16 @@ export const createPlaylistSlice: StateCreator<
 
     console.log("🛜 getUserPlaylists will call api...");
 
-    const res = await fetch(`https://api.spotify.com/v1/me/playlists?limit=5`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken?.token}`,
-        "Content-Type": "application/json",
+    const res = await fetch(
+      `https://api.spotify.com/v1/me/playlists?limit=10`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken?.token}`,
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
     if (!res.ok) throw new Error("No playlists or bad request");
 
     const { items } = await res.json();
@@ -140,7 +143,7 @@ export const createPlaylistSlice: StateCreator<
 
     const newPlaylistNamesWithIds: playlistNamesWithIdsType[] =
       await Promise.all(
-        items.map(async (playlist: any) => {
+        items.map(async (playlist: SpotifyApi.PlaylistObjectSimplified) => {
           const idsForCurrentP = await get().getPlaylist(playlist.id);
 
           if (!idsForCurrentP.success) throw new Error("No playlist found");
@@ -161,7 +164,7 @@ export const createPlaylistSlice: StateCreator<
     );
 
     const formattedPlaylists: UserPlaylistType[] = items.map(
-      (playlist: any) => ({
+      (playlist: SpotifyApi.PlaylistObjectSimplified) => ({
         name: playlist.name,
         id: playlist.id,
         imageUrl: playlist.images?.[0]?.url,
@@ -177,19 +180,23 @@ export const createPlaylistSlice: StateCreator<
   },
 
   getPlaylist: async (id, offset = 0, bypassCache = false) => {
-    console.log("getPlaylist running...");
-
     if (id === "liked_songs") {
       const usersSavedTracks = get().usersSavedTracks;
       if (!usersSavedTracks) {
         const result = await get().getUserSavedTracks();
-        return { success: true, data: result };
+        if (!result.success) return result;
+        set(
+          { usersSavedTracks: result.data },
+          undefined,
+          "playlist/setUserSavedTracksFromAPI",
+        );
+        return result;
       }
       return { success: true, data: usersSavedTracks };
     }
 
-    return await wrapPromiseResult(
-      fetchFromSpotify<any, DetailedPlaylistType>({
+    return await wrapPromiseResult<DetailedPlaylistType>(
+      fetchFromSpotify<SpotifyApi.PlaylistObjectFull, DetailedPlaylistType>({
         endpoint: `playlists/${id}`,
         cacheName: `playlist${id}`,
         offset: `?offset=${offset}&limit=5`,
@@ -199,32 +206,40 @@ export const createPlaylistSlice: StateCreator<
           id: data.id,
           type: data.type,
           tracks: data.tracks.items
-            .filter((tra: any) => tra.track !== null)
+            .filter((tra: SpotifyApi.PlaylistTrackObject) => tra.track !== null)
             .map(
-              (track: any): TrackType => ({
-                name: track.track.name,
-                id: track.track.id,
-                imageUrl: track.track.album.images[0]?.url || null,
-                multipleArtists: track.track.artists.length > 1,
-                artists: track.track.artists.map((artist: any) => ({
-                  name: artist.name,
-                  artistId: artist.id,
-                })),
-                type: track.track.type,
-                trackDuration: track.track.duration_ms,
-                releaseDate: track.track.album.release_date,
-                albumName: track.track.album.name,
-                albumId: track.track.album.id,
+              (track: SpotifyApi.PlaylistTrackObject): TrackType => ({
+                name: track.track?.name ?? "",
+                id: track.track?.id ?? "",
+                imageUrl: track.track?.album.images[0]?.url ?? "",
+                multipleArtists:
+                  track.track?.artists?.length &&
+                  track.track?.artists?.length > 1
+                    ? true
+                    : false,
+                artists:
+                  track.track?.artists?.map(
+                    (artist: SpotifyApi.ArtistObjectSimplified) => ({
+                      name: artist.name ?? "",
+                      artistId: artist.id ?? "",
+                    }),
+                  ) ?? [],
+                type: track.track?.type ?? "",
+                trackDuration: track.track?.duration_ms ?? 0,
+                releaseDate: track.track?.album.release_date ?? "",
+                albumName: track.track?.album.name ?? "",
+                albumId: track.track?.album.id ?? "",
               }),
             ),
           numTracks: data.tracks.items.length,
           totalDurationMs: data.tracks.items.reduce(
-            (sum: number, item: any) => sum + (item.track?.duration_ms || 0),
+            (sum: number, item: SpotifyApi.PlaylistTrackObject) =>
+              sum + (item.track?.duration_ms ?? 0),
             0,
           ),
-          imageUrl: data.images?.[0]?.url || "",
-          ownerName: data.owner.display_name,
-          ownerId: data.owner.id,
+          imageUrl: data.images?.[0]?.url ?? "",
+          ownerName: data.owner.display_name ?? "",
+          ownerId: data.owner.id ?? "",
         }),
         onCacheFound: (data) =>
           set({ playlist: data }, undefined, "playlist/setPlaylistFromCache"),
@@ -236,7 +251,10 @@ export const createPlaylistSlice: StateCreator<
 
   uploadNewPlaylistImage: async (id, base64ImageUrl) => {
     return await wrapPromiseResult(
-      fetchFromSpotify({
+      fetchFromSpotify<
+        SpotifyApi.PlaylistObjectSimplified,
+        DetailedPlaylistType
+      >({
         endpoint: `playlists/${id}/images`,
         method: "PUT",
         requestBody: base64ImageUrl,
@@ -245,8 +263,8 @@ export const createPlaylistSlice: StateCreator<
   },
 
   updatePlaylistDetails: async (id, updatedFields) => {
-    return await wrapPromiseResult(
-      fetchFromSpotify({
+    return await wrapPromiseResult<void>(
+      fetchFromSpotify<SpotifyApi.PlaylistObjectSimplified, void>({
         endpoint: `playlists/${id}`,
         method: "PUT",
         requestBody: JSON.stringify({
@@ -258,8 +276,8 @@ export const createPlaylistSlice: StateCreator<
   },
 
   addTrackToPlaylist: async (id, trackId) => {
-    return await wrapPromiseResult(
-      fetchFromSpotify({
+    return await wrapPromiseResult<void>(
+      fetchFromSpotify<SpotifyApi.AddTracksToPlaylistResponse, void>({
         endpoint: `playlists/${id}/tracks`,
         method: "POST",
         requestBody: JSON.stringify({ uris: [trackId], position: 0 }),

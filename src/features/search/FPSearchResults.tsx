@@ -102,7 +102,7 @@ function FPSearchResults() {
       </SearchResultSection>
 
       <SearchResultSection title="Podcasts">
-        {searchResults?.shows
+        {searchResults?.podcasts
           ?.slice(0, numCards)
           .map((podcast) => <PodcastCard key={podcast.id} podcast={podcast} />)}
       </SearchResultSection>
