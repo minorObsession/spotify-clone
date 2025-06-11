@@ -1,7 +1,11 @@
 import FPPodcastEpisode from "./FPPodcastEpisode";
 import { PodcastEpisodeType } from "./podcast";
 
-function FPPodcastEpisodes({ episodes }: { episodes: PodcastEpisodeType[] }) {
+interface FPPodcastEpisodesProps {
+  episodes: PodcastEpisodeType[];
+}
+
+function FPPodcastEpisodes({ episodes }: FPPodcastEpisodesProps) {
   // todo: ONLY PRELOAD ABOUT 10 EPISODES
   // AND THEN LOAD MORE ON SCROLL
 

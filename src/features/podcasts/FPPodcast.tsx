@@ -32,6 +32,13 @@ function FullPreviewPodcast() {
 
 export default memo(FullPreviewPodcast);
 
-const { getPodcast } = useStateStore.getState();
-
-export const podcastLoader = createLoader<PodcastType>("podcast", getPodcast);
+export const podcastLoader = createLoader<PodcastType>(
+  "podcast",
+  async (id) => {
+    const { getPodcast } = useStateStore.getState();
+    if (!id) return null;
+    const podcast = await getPodcast(id);
+    if (!podcast.success) return null;
+    return podcast.data;
+  },
+);

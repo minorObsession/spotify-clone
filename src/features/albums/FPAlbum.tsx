@@ -27,15 +27,12 @@ function FullPreviewAlbum() {
 
 export default memo(FullPreviewAlbum);
 
-const getAlbum = useStateStore.getState().getAlbum;
+export const albumLoader = createLoader<AlbumType>("album", async (id) => {
+  if (!id) return null;
+  const { getAlbum } = useStateStore.getState();
 
-export const albumLoader = createLoader<AlbumType>(
-  "album",
-  async (id: string) => {
-    if (!id) throw new Error("No album ID provided");
+  const album = await getAlbum(id);
+  if (!album.success) return null;
 
-    const album = await getAlbum(id);
-
-    return album;
-  },
-);
+  return album.data;
+});

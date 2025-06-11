@@ -22,6 +22,11 @@ function FPArtist() {
 
 export default FPArtist;
 
-const { getArtist } = useStateStore.getState();
+export const artistLoader = createLoader<ArtistType>("artist", async (id) => {
+  if (!id) return null;
+  const { getArtist } = useStateStore.getState();
+  const artist = await getArtist(id);
+  if (!artist.success) return null;
 
-export const artistLoader = createLoader<ArtistType>("artist", getArtist);
+  return artist.data;
+});

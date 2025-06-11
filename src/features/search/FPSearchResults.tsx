@@ -126,14 +126,14 @@ function FPSearchResults() {
 
 export default FPSearchResults;
 
-const search = useStateStore.getState().search;
-
 export const searchLoader = createLoader<SearchResultType>(
   "search",
   async (query?: string) => {
     if (!query) return null;
+    const { search } = useStateStore.getState();
     const searchResults = await search(query);
     if (!searchResults.success) return null;
+
     return searchResults.data;
   },
 );

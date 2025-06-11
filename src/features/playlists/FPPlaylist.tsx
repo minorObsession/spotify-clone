@@ -38,7 +38,8 @@ function FullPreviewPlaylist() {
     try {
       if (playlist.id === "liked_songs") {
         const loadedTracks = await getUserSavedTracks(playlist.tracks.length);
-        const allTracks = [...playlist.tracks, ...loadedTracks.tracks];
+        if (!loadedTracks.success) return;
+        const allTracks = [...playlist.tracks, ...loadedTracks.data.tracks];
         const uniqueTracks = Array.from(
           new Map(allTracks.map((track) => [track.id, track])).values(),
         );
@@ -89,16 +90,15 @@ function FullPreviewPlaylist() {
 
 export const playlistLoader = createLoader<DetailedPlaylistType>(
   "playlist",
-  async (id?: string) => {
+  async (id) => {
     const getPlaylist = useStateStore.getState().getPlaylist;
 
     if (!id) throw new Error("No playlist ID provided");
 
     const result = await getPlaylist(id);
 
-    if (!result.success) {
+    if (!result.success)
       throw new Error(result.error?.message || "Failed to load playlist");
-    }
 
     useStateStore.getState().setPlaylist(result.data); // Hydrate Zustand
     return result.data;

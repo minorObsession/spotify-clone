@@ -3,20 +3,21 @@ import { StateCreator } from "zustand";
 import { fetchFromSpotify } from "../../state/helpers";
 import { ShortArtistType } from "../search/search";
 import { TopTrackType } from "../artists/artist";
+import { AsyncResult, wrapPromiseResult } from "../../types/reusableTypes";
 
 export interface AlbumType {
   name: string;
   id: string;
   imageUrl: string;
   tracks: TopTrackType[];
-  artists: ShortArtistType[];
+  artists: Omit<ShortArtistType, "imageUrl">[];
   releaseDate: string;
   totalTracks: number;
 }
 
 export interface AlbumSlice {
   album: AlbumType | null;
-  getAlbum: (id: string) => Promise<AlbumType>;
+  getAlbum: (id: string) => Promise<AsyncResult<AlbumType>>;
   // getAlbumTracks: (id: string) => Promise<AlbumTrackType[] | null>;
 }
 
@@ -46,45 +47,51 @@ export const createAlbumSlice: StateCreator<
   // },
 
   getAlbum: async (id: string) => {
-    console.trace("get album called");
-    const result = await fetchFromSpotify<any, AlbumType>({
-      endpoint: `albums/${id}`,
-      cacheName: `album_${id}`,
-      transformFn: async (data) => {
-        // const tracks = await get().getAlbumTracks(id);
+    return await wrapPromiseResult(
+      fetchFromSpotify<SpotifyApi.AlbumObjectFull, AlbumType>({
+        endpoint: `albums/${id}`,
+        cacheName: `album_${id}`,
+        transformFn: async (data) => {
+          // const tracks = await get().getAlbumTracks(id);
 
-        // if (!tracks || tracks === null)
-        //   throw new Error("Album tracks could not be fetched");
+          // if (!tracks || tracks === null)
+          //   throw new Error("Album tracks could not be fetched");
 
-        return {
-          name: data.name,
-          id: data.id,
-          // type: data.type,
-          imageUrl: data.images[0].url,
-          artists: data.artists.map((artist: any) => ({
-            name: artist.name,
-            id: artist.id,
-          })),
-          releaseDate: data.release_date,
-          totalTracks: data.total_tracks,
-          tracks: data.tracks.items.map((track: any) => ({
-            name: track.name,
-            id: track.id,
-            trackDuration: track.duration_ms,
-            artists: track.artists.map((artist: any) => ({
-              name: artist.name,
-              id: artist.id,
-            })),
-          })),
-        };
-      },
-      onCacheFound: (data) => {
-        set({ album: data }, undefined, "album/setAlbumFromCache");
-      },
-      onDataReceived: (data) => {
-        set({ album: data }, undefined, "album/setAlbumFromAPI");
-      },
-    });
-    return result;
+          return {
+            name: data.name,
+            id: data.id,
+            imageUrl: data.images[0].url,
+            artists: data.artists.map(
+              (artist: SpotifyApi.ArtistObjectSimplified) => ({
+                name: artist.name,
+                id: artist.id,
+              }),
+            ),
+            releaseDate: data.release_date,
+            totalTracks: data.total_tracks,
+            tracks: data.tracks.items.map(
+              (track: SpotifyApi.TrackObjectSimplified) => ({
+                name: track.name,
+                id: track.id,
+                trackDuration: track.duration_ms,
+                imageUrl: data.images[0].url,
+                artists: track.artists.map(
+                  (artist: SpotifyApi.ArtistObjectSimplified) => ({
+                    name: artist.name,
+                    id: artist.id,
+                  }),
+                ),
+              }),
+            ),
+          };
+        },
+        onCacheFound: (data) => {
+          set({ album: data }, undefined, "album/setAlbumFromCache");
+        },
+        onDataReceived: (data) => {
+          set({ album: data }, undefined, "album/setAlbumFromAPI");
+        },
+      }),
+    );
   },
 });
