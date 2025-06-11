@@ -55,6 +55,7 @@ export function useTrackItem(track: TrackType | TopTrackType) {
       // * if not on any playlist page - just queue the track
       else playTrack(`spotify:playlist:${e.currentTarget.id}`, "track");
     } else {
+      // if NOT clicked on SVG
       navigate(`/home/track/${e.currentTarget.id}`);
     }
   };

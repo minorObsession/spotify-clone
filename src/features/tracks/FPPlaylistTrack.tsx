@@ -21,7 +21,12 @@ function FPPlaylistTrack() {
   );
 }
 
-const { getTrack } = useStateStore.getState();
-export const trackLoader = createLoader<TrackType>("track", getTrack);
+export const trackLoader = createLoader<TrackType>("track", async (id) => {
+  const { getTrack } = useStateStore.getState();
+  if (!id) return null;
+  const track = await getTrack(id);
+  if (!track.success) return null;
+  return track.data;
+});
 
 export default FPPlaylistTrack;
