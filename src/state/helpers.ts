@@ -90,6 +90,9 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
     if (!res.ok) {
       throw new Error(`API request failed: ${res.status} ${res.statusText}`);
     }
+    // if it's a PUT request, we don't need to transform the data
+    if (method === "PUT" || (method === "DELETE" && !transformFn))
+      return undefined as unknown as ReturnType;
 
     // basically bellow code runs if it's NOT a GET request
     if (!transformFn) throw new Error("❌ Transform function not found..");

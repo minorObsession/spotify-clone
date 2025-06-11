@@ -3,16 +3,11 @@ import useHoverTrackItem from "../hooks/useHoverTrackItem";
 import Tooltip from "./Tooltip";
 import { BiPlusCircle } from "react-icons/bi";
 import { isTrackInLibrary } from "../features/playlists/playlistHelpers";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useStateStore } from "../state/store";
 import OptionsMenu from "./OptionsMenu";
 import useOutsideClick from "../hooks/useOutsideClick";
 import { TrackType } from "../features/tracks/track";
-import { DetailedPlaylistType } from "../features/playlists/playlists";
-import {
-  getFromLocalStorage,
-  saveToLocalStorage,
-} from "../features/auth/authHelpers";
 
 interface AddToPlaylistProps {
   track: TrackType;
@@ -34,17 +29,28 @@ function AddToPlaylist({
   const playlists = useStateStore.getState().playlists;
   const playlistNames = playlists?.map((playlist) => playlist.name) || [];
 
+  // ! I WAS HERE!!! TRYING TO FIX THE ISSUE WITH THE PLAYLISTID!!!
+  // NEED TO DECOUPLE STATE FROM ZUSTAND OF FIND SOLUTION WITHIN ZUSTAND
+  // ! I WAS HERE!!! TRYING TO FIX THE ISSUE WITH THE PLAYLISTID!!!
+  // ! I WAS HERE!!! TRYING TO FIX THE ISSUE WITH THE PLAYLISTID!!!
+  // ! I WAS HERE!!! TRYING TO FIX THE ISSUE WITH THE PLAYLISTID!!!
   const playlistMenuRef = useOutsideClick<HTMLUListElement>(
     () => setIsPlaylistSelectMenuOpen(false),
     undefined,
     true,
   ) as React.RefObject<HTMLUListElement>;
 
-  const handleAddToLikedSongs = () => {
-    // * optimistic update UI
-    let usersSavedTracksVar: DetailedPlaylistType;
+  const handleAddToLikedSongs = async () => {
+    try {
+      const { addToLikedSongs } = useStateStore.getState();
+      const result = await addToLikedSongs(track.id);
+      if (!result.success) throw Error("Failed to add track to liked songs");
 
-    // local store update
+      // local store update
+    } catch (error) {
+      console.error("Error adding track to liked songs:", error);
+    }
+
     useStateStore.setState((prevState) => {
       if (!prevState.usersSavedTracks) return prevState;
       const newState = {
@@ -54,60 +60,31 @@ function AddToPlaylist({
           tracks: [track, ...prevState.usersSavedTracks.tracks],
         },
       };
-      usersSavedTracksVar = newState.usersSavedTracks;
+
       return newState;
     });
-
-    // * update local storage
-    localStorage.setItem(
-      `${useStateStore.getState().user?.username}s_saved_tracks_with_offset_of_0`,
-      JSON.stringify(usersSavedTracksVar!),
-    );
 
     console.log("should be all updated");
     // * call spotify api with post req
   };
 
-  const handleAddToPlaylist = async (playlistId: string) => {
-    try {
-      const response = await fetch(
-        `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${useStateStore.getState().accessToken?.token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            uris: [`spotify:track:${track.id}`],
-          }),
-        },
-      );
+  const handleAddToPlaylist = useCallback(
+    async (playlistId: string) => {
+      console.log("handleAddToPlaylist called");
+      try {
+        // * update UI state
+        const { addTrackToPlaylist } = useStateStore.getState();
 
-      if (!response.ok) {
-        throw new Error("Failed to add track to playlist");
+        const result = await addTrackToPlaylist(playlistId, track.id);
+
+        if (!result.success) throw Error("Failed to add track to playlist");
+      } catch (error) {
+        console.error("Error adding track to playlist:", error);
       }
+    },
+    [track.id],
+  );
 
-      // Update local storage
-      const playlist = getFromLocalStorage(`playlist${playlistId}`);
-      if (playlist) {
-        const updatedPlaylist = {
-          ...playlist,
-          tracks: {
-            ...playlist.tracks,
-            items: [...playlist.tracks.items, { track }],
-          },
-        };
-        saveToLocalStorage(`playlist${playlistId}`, updatedPlaylist);
-      }
-
-      // * optimistic update UI
-    } catch (error) {
-      console.error("Error adding track to playlist:", error);
-    }
-  };
-
-  // ! look for this ID in all playlists - make function that does this
   const isTheTrackInLibrary = isTrackInLibrary(id);
   const tooltipMessage = isTheTrackInLibrary
     ? "Add to Playlist"
@@ -118,8 +95,10 @@ function AddToPlaylist({
     <div
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onClick={(e) =>
-        isTheTrackInLibrary ? handleAddToPlaylist(id) : handleAddToLikedSongs()
+      onClick={() =>
+        isTheTrackInLibrary
+          ? setIsPlaylistSelectMenuOpen(true)
+          : handleAddToLikedSongs()
       }
       className="relative flex"
     >

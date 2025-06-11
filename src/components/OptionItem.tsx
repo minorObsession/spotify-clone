@@ -19,6 +19,17 @@ function OptionItem({ option, menuFor }: OptionItemProps) {
     }
 
     if (menuFor === "addToPlaylist") {
+      const { playlists, setSelectedPlaylistId } = useStateStore.getState();
+
+      const playlistId = playlists.find(
+        (playlist) =>
+          playlist.name.toLowerCase() === clickedOption.toLowerCase(),
+      )?.id;
+
+      if (!playlistId) throw Error("No playlist ID found");
+
+      setSelectedPlaylistId(playlistId);
+
       if (clickedOption === "Edit details") {
         // ! open modal
       }

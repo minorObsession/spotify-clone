@@ -65,6 +65,9 @@ export interface PlaylistSlice {
     id: string,
     trackId: string,
   ) => Promise<AsyncResult<void>>;
+  addToLikedSongs: (trackId: string) => Promise<AsyncResult<void>>;
+  selectedPlaylistId: string | null;
+  setSelectedPlaylistId: (id: string | null) => void;
 }
 
 export const createPlaylistSlice: StateCreator<
@@ -78,6 +81,14 @@ export const createPlaylistSlice: StateCreator<
   playlistNamesWithIds: [],
   // ! CONSIDER REMOVING THIS STATE COMPLETELY
   playlistsFetched: false,
+  selectedPlaylistId: null,
+  setSelectedPlaylistId: (id) => {
+    set(
+      { selectedPlaylistId: id },
+      undefined,
+      "playlist/setSelectedPlaylistId",
+    );
+  },
   setPlaylist: (playlist) => {
     set({ playlist }, undefined, "playlist/setPlaylist");
     // Cache is now handled by persist middleware
@@ -280,10 +291,22 @@ export const createPlaylistSlice: StateCreator<
       fetchFromSpotify<SpotifyApi.AddTracksToPlaylistResponse, void>({
         endpoint: `playlists/${id}/tracks`,
         method: "POST",
-        requestBody: JSON.stringify({ uris: [trackId], position: 0 }),
+        requestBody: JSON.stringify({
+          uris: [`spotify:track:${trackId}`],
+        }),
       }),
     );
   },
 
-  // addToLikedSongs: async (trackId: string) => {}
+  addToLikedSongs: async (trackId: string) => {
+    return await wrapPromiseResult<void>(
+      fetchFromSpotify<SpotifyApi.AddTracksToPlaylistResponse, void>({
+        endpoint: `me/tracks`,
+        method: "PUT",
+        requestBody: JSON.stringify({
+          ids: [trackId],
+        }),
+      }),
+    );
+  },
 });

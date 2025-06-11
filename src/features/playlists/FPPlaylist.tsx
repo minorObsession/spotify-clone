@@ -100,7 +100,6 @@ export const playlistLoader = createLoader<DetailedPlaylistType>(
     if (!result.success)
       throw new Error(result.error?.message || "Failed to load playlist");
 
-    useStateStore.getState().setPlaylist(result.data); // Hydrate Zustand
     return result.data;
   },
 );
