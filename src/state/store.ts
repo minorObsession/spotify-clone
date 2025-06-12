@@ -50,7 +50,6 @@ export const useStateStore = create<StateStore>()(
         name: "spotify-clone-state-storage",
         partialize: (state: StateStore) => ({
           // Auth state (tokens should persist)
-          isAuthenticated: state.isAuthenticated,
 
           // User data
           user: state.user,

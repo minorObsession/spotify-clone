@@ -89,7 +89,6 @@ export const userStateLoader = async () => {
 
   const { getUserPlaylists, getUser } = useStateStore.getState();
   const user = await getUser();
-  console.log(user);
   if (!user) console.error("❌ User is still null.. even after getUser() call");
   else await getUserPlaylists();
 

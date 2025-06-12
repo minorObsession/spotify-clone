@@ -4,10 +4,11 @@ import { base64encode, generateRandomString, sha256 } from "./authHelpers";
 import { StateStore, useStateStore } from "../../state/store";
 import { initialEmptyPlaylist } from "../playlists/playlists";
 import Cookies from "js-cookie";
+
 // --- Configuration ---
 const AUTH_CONFIG = {
-  clientId: "91915dd042e1406aa1ca2fef874d5e1b",
-  redirectUri: "http://127.0.0.1:5173/home",
+  clientId: import.meta.env.VITE_SPOTIFY_CLIENT_ID as string,
+  redirectUri: import.meta.env.VITE_SPOTIFY_REDIRECT_URI as string,
   scope:
     "app-remote-control user-read-playback-state user-modify-playback-state user-read-currently-playing streaming user-read-playback-position user-read-email user-read-private user-library-read user-library-modify playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-follow-read user-follow-modify user-top-read user-read-recently-played ugc-image-upload",
   authUrl: "https://accounts.spotify.com/authorize",
@@ -21,9 +22,6 @@ export interface AccessTokenType {
   expiresAtDate?: string;
   now?: string;
 }
-
-// ! NEED TO LOOK INTO DIFFERENT MANAGING OF ACCESS TOKEN! COOKIES?
-// ! NEED TO LOOK INTO DIFFERENT MANAGING OF ACCESS TOKEN! COOKIES?
 
 export interface AuthSlice {
   isAuthenticated: boolean;
@@ -206,6 +204,20 @@ export const createAuthSlice: StateCreator<
 
         const refreshToken = Cookies.get("refreshToken");
 
+        // If refresh token is missing but access token is still valid, initiate new auth flow
+        if (
+          !refreshToken &&
+          accessToken?.token &&
+          accessToken.expiresAt > Date.now()
+        ) {
+          console.log(
+            "Refresh token missing but access token valid - initiating new auth flow",
+          );
+          await get().requestAuthCodeAndRedirect();
+          return;
+        }
+
+        // If either token is missing and access token is expired, clear interval
         if (!accessToken?.token || !refreshToken) {
           clearInterval(interval);
           set(
