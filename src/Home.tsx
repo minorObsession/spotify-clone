@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from "react-router-dom";
-import { memo, use, useEffect } from "react";
+import { memo, useEffect } from "react";
 
 import Sidebar from "./layouts/desktop/Sidebar";
 import { useScreenWidthRem } from "./hooks/useScreenWidthRem";
