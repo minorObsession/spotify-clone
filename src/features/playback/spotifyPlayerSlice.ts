@@ -1,6 +1,6 @@
 import { StateCreator } from "zustand";
 import { AccessTokenType } from "../auth/Auth";
-import { getFromLocalStorage } from "../auth/authHelpers";
+import Cookies from "js-cookie";
 import { StateStore } from "../../state/store";
 import { fetchFromSpotify } from "../../state/helpers";
 
@@ -55,8 +55,10 @@ export const createSpotifyPlayerSlice: StateCreator<
   },
 
   initPlayer: () => {
-    const accessToken = get().accessToken;
-    if (!accessToken) {
+    const accessToken: AccessTokenType = JSON.parse(
+      Cookies.get("accessToken") || "{}",
+    );
+    if (!accessToken.token) {
       console.error("Access token missing");
       return;
     }
@@ -94,7 +96,7 @@ export const createSpotifyPlayerSlice: StateCreator<
 
   // ! THIS WILL ALWAYS THROW ERROR BECAUSE OF fetchFromSpotify!!!!!
   transferPlayback: async (deviceId: string) => {
-    return await fetchFromSpotify<any, any>({
+    return await fetchFromSpotify<SpotifyApi.CurrentPlaybackResponse, void>({
       endpoint: "me/player",
       method: "PUT",
       requestBody: JSON.stringify({

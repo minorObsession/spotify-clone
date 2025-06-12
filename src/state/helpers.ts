@@ -1,7 +1,8 @@
 import { ActionFunctionArgs } from "react-router";
 import { getFromLocalStorage } from "../features/auth/authHelpers";
 import { useStateStore } from "./store";
-// import { store } from "./store";
+import Cookies from "js-cookie";
+import { AccessTokenType } from "../features/auth/Auth";
 
 // ! make at least 1 argument required!!!
 export function createLoader<T>(
@@ -59,11 +60,13 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
 
     await useStateStore.getState().waitForAuthentication();
 
-    const accessToken = useStateStore.getState().accessToken;
-    if (!accessToken) {
+    const accessToken: AccessTokenType = JSON.parse(
+      Cookies.get("accessToken") || "{}",
+    );
+
+    if (!accessToken.token) {
       throw new Error("Access token expired or doesn't exist");
     }
-
     // Check cache first if cacheName is provided and not bypassing cache
     if (cacheName && !bypassCache) {
       const cachedData = getFromLocalStorage<ReturnType>(cacheName);

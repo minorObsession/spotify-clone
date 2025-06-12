@@ -4,6 +4,8 @@ import { TrackType } from "../tracks/track";
 import { fetchFromSpotify } from "../../state/helpers";
 import { PartialPlaylist } from "../../components/EditPlaylistModal";
 import { AsyncResult, wrapPromiseResult } from "../../types/reusableTypes";
+import { AccessTokenType } from "../auth/Auth";
+import Cookies from "js-cookie";
 
 export interface UserPlaylistType {
   name: string;
@@ -97,14 +99,22 @@ export const createPlaylistSlice: StateCreator<
   getUserPlaylists: async () => {
     const playlistsFetched = get().playlistsFetched;
     if (playlistsFetched) {
-      const playlists = get().playlists;
+      const { playlists } = get();
+      set(
+        { playlistsFetched: true },
+        undefined,
+        "playlist/setPlaylistsFetched",
+      );
+
       return { success: true, data: playlists };
     }
 
-    set({ playlistsFetched: true }, undefined, "playlist/setPlaylistsFetched");
+    const accessToken: AccessTokenType = JSON.parse(
+      Cookies.get("accessToken") || "{}",
+    );
 
-    const accessToken = get().accessToken;
-    if (!accessToken) throw new Error("Access token expired or doesn't exist");
+    if (!accessToken?.token)
+      throw new Error("Access token expired or doesn't exist");
 
     // Check persisted state first (handled automatically by persist middleware)
     const playlists = get().playlists;
@@ -112,6 +122,11 @@ export const createPlaylistSlice: StateCreator<
     const usersSavedTracks = get().usersSavedTracks;
     if (playlists.length > 0) {
       set({ playlists }, undefined, "playlist/setPlaylistsFromCache");
+      set(
+        { playlistsFetched: true },
+        undefined,
+        "playlist/setPlaylistsFetched",
+      );
 
       if (playlistNamesWithIds.length > 0) {
         set(

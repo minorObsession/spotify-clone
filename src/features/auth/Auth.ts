@@ -155,13 +155,27 @@ export const createAuthSlice: StateCreator<
           ).toISOString(),
           now: new Date().toISOString(),
         };
-        // Persist tokens in localStorage (for backwards compatibility) and Zustand persist
+
+        // Set secure cookies with proper expiration and security flags
         Cookies.set("accessToken", JSON.stringify(newAccessToken), {
-          expires: 1,
+          secure: true, // Only sent over HTTPS
+          sameSite: "strict", // Prevents CSRF attacks
+          expires: new Date(newAccessToken.expiresAt), // Expires when token expires
+          path: "/", // Available across the entire site
         });
+
+        // Refresh token typically has a longer lifespan (e.g., 1 year)
+        const oneYearFromNow = new Date();
+        oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+        console.log("oneYearFromNow", oneYearFromNow);
+
         Cookies.set("refreshToken", data.refresh_token, {
-          expires: 1,
+          secure: true,
+          sameSite: "strict",
+          expires: oneYearFromNow,
+          path: "/",
         });
+
         set(
           {
             isAuthenticated: true,
@@ -192,7 +206,7 @@ export const createAuthSlice: StateCreator<
 
         const refreshToken = Cookies.get("refreshToken");
 
-        if (!accessToken || !refreshToken) {
+        if (!accessToken?.token || !refreshToken) {
           clearInterval(interval);
           set(
             { refreshInterval: null },
@@ -233,15 +247,26 @@ export const createAuthSlice: StateCreator<
               now: new Date().toISOString(),
             };
 
-            // Use the new refresh token if provided, otherwise keep the old one
-            if (data.refresh_token)
-              Cookies.set("refreshToken", data.refresh_token, {
-                expires: 1,
-              });
-
+            // Update access token cookie with new expiration
             Cookies.set("accessToken", JSON.stringify(newAccessToken), {
-              expires: 1,
+              secure: true,
+              sameSite: "strict",
+              expires: new Date(newAccessToken.expiresAt),
+              path: "/",
             });
+
+            // If we got a new refresh token, update it with long expiration
+            if (data.refresh_token) {
+              const oneYearFromNow = new Date();
+              oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+
+              Cookies.set("refreshToken", data.refresh_token, {
+                secure: true,
+                sameSite: "strict",
+                expires: oneYearFromNow,
+                path: "/",
+              });
+            }
 
             console.log("✅ token successfully refreshed!");
           } catch (error) {

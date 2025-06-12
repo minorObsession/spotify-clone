@@ -91,7 +91,7 @@ function FullPreviewPlaylist() {
 export const playlistLoader = createLoader<DetailedPlaylistType>(
   "playlist",
   async (id) => {
-    const getPlaylist = useStateStore.getState().getPlaylist;
+    const { getPlaylist } = useStateStore.getState();
 
     if (!id) throw new Error("No playlist ID provided");
 

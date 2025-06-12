@@ -1,4 +1,5 @@
-import { useStateStore } from "../state/store";
+import { AccessTokenType } from "../features/auth/Auth";
+import Cookies from "js-cookie";
 
 export function flexibleMillisecondsConverter(ms: number) {
   const seconds = Math.floor(ms / 1000);
@@ -27,9 +28,12 @@ export const handleUploadToSpotify = async (
   playlistId: string,
   base64Image: string,
 ) => {
-  const accessToken = useStateStore.getState().accessToken;
+  const accessToken: AccessTokenType = JSON.parse(
+    Cookies.get("accessToken") || "{}",
+  );
 
-  if (!accessToken) throw new Error("Access token expired or doesn't exist");
+  if (!accessToken.token)
+    throw new Error("Access token expired or doesn't exist");
 
   const response = await fetch(
     "https://spotify-clone-2005.vercel.app/api/update-spotify-image",

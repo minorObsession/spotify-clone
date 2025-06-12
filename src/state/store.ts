@@ -51,8 +51,6 @@ export const useStateStore = create<StateStore>()(
         partialize: (state: StateStore) => ({
           // Auth state (tokens should persist)
           isAuthenticated: state.isAuthenticated,
-          accessToken: state.accessToken,
-          refreshToken: state.refreshToken,
 
           // User data
           user: state.user,

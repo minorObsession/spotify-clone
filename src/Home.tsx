@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from "react-router-dom";
-import { memo, useEffect } from "react";
+import { memo, use, useEffect } from "react";
 
 import Sidebar from "./layouts/desktop/Sidebar";
 import { useScreenWidthRem } from "./hooks/useScreenWidthRem";
@@ -87,10 +87,9 @@ export const userStateLoader = async () => {
   }
   homeLoaderNumOfRuns++;
 
-  const getUserPlaylists = useStateStore.getState().getUserPlaylists;
-  const getUser = useStateStore.getState().getUser;
+  const { getUserPlaylists, getUser } = useStateStore.getState();
   const user = await getUser();
-
+  console.log(user);
   if (!user) console.error("❌ User is still null.. even after getUser() call");
   else await getUserPlaylists();
 

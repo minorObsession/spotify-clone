@@ -13,12 +13,10 @@ function Root() {
 }
 
 export const initialLoader = async () => {
-  const { accessToken, initAuth, autoRefreshToken } = useStateStore.getState();
+  const { isAuthenticated, initAuth, autoRefreshToken } =
+    useStateStore.getState();
 
-  const isAuthTokenValid =
-    (accessToken?.token && accessToken.expiresAt > Date.now()) || false;
-  console.log("isAuthTokenValid", isAuthTokenValid);
-  if (!isAuthTokenValid) await initAuth();
+  if (!isAuthenticated) await initAuth();
 
   // Start the auto refresh timer if the token is valid
   await autoRefreshToken();
