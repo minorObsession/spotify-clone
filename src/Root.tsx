@@ -16,11 +16,11 @@ export const initialLoader = async () => {
   const { accessToken, initAuth, autoRefreshToken } = useStateStore.getState();
 
   const isAuthTokenValid =
-    accessToken?.token && accessToken.expiresAt > Date.now();
-
+    (accessToken?.token && accessToken.expiresAt > Date.now()) || false;
+  console.log("isAuthTokenValid", isAuthTokenValid);
   if (!isAuthTokenValid) await initAuth();
 
-  // ! to start the auto refresh timer
+  // Start the auto refresh timer if the token is valid
   await autoRefreshToken();
 
   redirect("/home");

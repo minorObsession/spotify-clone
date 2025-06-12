@@ -3,7 +3,8 @@ import { StateCreator } from "zustand";
 import { base64encode, generateRandomString, sha256 } from "./authHelpers";
 import { StateStore, useStateStore } from "../../state/store";
 import { initialEmptyPlaylist } from "../playlists/playlists";
-
+import Cookies from "js-cookie";
+console.log("COOKIES: ", Cookies);
 // --- Configuration ---
 const AUTH_CONFIG = {
   clientId: "91915dd042e1406aa1ca2fef874d5e1b",
@@ -22,6 +23,9 @@ export interface AccessTokenType {
   now?: string;
 }
 
+// ! NEED TO LOOK INTO DIFFERENT MANAGING OF ACCESS TOKEN! COOKIES?
+// ! NEED TO LOOK INTO DIFFERENT MANAGING OF ACCESS TOKEN! COOKIES?
+
 export interface AuthSlice {
   isAuthenticated: boolean;
   accessToken: AccessTokenType | null;
@@ -34,8 +38,6 @@ export interface AuthSlice {
   requestToken: (authCode: string, codeVerifier: string) => Promise<void>;
   autoRefreshToken: () => Promise<void>;
 }
-
-let hasFetchedToken = false;
 
 export const createAuthSlice: StateCreator<
   StateStore,
@@ -76,9 +78,6 @@ export const createAuthSlice: StateCreator<
   refreshInterval: null,
   // --- Public Action: Initialize Auth Flow ---
   initAuth: async () => {
-    if (hasFetchedToken) return;
-    hasFetchedToken = true;
-
     // ! 1. Check localStorage for existing tokens
 
     const parsedStateCache = JSON.parse(
@@ -106,13 +105,14 @@ export const createAuthSlice: StateCreator<
         console.error("Error using stored access token", error);
       }
     }
-
+    console.log("⏰ GONNA REDIRECT AND REQUEST");
     // 2. no tokens - Not authenticated: check if the URL contains an auth code
     const urlParams = new URLSearchParams(window.location.search);
     const authCode = urlParams.get("code");
     const storedCodeVerifier = localStorage.getItem("code_verifier");
 
     if (authCode && storedCodeVerifier) {
+      console.log("🔑 AUTH CODE EXISTS, REQUESTING TOKENS");
       // Auth code exists, request tokens
       await get().requestToken(authCode, storedCodeVerifier);
       // Clean URL by removing auth code parameters
@@ -145,8 +145,9 @@ export const createAuthSlice: StateCreator<
         redirect_uri: AUTH_CONFIG.redirectUri,
       };
       authUrl.search = new URLSearchParams(params).toString();
-
+      console.log("🔑 AUTH URL is gonna be set to: ", authUrl.toString());
       // Redirect to Spotify login page
+      debugger;
       window.location.href = authUrl.toString();
     } catch (error) {
       console.error("Error requesting auth code and redirecting", error);
@@ -243,9 +244,9 @@ export const createAuthSlice: StateCreator<
               }),
             });
 
-            const data = await response.json();
-
             if (!response.ok) throw new Error("Refreshing token failed.");
+
+            const data = await response.json();
 
             const newAccessToken: AccessTokenType = {
               token: data.access_token,

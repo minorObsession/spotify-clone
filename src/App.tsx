@@ -1,3 +1,5 @@
+import { CookiesProvider } from "react-cookie";
+
 import {
   createBrowserRouter,
   redirect,
@@ -25,16 +27,18 @@ import FullPreviewPodcast, {
 
 // TODO:
 
-// ! liked songs - not working not opening
-// ! check search filters -not currently applying!
-// test handleAddToLikedSongs with a random btn and random track
+// ! NEED TO:
+// ! NEED TO:
+// ! NEED TO:
+//  LOOK INTO DIFFERENT MANAGING OF ACCESS TOKEN! COOKIES?
+// THINK ABOUT ANCHORS TO POINT TO SPECIFIC PARTS OF SONGS!!
 
-// * think about better caching
+// !
+
+// ! check search filters -not currently applying!
 // ! WHEN TRACK IS SHORTER THAN 1 MIN, COLON SHOULDN'T BE DISPLAYED
 
 // * DIFFERENT USER NOTES:
-
-// ! consolidate all icons in 1 place
 
 function App() {
   const router = createBrowserRouter([
@@ -108,7 +112,11 @@ function App() {
     },
   ]);
 
-  return <RouterProvider router={router} />;
+  return (
+    <CookiesProvider>
+      <RouterProvider router={router} />
+    </CookiesProvider>
+  );
 }
 
 export default App;
