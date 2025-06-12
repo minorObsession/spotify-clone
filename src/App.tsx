@@ -1,5 +1,3 @@
-import { CookiesProvider } from "react-cookie";
-
 import {
   createBrowserRouter,
   redirect,
@@ -112,11 +110,7 @@ function App() {
     },
   ]);
 
-  return (
-    <CookiesProvider>
-      <RouterProvider router={router} />
-    </CookiesProvider>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

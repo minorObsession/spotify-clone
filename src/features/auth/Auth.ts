@@ -4,7 +4,6 @@ import { base64encode, generateRandomString, sha256 } from "./authHelpers";
 import { StateStore, useStateStore } from "../../state/store";
 import { initialEmptyPlaylist } from "../playlists/playlists";
 import Cookies from "js-cookie";
-console.log("COOKIES: ", Cookies);
 // --- Configuration ---
 const AUTH_CONFIG = {
   clientId: "91915dd042e1406aa1ca2fef874d5e1b",
@@ -28,8 +27,6 @@ export interface AccessTokenType {
 
 export interface AuthSlice {
   isAuthenticated: boolean;
-  accessToken: AccessTokenType | null;
-  refreshToken: string | null;
   refreshInterval: NodeJS.Timeout | null;
   initAuth: () => Promise<void>;
   logout: () => void;
@@ -47,53 +44,33 @@ export const createAuthSlice: StateCreator<
 > = (set, get) => ({
   isAuthenticated: (() => {
     // Check if token exists and is valid in spotify-clone-state-storage
-    const persistedState = JSON.parse(
-      localStorage.getItem("spotify-clone-state-storage") || "{}",
+    const existingAccessToken: AccessTokenType = JSON.parse(
+      Cookies.get("accessToken") || "{}",
     );
 
-    if (
-      persistedState?.state?.isAuthenticated &&
-      persistedState?.state?.accessToken
-    ) {
-      return persistedState.state.accessToken.expiresAt > Date.now();
+    if (existingAccessToken?.token) {
+      return existingAccessToken.expiresAt > Date.now();
     }
     return false;
   })(),
-  accessToken: (() => {
-    const persistedState = get();
-    if (persistedState?.accessToken) return persistedState.accessToken;
-    // Fallback to localStorage
-    return JSON.parse(
-      localStorage.getItem("spotify-clone-state-storage") || "{}",
-    )?.state?.accessToken?.token;
-  })(),
-  refreshToken: (() => {
-    const persistedState = get();
-    if (persistedState?.refreshToken) return persistedState.refreshToken;
-    // Fallback to localStorage
-    return JSON.parse(
-      localStorage.getItem("spotify-clone-state-storage") || "{}",
-    )?.state?.refreshToken;
-  })(),
+
   refreshInterval: null,
   // --- Public Action: Initialize Auth Flow ---
   initAuth: async () => {
     // ! 1. Check localStorage for existing tokens
 
-    const parsedStateCache = JSON.parse(
-      localStorage.getItem("spotify-clone-state-storage") || "{}",
+    const existingAccessToken: AccessTokenType = JSON.parse(
+      Cookies.get("accessToken") || "{}",
     );
-    const storedAccessToken = parsedStateCache?.state?.accessToken;
-    const storedRefreshToken = parsedStateCache?.state?.refreshToken;
+    const storedAccessToken = existingAccessToken?.token;
+    const storedRefreshToken = Cookies.get("refreshToken");
 
     if (storedAccessToken && storedRefreshToken) {
       try {
         // Validate token expiry
-        if (Date.now() < storedAccessToken.expiresAt) {
+        if (Date.now() < existingAccessToken.expiresAt) {
           set(
             {
-              accessToken: storedAccessToken,
-              refreshToken: storedRefreshToken,
               isAuthenticated: true,
             },
             undefined,
@@ -147,7 +124,6 @@ export const createAuthSlice: StateCreator<
       authUrl.search = new URLSearchParams(params).toString();
       console.log("🔑 AUTH URL is gonna be set to: ", authUrl.toString());
       // Redirect to Spotify login page
-      debugger;
       window.location.href = authUrl.toString();
     } catch (error) {
       console.error("Error requesting auth code and redirecting", error);
@@ -180,27 +156,21 @@ export const createAuthSlice: StateCreator<
           now: new Date().toISOString(),
         };
         // Persist tokens in localStorage (for backwards compatibility) and Zustand persist
-        localStorage.setItem(
-          "spotify-clone-state-storage",
-          JSON.stringify({
-            state: {
-              ...get(),
-              accessToken: newAccessToken,
-              refreshToken: data.refresh_token,
-            },
-          }),
-        );
+        Cookies.set("accessToken", JSON.stringify(newAccessToken), {
+          expires: 1,
+        });
+        Cookies.set("refreshToken", data.refresh_token, {
+          expires: 1,
+        });
         set(
           {
-            accessToken: newAccessToken,
-            refreshToken: data.refresh_token,
             isAuthenticated: true,
           },
           undefined,
           "auth/setAuthFromTokenRequest",
         );
 
-        console.log("User authenticated successfully.");
+        console.log("✅User authenticated successfully.");
         // Start auto–refresh interval
         await get().autoRefreshToken();
       }
@@ -216,7 +186,12 @@ export const createAuthSlice: StateCreator<
 
     const interval = setInterval(
       async () => {
-        const { accessToken, refreshToken } = get();
+        const accessToken: AccessTokenType = JSON.parse(
+          Cookies.get("accessToken") || "{}",
+        );
+
+        const refreshToken = Cookies.get("refreshToken");
+
         if (!accessToken || !refreshToken) {
           clearInterval(interval);
           set(
@@ -232,6 +207,7 @@ export const createAuthSlice: StateCreator<
         // ! if safety net is reached - refresh token request
         const minutesLeft = (+accessToken.expiresAt - Date.now()) / 1000 / 60;
         console.log(`Token expires in ${minutesLeft.toFixed(2)} minutes.`);
+
         if (minutesLeft <= safetyNetMinutes) {
           try {
             const response = await fetch(AUTH_CONFIG.tokenUrl, {
@@ -258,33 +234,24 @@ export const createAuthSlice: StateCreator<
             };
 
             // Use the new refresh token if provided, otherwise keep the old one
-            if (data.refresh_token) {
-              set(
-                { refreshToken: data.refresh_token },
-                undefined,
-                "auth/updateRefreshToken",
-              );
-            }
+            if (data.refresh_token)
+              Cookies.set("refreshToken", data.refresh_token, {
+                expires: 1,
+              });
 
-            set(
-              {
-                accessToken: newAccessToken,
-                refreshToken: data.refresh_token || refreshToken,
-                isAuthenticated: true,
-              },
-              undefined,
-              "auth/refreshToken",
-            );
+            Cookies.set("accessToken", JSON.stringify(newAccessToken), {
+              expires: 1,
+            });
 
-            console.log("token successfully refreshed!");
+            console.log("✅ token successfully refreshed!");
           } catch (error) {
-            console.error("Error refreshing token:", error);
+            console.error("❌ Error refreshing token:", error);
             // Optionally trigger a logout here on repeated failures
             // get().logout();
           }
         }
       },
-      5 * 60 * 1000,
+      10 * 60 * 1000,
     ); // Check every 5 minutes
 
     set({ refreshInterval: interval }, undefined, "auth/setRefreshInterval");
@@ -314,8 +281,7 @@ export const createAuthSlice: StateCreator<
     set(
       {
         // Clear auth state
-        accessToken: null,
-        refreshToken: null,
+
         isAuthenticated: false,
         refreshInterval: null,
         // Clear user data
@@ -339,6 +305,9 @@ export const createAuthSlice: StateCreator<
       undefined,
       "auth/logout",
     );
+    // clear cookies
+    Cookies.remove("accessToken");
+    Cookies.remove("refreshToken");
 
     // Clear other user-related state
     const { cleanupPlayer, logoutUser, requestAuthCodeAndRedirect } =
