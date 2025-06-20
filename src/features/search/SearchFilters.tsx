@@ -16,7 +16,7 @@ const filterMap = {
 export type FilterKey = keyof typeof filterMap;
 const filterOptions = Object.keys(filterMap) as FilterKey[];
 
-function SearchFilterBar() {
+function SearchFilters() {
   const { setSearchFilters } = useStateStore((store) => store);
   const [activeFilter, setActiveFilter] = useState<FilterKey>("All");
 
@@ -39,4 +39,4 @@ function SearchFilterBar() {
   );
 }
 
-export default SearchFilterBar;
+export default SearchFilters;

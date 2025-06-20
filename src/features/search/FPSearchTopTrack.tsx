@@ -75,6 +75,7 @@ function FPSearchTopTrack({ track, index }: TrackProps) {
       {/* // ! */}
       <div className="track-utilities col-span-3">
         <AddToPlaylist
+          track={track}
           id={id}
           isTrackHovered={isTrackHovered}
           isTrackBoxSelected={isTrackBoxSelected}

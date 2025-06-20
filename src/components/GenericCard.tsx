@@ -5,7 +5,7 @@ interface GenericCardProps {
   imageUrl: string;
   name: string;
   isPodcast?: boolean;
-  footer: ReactNode;
+  footer?: ReactNode;
   onPlayClick?: () => void;
   onClick?: () => void;
 }

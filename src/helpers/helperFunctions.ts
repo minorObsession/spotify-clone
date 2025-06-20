@@ -51,3 +51,27 @@ export const handleUploadToSpotify = async (
   const data = await response.json();
   console.log(data);
 };
+
+// utils/placeholderImages.ts
+export const getPlaceholderImage = (
+  type:
+    | "artist"
+    | "album"
+    | "playlist"
+    | "podcast"
+    | "episode"
+    | "audiobook"
+    | "track",
+) => {
+  const placeholders = {
+    artist: "https://dummyimage.com/160x160/1DB954/FFFFFF&text=Artist",
+    album: "https://dummyimage.com/160x160/FF6B35/FFFFFF&text=Album",
+    playlist: "https://dummyimage.com/160x160/9B59B6/FFFFFF&text=Playlist",
+    podcast: "https://dummyimage.com/160x160/E74C3C/FFFFFF&text=Podcast",
+    episode: "https://dummyimage.com/160x160/F39C12/FFFFFF&text=Episode",
+    audiobook: "https://dummyimage.com/160x160/27AE60/FFFFFF&text=Audiobook",
+    track: "https://dummyimage.com/160x160/1DB954/FFFFFF&text=Track",
+  };
+
+  return placeholders[type];
+};

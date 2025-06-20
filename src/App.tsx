@@ -22,6 +22,7 @@ import FullPreviewAlbum, { albumLoader } from "./features/albums/FPAlbum";
 import FullPreviewPodcast, {
   podcastLoader,
 } from "./features/podcasts/FPPodcast";
+import FPFiltered from "./features/search/FPFiltered";
 
 // TODO:
 
@@ -79,6 +80,12 @@ function App() {
               path: "search/:query",
               element: <FullPreviewSearchResults />,
               loader: searchLoader,
+              children: [
+                {
+                  path: ":filter",
+                  element: <FPFiltered />,
+                },
+              ],
             },
             {
               path: "album/:id",

@@ -10,6 +10,14 @@ import { AudiobookType } from "../audiobooks/audiobook";
 import { AsyncResult, wrapPromiseResult } from "../../types/reusableTypes";
 import { SpotifyApi } from "../../spotify.d";
 
+// ! GOTTA MATCH TYPES HERE WITH FPFILTERED
+// ! GOTTA MATCH TYPES HERE WITH FPFILTERED
+// ! GOTTA MATCH TYPES HERE WITH FPFILTERED
+// ! GOTTA MATCH TYPES HERE WITH FPFILTERED
+// ! GOTTA MATCH TYPES HERE WITH FPFILTERED
+// ! GOTTA MATCH TYPES HERE WITH FPFILTERED
+// ! GOTTA MATCH TYPES HERE WITH FPFILTERED
+
 export type SearchFiltersType =
   | "track,artist,album,playlist,show,episode,audiobook"
   | "track"
@@ -70,6 +78,7 @@ export interface ShortAudiobookType {
 }
 
 export interface SearchResultType {
+  searchQuery: string;
   tracks: TrackType[];
   artists: ShortArtistType[];
   albums: AlbumType[];
@@ -89,12 +98,16 @@ export type TopResultType = {
 
 export interface SearchSlice {
   searchResults: SearchResultType | null;
-  searchFilters: SearchFiltersType;
+  searchFilter: SearchFiltersType;
   topResult: TopResultType | null;
-  searchOffset: number;
-  searchLimit: number;
+
   setSearchFilters: (filterBy: SearchFiltersType) => void;
-  search: (query: string) => Promise<AsyncResult<SearchResultType>>;
+  setSearchResults: (results: SearchResultType) => void;
+  search: (
+    query: string,
+    offset?: number,
+    limit?: number,
+  ) => Promise<AsyncResult<SearchResultType>>;
 }
 
 export const createSearchSlice: StateCreator<
@@ -104,22 +117,20 @@ export const createSearchSlice: StateCreator<
   SearchSlice
 > = (set, get) => ({
   searchResults: null,
-  searchFilters: "track,artist,album,playlist,show,episode,audiobook",
+  searchFilter: "track,artist,album,playlist,show,episode,audiobook",
   topResult: null,
-  searchOffset: 0,
-  searchLimit: 20,
   // ! implement debounced auto search for production
   setSearchFilters: (filterBy) =>
-    set({ searchFilters: filterBy }, undefined, "search/setSearchFilters"),
-  search: async (query) => {
-    const searchOffset = get().searchOffset;
-    const searchLimit = get().searchLimit;
-    const searchFilters = get().searchFilters;
+    set({ searchFilter: filterBy }, undefined, "search/setSearchFilters"),
+  setSearchResults: (results) =>
+    set({ searchResults: results }, undefined, "search/setSearchResults"),
+  search: async (query, offset = 0, limit = 50) => {
+    const searchFilter = get().searchFilter;
 
     return await wrapPromiseResult<SearchResultType>(
       fetchFromSpotify<SpotifyApi.SearchResponse, SearchResultType>({
-        endpoint: `search?q=${query}&type=${searchFilters}&offset=${searchOffset}&limit=${searchLimit}`,
-        cacheName: `search_${query}`,
+        endpoint: `search?q=${query}&type=${searchFilter}&offset=${offset}&limit=${limit}`,
+        cacheName: `search_${query}_${searchFilter}_${offset}`,
         onCacheFound: (data) =>
           set(
             { searchResults: data },
@@ -134,6 +145,7 @@ export const createSearchSlice: StateCreator<
           ),
         transformFn: async (data: SpotifyApi.SearchResponse) => {
           const transformedData: SearchResultType = {
+            searchQuery: query,
             tracks:
               data.tracks?.items
                 ?.filter(

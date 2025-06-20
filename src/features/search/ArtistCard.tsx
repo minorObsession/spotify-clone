@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ShortArtistType } from "./search";
 import { IoMdPlay } from "react-icons/io";
 import { useNavigate } from "react-router";
+import { getPlaceholderImage } from "../../helpers/helperFunctions";
 
 interface ArtistCardProps {
   artist: ShortArtistType;
@@ -26,7 +27,7 @@ function ArtistCard({ artist }: ArtistCardProps) {
     >
       <img
         className={`h-40 w-40 rounded-full ${isCardHovered ? "brightness-75" : ""} transition-all duration-100`}
-        src={artist.imageUrl}
+        src={artist.imageUrl || getPlaceholderImage("artist")}
         alt={artist.name}
       />
 

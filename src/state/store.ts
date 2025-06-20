@@ -66,7 +66,7 @@ export const useStateStore = create<StateStore>()(
           currVolume: state.currVolume,
 
           // Search preferences
-          searchFilters: state.searchFilters,
+          searchFilter: state.searchFilter,
         }),
       },
     ),
