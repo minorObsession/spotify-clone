@@ -8,7 +8,7 @@ const filterMap = {
   Artists: "artist",
   Albums: "album",
   Playlists: "playlist",
-  Shows: "show",
+  Podcasts: "podcast",
   Episodes: "episode",
   Audiobooks: "audiobook",
 } as const;

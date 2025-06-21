@@ -12,6 +12,7 @@ function DesktopNav() {
   const [query, setQuery] = useState("");
 
   const handleSearch = () => {
+    console.log("QUERY", query);
     navigate(`/home/search/${query}`);
   };
 

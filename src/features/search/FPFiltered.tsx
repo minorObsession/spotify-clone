@@ -10,7 +10,8 @@ import GenericCard from "../../components/GenericCard";
 // ! GOTTA MATCH TYPES HERE WITH SEARCH FILTERS TYPE
 // ! GOTTA MATCH TYPES HERE WITH SEARCH FILTERS TYPE
 interface FPFilteredProps {
-  filter:
+  filter?:
+    | "track,artist,album,playlist,show,episode,audiobook"
     | "artists"
     | "albums"
     | "playlists"
@@ -19,18 +20,21 @@ interface FPFilteredProps {
     | "audiobooks";
 }
 
-function FPFiltered({ filter }: FPFilteredProps) {
+function FPFiltered({
+  filter = "track,artist,album,playlist,show,episode,audiobook",
+}: FPFilteredProps) {
   const { search, setSearchResults, searchResults } = useStateStore();
 
   const handleLoadMore = async () => {
     if (!searchResults) return;
-
+    console.log(searchResults);
+    console.log("FILTER", filter);
     const result = await search(
       searchResults.searchQuery,
       searchResults[filter].length,
     );
+
     if (result.success && result.data) {
-      // Combine existing and new artists, then deduplicate by ID
       const allItems = [...searchResults[filter], ...result.data[filter]];
       const uniqueItems = Array.from(
         new Map(allItems.map((item) => [item.id, item])).values(),
@@ -49,7 +53,7 @@ function FPFiltered({ filter }: FPFilteredProps) {
 
   return (
     <SearchResultSection>
-      {searchResults[filter].map((item) => (
+      {searchResults[filter]?.map((item) => (
         <GenericCard key={item.id} imageUrl={item.imageUrl} name={item.name} />
       ))}
       <div ref={sentinelRef} style={{ height: "10px", background: "red" }} />

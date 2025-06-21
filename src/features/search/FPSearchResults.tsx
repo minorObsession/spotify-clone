@@ -14,13 +14,9 @@ import SearchResultSection from "../../components/SearchResultSection";
 import { useState } from "react";
 import { IoMdPlay } from "react-icons/io";
 import AlbumCard from "./AlbumCard";
-import FPFArtists from "./FPFiltered";
-import FPFAlbums from "./FPFAlbums";
-import FPFPlaylists from "./FPFPlaylists";
-import FPFPodcasts from "./FPFPodcasts";
-import FPFEpisodes from "./FPFEpisodes";
-import FPFAudiobooks from "./FPFAudiobooks";
+
 import FPFiltered from "./FPFiltered";
+import FPFTracks from "./FPFTracks";
 
 function FPSearchResults() {
   const searchResults = useLoaderData() as SearchResultType;
@@ -42,9 +38,7 @@ function FPSearchResults() {
   return (
     // ! whole search results container
     <div className="flex flex-col gap-6">
-      {/* {searchFilter === "track" && (
-        <FPFTracks artists={searchResults.artists} />
-      )} */}
+      {searchFilter === "track" && <FPFTracks tracks={searchResults.tracks} />}
       {searchFilter !==
         "track,artist,album,playlist,show,episode,audiobook" && (
         <SearchResultSection fullPage>

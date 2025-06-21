@@ -53,7 +53,7 @@ export interface PlaylistSlice {
     id: string,
     offset?: number,
     bypassCache?: boolean,
-    type?: "playlists" | "shows" | "albums",
+    type?: "playlists" | "podcasts" | "albums",
   ) => Promise<AsyncResult<DetailedPlaylistType>>;
   uploadNewPlaylistImage: (
     id: string,

@@ -24,7 +24,7 @@ export type SearchFiltersType =
   | "artist"
   | "album"
   | "playlist"
-  | "show"
+  | "podcast"
   | "episode"
   | "audiobook";
 
@@ -129,7 +129,7 @@ export const createSearchSlice: StateCreator<
 
     return await wrapPromiseResult<SearchResultType>(
       fetchFromSpotify<SpotifyApi.SearchResponse, SearchResultType>({
-        endpoint: `search?q=${query}&type=${searchFilter}&offset=${offset}&limit=${limit}`,
+        endpoint: `search?q=${query}&type=${searchFilter === "podcast" ? "show" : searchFilter}&offset=${offset}&limit=${limit}`,
         cacheName: `search_${query}_${searchFilter}_${offset}`,
         onCacheFound: (data) =>
           set(
