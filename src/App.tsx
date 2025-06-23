@@ -1,3 +1,4 @@
+import React from "react";
 import {
   createBrowserRouter,
   redirect,
@@ -23,6 +24,8 @@ import FullPreviewPodcast, {
   podcastLoader,
 } from "./features/podcasts/FPPodcast";
 import FPFiltered from "./features/search/FPFiltered";
+import { ServiceWorkerCacheMonitor } from "./components/ServiceWorkerCacheMonitor";
+import { serviceWorker } from "./serviceWorker";
 
 // TODO:
 
@@ -115,8 +118,14 @@ function App() {
       element: <PageNotFound />,
     },
   ]);
-
-  return <RouterProvider router={router} />;
+  console.log(serviceWorker);
+  return (
+    <>
+      <RouterProvider router={router} />
+      {/* Show Service Worker cache monitor in development */}
+      {process.env.NODE_ENV === "development" && <ServiceWorkerCacheMonitor />}
+    </>
+  );
 }
 
 export default App;
