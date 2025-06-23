@@ -38,7 +38,6 @@ export const createUserSlice: StateCreator<
     return await wrapPromiseResult<UserType>(
       fetchFromSpotify<SpotifyApi.CurrentUsersProfileResponse, UserType>({
         endpoint: "me",
-        cacheName: `user_me`,
         transformFn: (data) => ({
           username: data.display_name ?? "",
           photo: data.images?.[0]?.url || "",
@@ -48,9 +47,6 @@ export const createUserSlice: StateCreator<
         onDataReceived: (data) => {
           set({ user: data }, undefined, "user/setUserFromAPI");
         },
-        onCacheFound: (data) => {
-          set({ user: data }, undefined, "user/setUserFromCache");
-        },
       }),
     );
   },
@@ -59,11 +55,13 @@ export const createUserSlice: StateCreator<
     const user = get().user;
     const getUser = get().getUser;
 
-    const currentUser =
-      user ||
-      (await getUser().then((user) => {
-        if (user.success) return user.data;
-      }));
+    // Ensure we have user data
+    if (!user) {
+      const userResult = await getUser();
+      if (!userResult.success) {
+        throw Error("User not found");
+      }
+    }
 
     return await wrapPromiseResult<DetailedPlaylistType>(
       fetchFromSpotify<
@@ -71,7 +69,6 @@ export const createUserSlice: StateCreator<
         DetailedPlaylistType
       >({
         endpoint: "me/tracks",
-        cacheName: `${currentUser?.username}s_saved_tracks_with_offset_of_${offset}`,
         // ! TEMPORARY LIMIT
         offset: `?offset=${offset}&limit=50`,
         transformFn: (data) => {
@@ -137,13 +134,6 @@ export const createUserSlice: StateCreator<
           console.log("✅ users tracks saved");
 
           return tracksToStore;
-        },
-        onCacheFound: (data) => {
-          set(
-            { usersSavedTracks: data },
-            undefined,
-            "user/setUserSavedTracksFromCache",
-          );
         },
         onDataReceived: (data) => {
           set(

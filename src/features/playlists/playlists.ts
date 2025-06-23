@@ -46,7 +46,7 @@ export interface PlaylistSlice {
   playlists: UserPlaylistType[];
   playlist: DetailedPlaylistType;
   playlistNamesWithIds: playlistNamesWithIdsType[];
-  playlistsFetched: boolean;
+
   setPlaylist: (playlist: DetailedPlaylistType) => void;
   getUserPlaylists: () => Promise<AsyncResult<UserPlaylistType[]>>;
   getPlaylist: (
@@ -82,7 +82,7 @@ export const createPlaylistSlice: StateCreator<
   playlist: initialEmptyPlaylist,
   playlistNamesWithIds: [],
   // ! CONSIDER REMOVING THIS STATE COMPLETELY
-  playlistsFetched: false,
+
   selectedPlaylistId: null,
   setSelectedPlaylistId: (id) => {
     set(
@@ -97,18 +97,6 @@ export const createPlaylistSlice: StateCreator<
   },
 
   getUserPlaylists: async () => {
-    const playlistsFetched = get().playlistsFetched;
-    if (playlistsFetched) {
-      const { playlists } = get();
-      set(
-        { playlistsFetched: true },
-        undefined,
-        "playlist/setPlaylistsFetched",
-      );
-
-      return { success: true, data: playlists };
-    }
-
     const accessToken: AccessTokenType = JSON.parse(
       Cookies.get("accessToken") || "{}",
     );
@@ -122,11 +110,6 @@ export const createPlaylistSlice: StateCreator<
     const usersSavedTracks = get().usersSavedTracks;
     if (playlists.length > 0) {
       set({ playlists }, undefined, "playlist/setPlaylistsFromCache");
-      set(
-        { playlistsFetched: true },
-        undefined,
-        "playlist/setPlaylistsFetched",
-      );
 
       if (playlistNamesWithIds.length > 0) {
         set(
@@ -155,21 +138,15 @@ export const createPlaylistSlice: StateCreator<
     // Use fetchFromSpotify instead of direct fetch - this will use service worker cache
     return await wrapPromiseResult<UserPlaylistType[]>(
       fetchFromSpotify<
-        SpotifyApi.PlaylistObjectSimplified[],
+        SpotifyApi.ListOfUsersPlaylistsResponse,
         UserPlaylistType[]
       >({
         endpoint: `me/playlists?limit=10`,
-        cacheName: `user_playlists`,
-        onDataReceived: (data) => {
-          set({ playlists: data }, undefined, "playlist/setPlaylistsFromAPI");
-          set(
-            { playlistsFetched: true },
-            undefined,
-            "playlist/setPlaylistsFetched",
-          );
-        },
-        transformFn: async (items: SpotifyApi.PlaylistObjectSimplified[]) => {
-          console.log(items);
+        onDataReceived: (data) =>
+          set({ playlists: data }, undefined, "playlist/setPlaylistsFromAPI"),
+        transformFn: async (data: SpotifyApi.ListOfUsersPlaylistsResponse) => {
+          console.log(data);
+          const items = data.items || [];
 
           const newPlaylistNamesWithIds: playlistNamesWithIdsType[] =
             await Promise.all(
@@ -236,7 +213,6 @@ export const createPlaylistSlice: StateCreator<
     return await wrapPromiseResult<DetailedPlaylistType>(
       fetchFromSpotify<SpotifyApi.PlaylistObjectFull, DetailedPlaylistType>({
         endpoint: `playlists/${id}`,
-        cacheName: `playlist${id}`,
         offset: `?offset=${offset}&limit=5`,
         bypassCache,
         transformFn: (data) => ({

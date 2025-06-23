@@ -3,6 +3,9 @@
 import UserPlaylist from "../../features/playlists/UserPlaylist";
 import { useStateStore } from "../../state/store";
 
+//  ! SIDEBAR CAN CONTAIN MORE THAN PLAYLISTS!! ACCOUNT FOR THIS!!
+//  ! SIDEBAR CAN CONTAIN MORE THAN PLAYLISTS!! ACCOUNT FOR THIS!!
+//  ! SIDEBAR CAN CONTAIN MORE THAN PLAYLISTS!! ACCOUNT FOR THIS!!
 function Sidebar() {
   const playlists = useStateStore((store) => store.playlists);
   const usersSavedTracks = useStateStore((store) => store.usersSavedTracks);

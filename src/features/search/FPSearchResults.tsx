@@ -31,7 +31,6 @@ function FPSearchResults() {
   });
 
   const { searchFilter } = useStateStore((store) => store);
-  console.log(searchFilter);
 
   if (!searchResults) return null;
 
@@ -42,7 +41,7 @@ function FPSearchResults() {
       {searchFilter !==
         "track,artist,album,playlist,show,episode,audiobook" && (
         <SearchResultSection fullPage>
-          <FPFiltered filter={`${searchFilter}s`} />
+          <FPFiltered filter={searchFilter} />
         </SearchResultSection>
       )}
 

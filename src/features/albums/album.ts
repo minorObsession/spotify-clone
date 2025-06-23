@@ -50,7 +50,6 @@ export const createAlbumSlice: StateCreator<
     return await wrapPromiseResult(
       fetchFromSpotify<SpotifyApi.AlbumObjectFull, AlbumType>({
         endpoint: `albums/${id}`,
-        cacheName: `album_${id}`,
         transformFn: async (data) => {
           // const tracks = await get().getAlbumTracks(id);
 
@@ -84,9 +83,6 @@ export const createAlbumSlice: StateCreator<
               }),
             ),
           };
-        },
-        onCacheFound: (data) => {
-          set({ album: data }, undefined, "album/setAlbumFromCache");
         },
         onDataReceived: (data) => {
           set({ album: data }, undefined, "album/setAlbumFromAPI");

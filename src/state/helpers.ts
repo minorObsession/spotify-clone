@@ -35,7 +35,6 @@ export function createLoader<T>(
 interface FetchFromSpotifyParams<ResponseType, ReturnType> {
   endpoint: string;
   offset?: string;
-  cacheName?: string;
   method?: string;
   requestBody?: string;
   additionalHeaders?: Record<string, string>;
@@ -47,7 +46,6 @@ interface FetchFromSpotifyParams<ResponseType, ReturnType> {
 export const fetchFromSpotify = async <ResponseType, ReturnType>({
   endpoint,
   transformFn,
-  cacheName,
   offset = "",
   onDataReceived,
   method = "GET",
@@ -55,7 +53,7 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
   bypassCache = false,
 }: FetchFromSpotifyParams<ResponseType, ReturnType>): Promise<ReturnType> => {
   try {
-    console.log(`calling fetch ${endpoint} ${cacheName} `);
+    console.log(`calling fetch ${endpoint} `);
 
     await useStateStore.getState().waitForAuthentication();
 
@@ -98,10 +96,10 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
     // Only log when it's a fresh API call
     if (isFreshCall) {
       console.log(
-        `🛜 🛜 🛜 Calling spotify API: ${endpoint} ${method} ${cacheName} ${offset} ${bypassCache ? "(bypassing cache)" : ""}`,
+        `🛜 🛜 🛜 Calling spotify API: ${endpoint} ${method} ${offset} ${bypassCache ? "(bypassing cache)" : ""}`,
       );
     } else {
-      console.log(`📦 Serving from cache: ${endpoint} ${cacheName}`);
+      console.log(`📦 Serving from cache: ${endpoint}`);
     }
 
     // if it's a PUT request, we don't need to transform the data

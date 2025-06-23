@@ -15,26 +15,26 @@ export interface AudiobookType {
   totalTracks: number;
 }
 
-export interface AlbumSlice {
-  album: AlbumType | null;
-  getAlbum: (id: string) => Promise<AlbumType>;
-  // getAlbumTracks: (id: string) => Promise<AlbumTrackType[] | null>;
-  setAlbum: (album: AlbumType) => void;
+export interface AudiobookSlice {
+  audiobook: AudiobookType | null;
+  getAudiobook: (id: string) => Promise<AudiobookType>;
+  // getAudiobookTracks: (id: string) => Promise<AudiobookTrackType[] | null>;
+  setAudiobook: (audiobook: AudiobookType) => void;
 }
 
-export const createAlbumSlice: StateCreator<
+export const createAudiobookSlice: StateCreator<
   StateStore,
   [["zustand/devtools", never]],
   [],
-  AlbumSlice
-> = (set, get) => ({
-  album: null,
-  setAlbum: (album: AlbumType) => set({ album }),
-  // getAlbumTracks: async (id: string) => {
-  //   console.log("calling getAlbumTracks");
-  //   return await fetchFromSpotify<any, AlbumTrackType[]>({
-  //     endpoint: `albums/${id}/tracks`,
-  //     cacheName: `tracks_for_album_${id}`,
+  AudiobookSlice
+> = (set) => ({
+  audiobook: null,
+  setAudiobook: (audiobook: AudiobookType) => set({ audiobook }),
+  // getAudiobookTracks: async (id: string) => {
+  //   console.log("calling getAudiobookTracks");
+  //   return await fetchFromSpotify<any, AudiobookTrackType[]>({
+  //     endpoint: `audiobooks/${id}/tracks`,
+  //     cacheName: `tracks_for_audiobook_${id}`,
   //     transformFn: (data) =>
   //       data.items?.map((track: any) => ({
   //         name: track.name,
@@ -48,17 +48,16 @@ export const createAlbumSlice: StateCreator<
   //   });
   // },
 
-  getAlbum: async (id: string) => {
-    console.log("get album called");
+  getAudiobook: async (id: string) => {
+    console.log("get audiobook called");
     try {
-      const result = await fetchFromSpotify<any, AlbumType>({
-        endpoint: `albums/${id}`,
-        cacheName: `album_${id}`,
+      const result = await fetchFromSpotify<any, AudiobookType>({
+        endpoint: `audiobooks/${id}`,
         transformFn: async (data) => {
-          // const tracks = await get().getAlbumTracks(id);
+          // const tracks = await get().getAudiobookTracks(id);
 
           // if (!tracks || tracks === null)
-          //   throw new Error("Album tracks could not be fetched");
+          //   throw new Error("Audiobook tracks could not be fetched");
 
           return {
             name: data.name,
@@ -82,16 +81,13 @@ export const createAlbumSlice: StateCreator<
             })),
           };
         },
-        onCacheFound: (data) => {
-          set({ album: data });
-        },
         onDataReceived: (data) => {
-          set({ album: data });
+          set({ audiobook: data });
         },
       });
       return result;
     } catch (error) {
-      console.error("Error fetching album", error);
+      console.error("Error fetching audiobook", error);
       throw error;
     }
   },

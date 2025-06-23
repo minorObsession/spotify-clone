@@ -45,7 +45,6 @@ export const createPodcastSlice: StateCreator<
     return await wrapPromiseResult<PodcastType>(
       fetchFromSpotify<SpotifyApi.ShowObjectFull, PodcastType>({
         endpoint: `shows/${id}`,
-        cacheName: `podcast_${id}`,
         transformFn: async (data) => {
           return {
             name: data.name,
@@ -66,9 +65,6 @@ export const createPodcastSlice: StateCreator<
               }),
             ),
           };
-        },
-        onCacheFound: (data) => {
-          set({ podcast: data }, undefined, "podcast/setPodcastFromCache");
         },
         onDataReceived: (data) => {
           set({ podcast: data }, undefined, "podcast/setPodcastFromAPI");

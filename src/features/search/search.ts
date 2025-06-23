@@ -125,18 +125,9 @@ export const createSearchSlice: StateCreator<
   setSearchResults: (results) =>
     set({ searchResults: results }, undefined, "search/setSearchResults"),
   search: async (query, offset = 0, limit = 50) => {
-    const searchFilter = get().searchFilter;
-
     return await wrapPromiseResult<SearchResultType>(
       fetchFromSpotify<SpotifyApi.SearchResponse, SearchResultType>({
-        endpoint: `search?q=${query}&type=${searchFilter === "podcast" ? "show" : searchFilter}&offset=${offset}&limit=${limit}`,
-        cacheName: `search_${query}_${searchFilter}_${offset}`,
-        onCacheFound: (data) =>
-          set(
-            { searchResults: data },
-            undefined,
-            "search/setSearchResultsFromCache",
-          ),
+        endpoint: `search?q=${query}&type=track,artist,album,playlist,show,episode,audiobook&offset=${offset}&limit=${limit}`,
         onDataReceived: (data) =>
           set(
             { searchResults: data },
@@ -289,20 +280,34 @@ export const createSearchSlice: StateCreator<
 
           return transformedData;
         },
-      }).then(async (result) => {
-        if (!result) throw new Error("Couldn't fetch search results");
+      })
+        .then(async (result) => {
+          if (!result) throw new Error("Couldn't fetch search results");
 
-        const topResultToStore: TopResultType = {
-          imageUrl: result.artists[0].imageUrl,
-          name: result.artists[0].name,
-          id: result.artists[0].id,
-          topTracks: result.topTracks,
-        };
-        set({ topResult: topResultToStore }, undefined, "search/setTopResult");
-        set({ searchResults: result }, undefined, "search/setSearchResults");
+          // Only set top result if we have artists
+          if (result.artists && result.artists.length > 0) {
+            const topResultToStore: TopResultType = {
+              imageUrl: result.artists[0].imageUrl,
+              name: result.artists[0].name,
+              id: result.artists[0].id,
+              topTracks: result.topTracks,
+            };
+            set(
+              { topResult: topResultToStore },
+              undefined,
+              "search/setTopResult",
+            );
+          }
 
-        return result;
-      }),
+          set({ searchResults: result }, undefined, "search/setSearchResults");
+          console.log("🎉 Search completed successfully:", result);
+
+          return result;
+        })
+        .catch((error) => {
+          console.error("❌ Search error:", error);
+          throw error;
+        }),
     );
   },
 });

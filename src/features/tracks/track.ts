@@ -34,7 +34,6 @@ export const createTrackSlice: StateCreator<
     return await wrapPromiseResult<TrackType>(
       fetchFromSpotify<SpotifyApi.TrackObjectFull, TrackType>({
         endpoint: `tracks/${id}`,
-        cacheName: `track_${id}`,
         transformFn: (data) => ({
           name: data.name,
           type: data.type,
@@ -52,9 +51,6 @@ export const createTrackSlice: StateCreator<
           albumName: data.album.name,
           albumId: data.album.id,
         }),
-        onCacheFound: (data) => {
-          set({ track: data }, undefined, "track/setTrackFromCache");
-        },
         onDataReceived: (data) => {
           set({ track: data }, undefined, "track/setTrackFromAPI");
         },

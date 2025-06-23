@@ -96,8 +96,7 @@
   .search-view-card {
     @apply flex max-h-68 w-45 min-w-45 cursor-pointer flex-col gap-2 rounded-xl p-2 hover:bg-amber-500;
   }
-
-  .fullPreviewContainer {
+  ww .fullPreviewContainer {
     @apply flex h-full flex-col overflow-y-scroll bg-amber-800 p-3 md:p-4;
   }
 

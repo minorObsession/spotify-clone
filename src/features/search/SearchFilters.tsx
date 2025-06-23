@@ -1,37 +1,36 @@
 import { useState } from "react";
 import SearchFilterOption from "./SearchFilterOption";
 import { useStateStore } from "../../state/store";
-
-const filterMap = {
-  All: "track,artist,album,playlist,show,episode,audiobook",
-  Tracks: "track",
-  Artists: "artist",
-  Albums: "album",
-  Playlists: "playlist",
-  Podcasts: "podcast",
-  Episodes: "episode",
-  Audiobooks: "audiobook",
-} as const;
-
-export type FilterKey = keyof typeof filterMap;
-const filterOptions = Object.keys(filterMap) as FilterKey[];
+import { SearchFiltersType } from "./search";
 
 function SearchFilters() {
-  const { setSearchFilters } = useStateStore((store) => store);
-  const [activeFilter, setActiveFilter] = useState<FilterKey>("All");
+  const { searchFilter, setSearchFilters } = useStateStore((store) => store);
+  const [activeFilter, setActiveFilter] =
+    useState<SearchFiltersType>(searchFilter);
 
-  const handleFilterClick = (filter: FilterKey) => {
-    setActiveFilter(filter);
-    setSearchFilters(filterMap[filter]);
+  const handleFilterClick = (filterOption: SearchFiltersType) => {
+    setActiveFilter(filterOption);
+    setSearchFilters(filterOption);
   };
+
+  const filterOptions: SearchFiltersType[] = [
+    "track,artist,album,playlist,show,episode,audiobook",
+    "track",
+    "artist",
+    "album",
+    "playlist",
+    "podcast",
+    "episode",
+    "audiobook",
+  ];
 
   return (
     <div className="flex gap-2 pb-5">
-      {filterOptions.map((filter) => (
+      {filterOptions.map((filterOption) => (
         <SearchFilterOption
-          key={filter}
-          filterBy={filter}
-          isActive={filter === activeFilter}
+          key={filterOption}
+          filterBy={filterOption}
+          isActive={filterOption === activeFilter}
           handleClick={handleFilterClick}
         />
       ))}

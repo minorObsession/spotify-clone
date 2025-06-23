@@ -42,7 +42,6 @@ export const createArtistSlice: StateCreator<
     return await wrapPromiseResult<TopTrackType[]>(
       fetchFromSpotify<SpotifyApi.ArtistsTopTracksResponse, TopTrackType[]>({
         endpoint: `artists/${id}/top-tracks`,
-        cacheName: `top_tracks_for_${id}`,
         transformFn: (data) =>
           data.tracks?.map((track: SpotifyApi.TrackObjectFull) => ({
             name: track.name,
@@ -65,7 +64,6 @@ export const createArtistSlice: StateCreator<
     return await wrapPromiseResult<ArtistType>(
       fetchFromSpotify<SpotifyApi.ArtistObjectFull, ArtistType>({
         endpoint: `artists/${id}`,
-        cacheName: `artist_${id}`,
         transformFn: async (data) => {
           const topTracks = await get().getTopTracks(id);
 
@@ -78,9 +76,6 @@ export const createArtistSlice: StateCreator<
             imageUrl: data.images[0].url,
             topTracks: topTracks.success ? topTracks.data || [] : [],
           };
-        },
-        onCacheFound: (data) => {
-          set({ artist: data }, undefined, "artist/setArtistFromCache");
         },
         onDataReceived: (data) => {
           set({ artist: data }, undefined, "artist/setArtistFromAPI");
