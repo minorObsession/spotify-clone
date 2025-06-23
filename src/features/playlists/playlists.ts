@@ -152,57 +152,69 @@ export const createPlaylistSlice: StateCreator<
 
     console.log("🛜 getUserPlaylists will call api...");
 
-    const res = await fetch(
-      `https://api.spotify.com/v1/me/playlists?limit=10`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken?.token}`,
-          "Content-Type": "application/json",
+    // Use fetchFromSpotify instead of direct fetch - this will use service worker cache
+    return await wrapPromiseResult<UserPlaylistType[]>(
+      fetchFromSpotify<
+        SpotifyApi.PlaylistObjectSimplified[],
+        UserPlaylistType[]
+      >({
+        endpoint: `me/playlists?limit=10`,
+        cacheName: `user_playlists`,
+        onDataReceived: (data) => {
+          set({ playlists: data }, undefined, "playlist/setPlaylistsFromAPI");
+          set(
+            { playlistsFetched: true },
+            undefined,
+            "playlist/setPlaylistsFetched",
+          );
         },
-      },
-    );
-    if (!res.ok) throw new Error("No playlists or bad request");
+        transformFn: async (items: SpotifyApi.PlaylistObjectSimplified[]) => {
+          console.log(items);
 
-    const { items } = await res.json();
-    console.log(items);
+          const newPlaylistNamesWithIds: playlistNamesWithIdsType[] =
+            await Promise.all(
+              items.map(
+                async (playlist: SpotifyApi.PlaylistObjectSimplified) => {
+                  const idsForCurrentP = await get().getPlaylist(playlist.id);
 
-    const newPlaylistNamesWithIds: playlistNamesWithIdsType[] =
-      await Promise.all(
-        items.map(async (playlist: SpotifyApi.PlaylistObjectSimplified) => {
-          const idsForCurrentP = await get().getPlaylist(playlist.id);
+                  if (!idsForCurrentP.success)
+                    throw new Error("No playlist found");
 
-          if (!idsForCurrentP.success) throw new Error("No playlist found");
+                  return {
+                    name: playlist.name,
+                    ids: idsForCurrentP.data?.tracks.map(
+                      (track: TrackType) => track.id,
+                    ),
+                  };
+                },
+              ),
+            );
 
-          return {
-            name: playlist.name,
-            ids: idsForCurrentP.data?.tracks.map(
-              (track: TrackType) => track.id,
-            ),
-          };
-        }),
-      );
+          set(
+            { playlistNamesWithIds: newPlaylistNamesWithIds },
+            undefined,
+            "playlist/setPlaylistNamesWithIds",
+          );
 
-    set(
-      { playlistNamesWithIds: newPlaylistNamesWithIds },
-      undefined,
-      "playlist/setPlaylistNamesWithIds",
-    );
+          const formattedPlaylists: UserPlaylistType[] = items.map(
+            (playlist: SpotifyApi.PlaylistObjectSimplified) => ({
+              name: playlist.name,
+              id: playlist.id,
+              imageUrl: playlist.images?.[0]?.url,
+              ownerName: playlist.owner?.display_name || "",
+              trackIds: [], // Will be populated by getPlaylist calls
+            }),
+          );
 
-    const formattedPlaylists: UserPlaylistType[] = items.map(
-      (playlist: SpotifyApi.PlaylistObjectSimplified) => ({
-        name: playlist.name,
-        id: playlist.id,
-        imageUrl: playlist.images?.[0]?.url,
-        ownerName: playlist.owner?.display_name || "",
+          // Get user saved tracks if not already cached
+          if (!usersSavedTracks) {
+            await get().getUserSavedTracks();
+          }
+
+          return formattedPlaylists;
+        },
       }),
     );
-
-    // Data is now persisted automatically by persist middleware
-    set({ playlists: formattedPlaylists }, undefined, "playlist/setPlaylists");
-    await get().getUserSavedTracks();
-
-    return { success: true, data: formattedPlaylists };
   },
 
   getPlaylist: async (id, offset = 0, bypassCache = false) => {
@@ -267,8 +279,6 @@ export const createPlaylistSlice: StateCreator<
           ownerName: data.owner.display_name ?? "",
           ownerId: data.owner.id ?? "",
         }),
-        onCacheFound: (data) =>
-          set({ playlist: data }, undefined, "playlist/setPlaylistFromCache"),
         onDataReceived: (data) =>
           set({ playlist: data }, undefined, "playlist/setPlaylistFromAPI"),
       }),

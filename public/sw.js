@@ -40,7 +40,41 @@ self.addEventListener("fetch", (event) => {
 
 // Handle Spotify API requests
 async function handleSpotifyRequest(request) {
-  const cacheKey = `${request.method}:${request.url}`;
+  // Only cache GET requests
+  if (request.method !== "GET") {
+    console.log("Non-GET request, not caching:", request.url);
+    return fetch(request);
+  }
+
+  const cacheKey = request.url;
+
+  // Check if request has cache-busting headers
+  const hasCacheBustingHeaders =
+    request.headers.get("Cache-Control") === "no-cache" ||
+    request.headers.get("Pragma") === "no-cache";
+
+  // If cache-busting headers are present, skip cache entirely
+  if (hasCacheBustingHeaders) {
+    console.log(
+      "Cache-busting headers detected, fetching fresh data:",
+      request.url,
+    );
+    try {
+      const networkResponse = await fetch(request);
+      return networkResponse;
+    } catch (error) {
+      console.error("Network error with cache-busting:", error);
+      return new Response(
+        JSON.stringify({
+          error: "Network error - Please check your connection",
+        }),
+        {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+  }
 
   try {
     // Try to get from cache first
@@ -51,12 +85,20 @@ async function handleSpotifyRequest(request) {
       // Check if cache is still fresh (5 minutes)
       const cacheTime = new Date(cachedResponse.headers.get("sw-cache-time"));
       const now = new Date();
-      const fiveMinutes = 5 * 60 * 1000;
-
+      // ! TODO: CHANGE TO 5 MINUTES
+      // const fiveMinutes = 5 * 60 * 1000;
+      const oneDay = 1 * 24 * 60 * 60 * 1000;
       // if cache is still fresh, serve from cache
-      if (now - cacheTime < fiveMinutes) {
+      if (now - cacheTime < oneDay) {
         console.log("Serving from cache:", request.url);
-        return cachedResponse;
+        // Add header to indicate this came from cache
+        const headers = new Headers(cachedResponse.headers);
+        headers.set("sw-cache-source", "cache");
+        return new Response(cachedResponse.body, {
+          status: cachedResponse.status,
+          statusText: cachedResponse.statusText,
+          headers: headers,
+        });
       } else {
         // Cache expired, remove it
         await cache.delete(cacheKey);
@@ -67,23 +109,31 @@ async function handleSpotifyRequest(request) {
     const networkResponse = await fetch(request);
 
     if (networkResponse.ok) {
-      // Cache the response
+      // Cache the response with metadata
       const responseToCache = networkResponse.clone();
       const headers = new Headers(responseToCache.headers);
       headers.set("sw-cache-time", new Date().toISOString());
+      headers.set("sw-cache-source", "fresh");
 
-      const cachedResponse = new Response(responseToCache.body, {
-        status: responseToCache.status,
-        statusText: responseToCache.statusText,
-        headers: headers,
-      });
-
-      const cache = await caches.open(CACHE_NAME);
-      await cache.put(cacheKey, cachedResponse);
+      await cache.put(
+        cacheKey,
+        new Response(responseToCache.body, {
+          status: responseToCache.status,
+          statusText: responseToCache.statusText,
+          headers: headers,
+        }),
+      );
       console.log("Cached response:", request.url);
     }
 
-    return networkResponse;
+    // Return response with cache source header
+    const headers = new Headers(networkResponse.headers);
+    headers.set("sw-cache-source", "fresh");
+    return new Response(networkResponse.body, {
+      status: networkResponse.status,
+      statusText: networkResponse.statusText,
+      headers: headers,
+    });
   } catch (error) {
     console.error("Network error:", error);
 

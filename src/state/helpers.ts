@@ -1,5 +1,4 @@
 import { ActionFunctionArgs } from "react-router";
-import { getFromLocalStorage } from "../features/auth/authHelpers";
 import { useStateStore } from "./store";
 import Cookies from "js-cookie";
 import { AccessTokenType } from "../features/auth/Auth";
@@ -32,6 +31,7 @@ export function createLoader<T>(
     }
   };
 }
+
 interface FetchFromSpotifyParams<ResponseType, ReturnType> {
   endpoint: string;
   offset?: string;
@@ -41,16 +41,15 @@ interface FetchFromSpotifyParams<ResponseType, ReturnType> {
   additionalHeaders?: Record<string, string>;
   transformFn?: (data: ResponseType) => Promise<ReturnType> | ReturnType;
   onDataReceived?: (data: ReturnType) => void;
-  onCacheFound?: (data: ReturnType) => void;
   bypassCache?: boolean;
 }
+
 export const fetchFromSpotify = async <ResponseType, ReturnType>({
   endpoint,
   transformFn,
   cacheName,
   offset = "",
   onDataReceived,
-  onCacheFound,
   method = "GET",
   requestBody,
   bypassCache = false,
@@ -67,32 +66,44 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
     if (!accessToken.token) {
       throw new Error("Access token expired or doesn't exist");
     }
-    // Check cache first if cacheName is provided and not bypassing cache
-    if (cacheName && !bypassCache) {
-      const cachedData = getFromLocalStorage<ReturnType>(cacheName);
-      if (cachedData) {
-        console.log("Found cached data, returning early");
-        if (onCacheFound) onCacheFound(cachedData);
-        return cachedData;
-      }
+
+    // Prepare headers
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${accessToken.token}`,
+      "Content-Type": "application/json",
+    };
+
+    // Add cache-busting header if bypassCache is true
+    // This will force the service worker to fetch fresh data
+    if (bypassCache) {
+      headers["Cache-Control"] = "no-cache";
+      headers["Pragma"] = "no-cache";
     }
 
-    // Fetch data from Spotify API
-    console.log(
-      `🛜 🛜 🛜 Calling spotify API: ${endpoint} ${method} ${cacheName} ${offset}`,
-    );
-
+    // Fetch data from Spotify API - Service Worker will handle caching automatically
     const res = await fetch(`https://api.spotify.com/v1/${endpoint}${offset}`, {
       method: method,
-      headers: {
-        Authorization: `Bearer ${accessToken.token}`,
-        "Content-Type": "application/json",
-      },
+      headers,
       body: requestBody,
     });
+
     if (!res.ok) {
       throw new Error(`API request failed: ${res.status} ${res.statusText}`);
     }
+
+    // Check if response came from cache or fresh API
+    const cacheSource = res.headers.get("sw-cache-source");
+    const isFreshCall = cacheSource === "fresh" || cacheSource === null;
+
+    // Only log when it's a fresh API call
+    if (isFreshCall) {
+      console.log(
+        `🛜 🛜 🛜 Calling spotify API: ${endpoint} ${method} ${cacheName} ${offset} ${bypassCache ? "(bypassing cache)" : ""}`,
+      );
+    } else {
+      console.log(`📦 Serving from cache: ${endpoint} ${cacheName}`);
+    }
+
     // if it's a PUT request, we don't need to transform the data
     if (method === "PUT" || (method === "DELETE" && !transformFn))
       return undefined as unknown as ReturnType;
@@ -104,12 +115,8 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
 
     const transformedData: ReturnType = await transformFn(data);
 
+    // Call appropriate callback - service worker handles cache vs fresh data
     if (onDataReceived) onDataReceived(transformedData);
-
-    // Store in localStorage if cacheName is provided
-    if (cacheName) {
-      localStorage.setItem(cacheName, JSON.stringify(transformedData));
-    }
 
     return transformedData;
   } catch (err) {
