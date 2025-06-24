@@ -10,8 +10,8 @@ interface UserAvatarProps {
 }
 
 function UserAvatar({ inHeader = false }: UserAvatarProps) {
-  const user = useStateStore((store) => store.user);
-  const userPhoto = useStateStore((store) => store.user && store.user.photo);
+  const { user } = useStateStore((store) => store);
+  const userPhoto = user && user.photo;
   const [areOptionsVisible, setAreOptionsVisible] = useState(false);
   const { isHovered, handleMouseEnter, handleMouseLeave } = useHoverTrackItem();
   const menuRef = useOutsideClick<HTMLUListElement>(

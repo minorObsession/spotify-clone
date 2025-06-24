@@ -78,6 +78,10 @@ export interface PlaylistSlice {
     id: string,
     trackId: string,
   ) => Promise<AsyncResult<void>>;
+  createNewPlaylist: (
+    name: string,
+    trackId: string,
+  ) => Promise<AsyncResult<SpotifyApi.CreatePlaylistResponse>>;
 }
 
 export const createPlaylistSlice: StateCreator<
@@ -306,7 +310,7 @@ export const createPlaylistSlice: StateCreator<
         method: "PUT",
         requestBody: JSON.stringify({
           name: updatedFields.name,
-          description: updatedFields.description || "",
+          description: updatedFields.description,
         }),
       }),
     );
@@ -346,7 +350,7 @@ export const createPlaylistSlice: StateCreator<
   },
 
   addToLikedSongs: async (trackId: string) => {
-    return await wrapPromiseResult<void>(
+    const result = await wrapPromiseResult<void>(
       fetchFromSpotify<SpotifyApi.AddTracksToPlaylistResponse, void>({
         endpoint: `me/tracks`,
         method: "PUT",
@@ -355,5 +359,62 @@ export const createPlaylistSlice: StateCreator<
         }),
       }),
     );
+
+    if (result.success) await invalidateCacheForEndpoint(`me/tracks`);
+    return result;
+  },
+
+  createNewPlaylist: async (name: string, trackId: string) => {
+    const userID = get().user?.userID;
+    if (!userID) {
+      return {
+        success: false,
+        error: new Error("User ID not found"),
+      };
+    }
+
+    const result = await wrapPromiseResult<SpotifyApi.CreatePlaylistResponse>(
+      fetchFromSpotify<
+        SpotifyApi.CreatePlaylistResponse,
+        SpotifyApi.CreatePlaylistResponse
+      >({
+        endpoint: `users/${userID}/playlists`,
+        method: "POST",
+        requestBody: JSON.stringify({
+          name,
+        }),
+        transformFn: (data) => data,
+      }),
+    );
+
+    if (result.success) {
+      // If a trackId was provided, add it to the playlistNamesWithIds
+      const { playlistNamesWithIds, playlists } = get();
+
+      const updatedPlaylists = playlists.map((p) =>
+        p.name === name ? { ...p, trackIds: [...p.trackIds, trackId] } : p,
+      );
+
+      const updatedPlaylistNamesWithIds = playlistNamesWithIds.map((p) =>
+        p.name === name ? { ...p, ids: [...p.ids, trackId] } : p,
+      );
+
+      set(
+        { playlistNamesWithIds: updatedPlaylistNamesWithIds },
+        undefined,
+        "playlist/updatePlaylistNamesWithIdsForNewPlaylist",
+      );
+      set(
+        { playlists: updatedPlaylists },
+        undefined,
+        "playlist/setPlaylistsFromAPI",
+      );
+
+      // Invalidate cache for user playlists
+      // ! TEST WHAT HAPPENS IF I DON'T DO THIS INVALIDATION
+      await invalidateCacheForEndpoint(`users/${userID}/playlists`);
+    }
+
+    return result;
   },
 });

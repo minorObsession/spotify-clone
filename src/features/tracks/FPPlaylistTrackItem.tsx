@@ -69,10 +69,10 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
         >
           {trackName}
         </span>
-        <span className="text-2xs w-fit truncate md:text-sm">
+        <span className="w-fit truncate text-xs md:text-sm">
           <ArtistList
             artists={track?.artists as unknown as Artist[]}
-            addClassName="text-2xs md:text-sm"
+            addClassName="text-xs md:text-sm"
           />
         </span>
       </div>
@@ -94,7 +94,7 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
           isTrackBoxSelected={isTrackBoxSelected}
         />
         {/* // * DURATION */}
-        <span className="text-2xs font-mono tabular-nums">
+        <span className="font-mono text-xs tabular-nums">
           {trackDurationFormatted}
         </span>
 

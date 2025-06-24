@@ -1,3 +1,5 @@
+import { FaCircleCheck } from "react-icons/fa6";
+import { FaRegCircle } from "react-icons/fa";
 import { MenuFor } from "./OptionsMenu";
 import { useStateStore } from "../state/store";
 import { memo, useCallback } from "react";
@@ -168,23 +170,23 @@ function OptionItem({ option, menuFor, selectedTrackId }: OptionItemProps) {
   };
 
   return (
-    <div className="flex h-6 w-full items-center justify-between bg-amber-600">
-      <li
-        onClick={(e) => handleOptionClick(e, option)}
-        key={option}
-        className={`hover:cursor-pointer hover:underline`}
-      >
+    <div className="z-1000 flex h-10 w-full items-center justify-between rounded-md p-2 font-bold hover:cursor-pointer hover:bg-amber-400">
+      <li onClick={(e) => handleOptionClick(e, option)} key={option}>
         {option}
       </li>
       <button
-        className="h-4 w-4"
+        className="h-4 w-4 hover:cursor-pointer"
         onClick={() =>
           trackInQuestion?.isTrackInPlaylist
             ? removeTrackFromPlaylist()
             : handleAddToPlaylist()
         }
       >
-        {trackInQuestion?.isTrackInPlaylist ? "✅" : "❌"}
+        {trackInQuestion?.isTrackInPlaylist ? (
+          <FaCircleCheck fill="green" />
+        ) : (
+          <FaRegCircle fill="black" />
+        )}
       </button>
     </div>
   );

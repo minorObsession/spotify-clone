@@ -97,12 +97,13 @@ function AddToPlaylist({
           </span>
         )}
       </button>
+
       <OptionsMenu
         ref={playlistMenuRef}
         areOptionsVisible={isPlaylistSelectMenuOpen}
         menuFor="addToPlaylist"
         options={playlistNames}
-        selectedTrackId={track.id}
+        track={track}
       />
     </div>
   );
