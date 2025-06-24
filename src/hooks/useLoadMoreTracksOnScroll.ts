@@ -26,7 +26,7 @@ export function useLoadMoreTracksOnScroll(onTriggerLoadMore: () => void) {
     observer.observe(sentinelRef.current);
 
     return () => observer.disconnect();
-  }, [onTriggerLoadMore]);
+  }, []);
 
   return sentinelRef;
 }

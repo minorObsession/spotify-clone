@@ -8,7 +8,7 @@ import PlaylistPreviewHeader from "./PlaylistPreviewHeader";
 import { createLoader } from "../../state/helpers";
 import FPPlaylistOverview from "./FPPlaylistOverview";
 import { useLoadMoreTracksOnScroll } from "../../hooks/useLoadMoreTracksOnScroll";
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useCallback } from "react";
 import FPControls from "../../components/FPControls";
 import { playlistOptions } from "../../config/menuOptions";
 
@@ -17,7 +17,7 @@ function FullPreviewPlaylist() {
   const { playlist, setPlaylist, getPlaylist, getUserSavedTracks } =
     useStateStore((state) => state);
   const isFetching = useRef(false);
-  const hasMoreToLoad = playlist?.tracks?.length < (playlist?.numTracks || 0);
+  const hasMoreToLoad = playlist?.tracks?.length < playlist?.numTracks;
   const currPlaylist = useStateStore((state) =>
     state.playlist?.id === "liked_songs"
       ? (state.usersSavedTracks as DetailedPlaylistType)
@@ -29,9 +29,9 @@ function FullPreviewPlaylist() {
   }, [initialPlaylist, setPlaylist]);
 
   // wrap into useCallback
-  const handleLoadMore = async () => {
+  const handleLoadMore = useCallback(async () => {
     console.log("calling HLM");
-    if (!hasMoreToLoad || !playlist) return;
+    if (!hasMoreToLoad || !playlist || isFetching.current) return;
     isFetching.current = true;
     try {
       if (playlist.id === "liked_songs") {
@@ -63,7 +63,7 @@ function FullPreviewPlaylist() {
     } finally {
       isFetching.current = false;
     }
-  };
+  }, [hasMoreToLoad, playlist, getUserSavedTracks, getPlaylist, setPlaylist]);
 
   const sentinelRef = useLoadMoreTracksOnScroll(handleLoadMore);
 
