@@ -3,7 +3,7 @@ import useHoverTrackItem from "../hooks/useHoverTrackItem";
 import Tooltip from "./Tooltip";
 import { BiPlusCircle } from "react-icons/bi";
 import { isTrackInLibrary } from "../features/playlists/playlistHelpers";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useStateStore } from "../state/store";
 import OptionsMenu from "./OptionsMenu";
 import useOutsideClick from "../hooks/useOutsideClick";
@@ -29,11 +29,6 @@ function AddToPlaylist({
   const playlists = useStateStore.getState().playlists;
   const playlistNames = playlists?.map((playlist) => playlist.name) || [];
 
-  // ! I WAS HERE!!! TRYING TO FIX THE ISSUE WITH THE PLAYLISTID!!!
-  // NEED TO DECOUPLE STATE FROM ZUSTAND OF FIND SOLUTION WITHIN ZUSTAND
-  // ! I WAS HERE!!! TRYING TO FIX THE ISSUE WITH THE PLAYLISTID!!!
-  // ! I WAS HERE!!! TRYING TO FIX THE ISSUE WITH THE PLAYLISTID!!!
-  // ! I WAS HERE!!! TRYING TO FIX THE ISSUE WITH THE PLAYLISTID!!!
   const playlistMenuRef = useOutsideClick<HTMLUListElement>(
     () => setIsPlaylistSelectMenuOpen(false),
     undefined,
@@ -67,23 +62,6 @@ function AddToPlaylist({
     console.log("should be all updated");
     // * call spotify api with post req
   };
-
-  const handleAddToPlaylist = useCallback(
-    async (playlistId: string) => {
-      console.log("handleAddToPlaylist called");
-      try {
-        // * update UI state
-        const { addTrackToPlaylist } = useStateStore.getState();
-
-        const result = await addTrackToPlaylist(playlistId, track.id);
-
-        if (!result.success) throw Error("Failed to add track to playlist");
-      } catch (error) {
-        console.error("Error adding track to playlist:", error);
-      }
-    },
-    [track.id],
-  );
 
   const isTheTrackInLibrary = isTrackInLibrary(id);
   const tooltipMessage = isTheTrackInLibrary
@@ -124,6 +102,7 @@ function AddToPlaylist({
         areOptionsVisible={isPlaylistSelectMenuOpen}
         menuFor="addToPlaylist"
         options={playlistNames}
+        selectedTrackId={track.id}
       />
     </div>
   );

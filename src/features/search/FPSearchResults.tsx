@@ -5,7 +5,6 @@ import { SearchResultType } from "./search";
 import FPSearchTopTrack from "./FPSearchTopTrack";
 import ArtistCard from "./ArtistCard";
 import { useResponsiveCards1Row } from "../../hooks/useResponsiveCards1Row";
-
 import PlaylistCard from "./PlaylistCard";
 import PodcastCard from "./PodcastCard";
 import EpisodeCard from "./EpisodeCard";
@@ -14,23 +13,18 @@ import SearchResultSection from "../../components/SearchResultSection";
 import { useState } from "react";
 import { IoMdPlay } from "react-icons/io";
 import AlbumCard from "./AlbumCard";
-
 import FPFiltered from "./FPFiltered";
 import FPFTracks from "./FPFTracks";
 
 function FPSearchResults() {
   const searchResults = useLoaderData() as SearchResultType;
-
-  console.log(searchResults);
-  const topResult = useStateStore((store) => store.topResult);
   const [isTopArtistHovered, setIsTopArtistHovered] = useState(false);
   const navigate = useNavigate();
   const numCards = useResponsiveCards1Row({
     itemWidth: 180 + 8, // card width + gap
     containerSelector: "main", // relative to main el
   });
-
-  const { searchFilter } = useStateStore((store) => store);
+  const { searchFilter, topResult } = useStateStore((store) => store);
 
   if (!searchResults) return null;
 

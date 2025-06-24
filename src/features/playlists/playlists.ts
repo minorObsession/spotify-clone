@@ -1,7 +1,10 @@
 import { StateCreator } from "zustand";
 import { StateStore } from "../../state/store";
 import { TrackType } from "../tracks/track";
-import { fetchFromSpotify } from "../../state/helpers";
+import {
+  fetchFromSpotify,
+  invalidateCacheForEndpoint,
+} from "../../state/helpers";
 import { PartialPlaylist } from "../../components/EditPlaylistModal";
 import { AsyncResult, wrapPromiseResult } from "../../types/reusableTypes";
 import { AccessTokenType } from "../auth/Auth";
@@ -46,7 +49,10 @@ export interface PlaylistSlice {
   playlists: UserPlaylistType[];
   playlist: DetailedPlaylistType;
   playlistNamesWithIds: playlistNamesWithIdsType[];
-
+  setUserPlaylists: (playlists: UserPlaylistType[]) => void;
+  setPlaylistNamesWithIds: (
+    playlistNamesWithIds: playlistNamesWithIdsType[],
+  ) => void;
   setPlaylist: (playlist: DetailedPlaylistType) => void;
   getUserPlaylists: () => Promise<AsyncResult<UserPlaylistType[]>>;
   getPlaylist: (
@@ -68,8 +74,10 @@ export interface PlaylistSlice {
     trackId: string,
   ) => Promise<AsyncResult<void>>;
   addToLikedSongs: (trackId: string) => Promise<AsyncResult<void>>;
-  selectedPlaylistId: string | null;
-  setSelectedPlaylistId: (id: string | null) => void;
+  removeTrackFromPlaylist: (
+    id: string,
+    trackId: string,
+  ) => Promise<AsyncResult<void>>;
 }
 
 export const createPlaylistSlice: StateCreator<
@@ -81,19 +89,35 @@ export const createPlaylistSlice: StateCreator<
   playlists: [],
   playlist: initialEmptyPlaylist,
   playlistNamesWithIds: [],
-  // ! CONSIDER REMOVING THIS STATE COMPLETELY
-
-  selectedPlaylistId: null,
-  setSelectedPlaylistId: (id) => {
+  setUserPlaylists: (playlists) => {
     set(
-      { selectedPlaylistId: id },
+      (prevState) => ({
+        ...prevState,
+        playlists,
+      }),
       undefined,
-      "playlist/setSelectedPlaylistId",
+      "playlist/setUserPlaylists",
+    );
+  },
+  setPlaylistNamesWithIds: (playlistNamesWithIds) => {
+    set(
+      (prevState) => ({
+        ...prevState,
+        playlistNamesWithIds,
+      }),
+      undefined,
+      "playlist/setPlaylistNamesWithIds",
     );
   },
   setPlaylist: (playlist) => {
-    set({ playlist }, undefined, "playlist/setPlaylist");
-    // Cache is now handled by persist middleware
+    set(
+      (prevState) => ({
+        ...prevState,
+        playlist,
+      }),
+      undefined,
+      "playlist/setPlaylist",
+    );
   },
 
   getUserPlaylists: async () => {
@@ -105,9 +129,7 @@ export const createPlaylistSlice: StateCreator<
       throw new Error("Access token expired or doesn't exist");
 
     // Check persisted state first (handled automatically by persist middleware)
-    const playlists = get().playlists;
-    const playlistNamesWithIds = get().playlistNamesWithIds;
-    const usersSavedTracks = get().usersSavedTracks;
+    const { playlists, playlistNamesWithIds, usersSavedTracks } = get();
     if (playlists.length > 0) {
       set({ playlists }, undefined, "playlist/setPlaylistsFromCache");
 
@@ -141,7 +163,7 @@ export const createPlaylistSlice: StateCreator<
         SpotifyApi.ListOfUsersPlaylistsResponse,
         UserPlaylistType[]
       >({
-        endpoint: `me/playlists?limit=10`,
+        endpoint: `me/playlists?limit=50`,
         onDataReceived: (data) =>
           set({ playlists: data }, undefined, "playlist/setPlaylistsFromAPI"),
         transformFn: async (data: SpotifyApi.ListOfUsersPlaylistsResponse) => {
@@ -262,7 +284,7 @@ export const createPlaylistSlice: StateCreator<
   },
 
   uploadNewPlaylistImage: async (id, base64ImageUrl) => {
-    return await wrapPromiseResult(
+    const result = await wrapPromiseResult(
       fetchFromSpotify<
         SpotifyApi.PlaylistObjectSimplified,
         DetailedPlaylistType
@@ -272,10 +294,13 @@ export const createPlaylistSlice: StateCreator<
         requestBody: base64ImageUrl,
       }).then(() => true),
     );
+
+    if (result.success) await invalidateCacheForEndpoint(`playlists/${id}`);
+    return result;
   },
 
   updatePlaylistDetails: async (id, updatedFields) => {
-    return await wrapPromiseResult<void>(
+    const result = await wrapPromiseResult<void>(
       fetchFromSpotify<SpotifyApi.PlaylistObjectSimplified, void>({
         endpoint: `playlists/${id}`,
         method: "PUT",
@@ -285,10 +310,13 @@ export const createPlaylistSlice: StateCreator<
         }),
       }),
     );
+
+    if (result.success) await invalidateCacheForEndpoint(`playlists/${id}`);
+    return result;
   },
 
   addTrackToPlaylist: async (id, trackId) => {
-    return await wrapPromiseResult<void>(
+    const result = await wrapPromiseResult<void>(
       fetchFromSpotify<SpotifyApi.AddTracksToPlaylistResponse, void>({
         endpoint: `playlists/${id}/tracks`,
         method: "POST",
@@ -297,6 +325,24 @@ export const createPlaylistSlice: StateCreator<
         }),
       }),
     );
+
+    if (result.success) await invalidateCacheForEndpoint(`playlists/${id}`);
+    return result;
+  },
+
+  removeTrackFromPlaylist: async (id, trackId) => {
+    const result = await wrapPromiseResult<void>(
+      fetchFromSpotify<SpotifyApi.RemoveTracksFromPlaylistResponse, void>({
+        endpoint: `playlists/${id}/tracks`,
+        method: "DELETE",
+        requestBody: JSON.stringify({
+          tracks: [{ uri: `spotify:track:${trackId}` }],
+        }),
+      }),
+    );
+
+    if (result.success) await invalidateCacheForEndpoint(`playlists/${id}`);
+    return result;
   },
 
   addToLikedSongs: async (trackId: string) => {

@@ -14,6 +14,7 @@ interface OptionsMenuProps {
   ref: React.RefObject<HTMLUListElement>;
   areOptionsVisible: boolean;
   directionOfMenu?: "topLeft" | "bottomLeft";
+  selectedTrackId: string;
 }
 
 function OptionsMenu({
@@ -22,6 +23,7 @@ function OptionsMenu({
   areOptionsVisible,
   menuFor,
   options,
+  selectedTrackId,
 }: OptionsMenuProps) {
   const { handleMouseEnter, handleMouseLeave } = useHoverTrackItem();
 
@@ -42,7 +44,12 @@ function OptionsMenu({
       >
         {options.map((option) => (
           // menuFor
-          <OptionItem menuFor={menuFor} option={option} key={option} />
+          <OptionItem
+            menuFor={menuFor}
+            option={option}
+            key={option}
+            selectedTrackId={selectedTrackId}
+          />
         ))}
       </ul>
     </div>

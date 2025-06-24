@@ -1,4 +1,3 @@
-import React from "react";
 import {
   createBrowserRouter,
   redirect,
@@ -27,17 +26,15 @@ import FPFiltered from "./features/search/FPFiltered";
 import { ServiceWorkerCacheMonitor } from "./components/ServiceWorkerCacheMonitor";
 import { serviceWorker } from "./serviceWorker";
 
-// TODO:
+// TODO :
+// ! fix issue with infinite reloading when only 1 thing in playlist! (problem with assumption that all items are playlists!!!)
+// ! PUT SEARCH FILTERS IN URL BAR
 
-// ! NEED TO:
-// ! NEED TO:
-// ! NEED TO:
-// THINK ABOUT ANCHORS TO POINT TO SPECIFIC PARTS OF SONGS!!
+// ! :
 
 // !
-
-// ! check search filters -not currently applying!
-// ! WHEN TRACK IS SHORTER THAN 1 MIN, COLON SHOULDN'T BE DISPLAYED
+// THINK ABOUT ANCHORS TO POINT TO SPECIFIC PARTS OF SONGS!!
+//  WHEN TRACK IS SHORTER THAN 1 MIN, COLON SHOULDN'T BE DISPLAYED
 
 // * DIFFERENT USER NOTES:
 

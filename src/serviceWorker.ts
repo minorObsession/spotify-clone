@@ -50,6 +50,38 @@ class SimpleServiceWorker {
       console.error("Failed to clear cache:", error);
     }
   }
+
+  async invalidateCacheForEndpoint(endpoint: string): Promise<void> {
+    try {
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: "INVALIDATE_CACHE",
+          endpoint,
+        });
+        console.log(`Cache invalidation message sent for: ${endpoint}`);
+      }
+    } catch (error) {
+      console.error("Failed to invalidate cache:", error);
+    }
+  }
+
+  async updateCacheForEndpoint(
+    endpoint: string,
+    updatedData: any,
+  ): Promise<void> {
+    try {
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: "UPDATE_CACHE",
+          endpoint,
+          updatedData,
+        });
+        console.log(`Cache update message sent for: ${endpoint}`);
+      }
+    } catch (error) {
+      console.error("Failed to update cache:", error);
+    }
+  }
 }
 
 // Export singleton

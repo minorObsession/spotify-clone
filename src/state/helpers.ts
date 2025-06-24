@@ -103,7 +103,11 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
     }
 
     // if it's a PUT request, we don't need to transform the data
-    if (method === "PUT" || (method === "DELETE" && !transformFn))
+    if (
+      method === "PUT" ||
+      method === "POST" ||
+      (method === "DELETE" && !transformFn)
+    )
       return undefined as unknown as ReturnType;
 
     // basically bellow code runs if it's NOT a GET request
@@ -120,5 +124,17 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
   } catch (err) {
     console.error("🛑 ❌", err);
     throw err;
+  }
+};
+
+// Robust cache invalidation function for use across all slices
+export const invalidateCacheForEndpoint = async (
+  endpoint: string,
+): Promise<void> => {
+  try {
+    const { serviceWorker } = await import("../serviceWorker");
+    await serviceWorker.invalidateCacheForEndpoint(endpoint);
+  } catch (error) {
+    console.error(`Failed to invalidate cache for ${endpoint}:`, error);
   }
 };

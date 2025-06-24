@@ -14,10 +14,8 @@ import { playlistOptions } from "../../config/menuOptions";
 
 function FullPreviewPlaylist() {
   const initialPlaylist = useLoaderData() as DetailedPlaylistType;
-  const playlist = useStateStore((state) => state.playlist);
-  const setPlaylist = useStateStore((state) => state.setPlaylist);
-  const getPlaylist = useStateStore((state) => state.getPlaylist);
-  const getUserSavedTracks = useStateStore((state) => state.getUserSavedTracks);
+  const { playlist, setPlaylist, getPlaylist, getUserSavedTracks } =
+    useStateStore((state) => state);
   const isFetching = useRef(false);
   const hasMoreToLoad = playlist?.tracks?.length < (playlist?.numTracks || 0);
   const currPlaylist = useStateStore((state) =>

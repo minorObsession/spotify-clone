@@ -27,6 +27,33 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+// Handle messages from the main thread
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "INVALIDATE_CACHE") {
+    const { endpoint } = event.data;
+    invalidateCacheForEndpoint(endpoint);
+  }
+});
+
+// Invalidate cache for specific endpoint
+async function invalidateCacheForEndpoint(endpoint) {
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    const keys = await cache.keys();
+
+    // Find and delete cache entries that match the endpoint
+    const matchingKeys = keys.filter((key) => {
+      const url = new URL(key.url);
+      return url.pathname.includes(endpoint);
+    });
+
+    await Promise.all(matchingKeys.map((key) => cache.delete(key)));
+    console.log(`Invalidated cache for endpoint: ${endpoint}`);
+  } catch (error) {
+    console.error("Error invalidating cache:", error);
+  }
+}
+
 // Fetch - intercept requests
 self.addEventListener("fetch", (event) => {
   const { request } = event;
