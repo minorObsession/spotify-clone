@@ -34,6 +34,7 @@ function OptionsMenu({
     areOptionsVisible = true;
   };
 
+  // no need for try catch here because errors are handled by createNewPlaylist function in state slice
   const handleCreateNewPlaylist = async () => {
     if (!track) return;
 
@@ -42,7 +43,7 @@ function OptionsMenu({
     const result = await createNewPlaylist(track.name, track.id);
 
     if (result.success) {
-      console.log("✅ Playlist created successfully:", result.data);
+      console.log("✅ Playlist created successfully:");
       // TODO: Show success toast/notification
       // State is automatically updated by createNewPlaylist function
     } else {
@@ -77,7 +78,7 @@ function OptionsMenu({
           <OptionItem
             menuFor={menuFor}
             option={option}
-            key={option}
+            key={track.id}
             selectedTrackId={track.id}
           />
         ))}

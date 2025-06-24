@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
+import { devtools, persist, createJSONStorage } from "zustand/middleware";
 import { AuthSlice, createAuthSlice } from "../features/auth/Auth";
 import { createUserSlice, UserSlice } from "../features/user/user";
 import {
@@ -19,6 +19,47 @@ import {
 import { SearchSlice, createSearchSlice } from "../features/search/search";
 import { AlbumSlice, createAlbumSlice } from "../features/albums/album";
 import { createPodcastSlice, PodcastSlice } from "../features/podcasts/podcast";
+
+// Custom cache storage that uses the same cache as service worker
+const cacheStorage = {
+  getItem: async (name: string) => {
+    try {
+      const cache = await caches.open("spotify-cache-v1");
+      const response = await cache.match(`zustand-${name}`);
+      if (response) {
+        return await response.text();
+      }
+      return null;
+    } catch (error) {
+      console.error("Failed to get from cache storage:", error);
+      return null;
+    }
+  },
+  setItem: async (name: string, value: string) => {
+    try {
+      const cache = await caches.open("spotify-cache-v1");
+      await cache.put(
+        `zustand-${name}`,
+        new Response(value, {
+          headers: {
+            "Content-Type": "application/json",
+            "sw-cache-time": new Date().toISOString(),
+          },
+        }),
+      );
+    } catch (error) {
+      console.error("Failed to set cache storage:", error);
+    }
+  },
+  removeItem: async (name: string) => {
+    try {
+      const cache = await caches.open("spotify-cache-v1");
+      await cache.delete(`zustand-${name}`);
+    } catch (error) {
+      console.error("Failed to remove from cache storage:", error);
+    }
+  },
+};
 
 export type StateStore = AuthSlice &
   UserSlice &
@@ -48,6 +89,7 @@ export const useStateStore = create<StateStore>()(
       }),
       {
         name: "spotify-clone-state-storage",
+        storage: createJSONStorage(() => cacheStorage),
         partialize: (state: StateStore) => ({
           // Auth state (tokens should persist)
 

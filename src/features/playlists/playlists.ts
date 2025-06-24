@@ -366,12 +366,12 @@ export const createPlaylistSlice: StateCreator<
 
   createNewPlaylist: async (name: string, trackId: string) => {
     const userID = get().user?.userID;
-    if (!userID) {
+
+    if (!userID)
       return {
         success: false,
         error: new Error("User ID not found"),
       };
-    }
 
     const result = await wrapPromiseResult<SpotifyApi.CreatePlaylistResponse>(
       fetchFromSpotify<
@@ -387,33 +387,37 @@ export const createPlaylistSlice: StateCreator<
       }),
     );
 
-    if (result.success) {
-      // If a trackId was provided, add it to the playlistNamesWithIds
-      const { playlistNamesWithIds, playlists } = get();
+    if (!result.success)
+      return {
+        success: false,
+        error: new Error("Failed to create playlist"),
+      };
 
-      const updatedPlaylists = playlists.map((p) =>
-        p.name === name ? { ...p, trackIds: [...p.trackIds, trackId] } : p,
-      );
+    // Add trackId to playlistNamesWithIds and playlists
+    const { playlistNamesWithIds, playlists } = get();
 
-      const updatedPlaylistNamesWithIds = playlistNamesWithIds.map((p) =>
-        p.name === name ? { ...p, ids: [...p.ids, trackId] } : p,
-      );
+    set(
+      {
+        playlistNamesWithIds: playlistNamesWithIds.map((p) =>
+          p.name === name ? { ...p, ids: [...p.ids, trackId] } : p,
+        ),
+      },
+      undefined,
+      "playlist/updatePlaylistNamesWithIdsForNewPlaylist",
+    );
+    set(
+      {
+        playlists: playlists.map((p) =>
+          p.name === name ? { ...p, trackIds: [...p.trackIds, trackId] } : p,
+        ),
+      },
+      undefined,
+      "playlist/setPlaylistsFromAPI",
+    );
 
-      set(
-        { playlistNamesWithIds: updatedPlaylistNamesWithIds },
-        undefined,
-        "playlist/updatePlaylistNamesWithIdsForNewPlaylist",
-      );
-      set(
-        { playlists: updatedPlaylists },
-        undefined,
-        "playlist/setPlaylistsFromAPI",
-      );
-
-      // Invalidate cache for user playlists
-      // ! TEST WHAT HAPPENS IF I DON'T DO THIS INVALIDATION
-      await invalidateCacheForEndpoint(`users/${userID}/playlists`);
-    }
+    // Invalidate cache for user playlists
+    // ! TEST WHAT HAPPENS IF I DON'T DO THIS INVALIDATION
+    await invalidateCacheForEndpoint(`v1/me/playlists`);
 
     return result;
   },

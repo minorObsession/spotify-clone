@@ -63,7 +63,7 @@ function AddToPlaylist({
     // * call spotify api with post req
   };
 
-  const isTheTrackInLibrary = isTrackInLibrary(id);
+  const isTheTrackInLibrary = isTrackInLibrary(id) || false;
   const tooltipMessage = isTheTrackInLibrary
     ? "Add to Playlist"
     : "Add to Liked Songs";

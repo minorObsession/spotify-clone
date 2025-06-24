@@ -47,8 +47,21 @@ async function invalidateCacheForEndpoint(endpoint) {
       return url.pathname.includes(endpoint);
     });
 
-    await Promise.all(matchingKeys.map((key) => cache.delete(key)));
+    // Also invalidate related Zustand state cache entries
+    const zustandKeys = keys.filter((key) => {
+      return (
+        key.url.includes("zustand-") &&
+        (key.url.includes("playlists") ||
+          key.url.includes("playlist") ||
+          key.url.includes("user"))
+      );
+    });
+
+    const allKeysToDelete = [...matchingKeys, ...zustandKeys];
+    await Promise.all(allKeysToDelete.map((key) => cache.delete(key)));
+
     console.log(`Invalidated cache for endpoint: ${endpoint}`);
+    console.log(`Also invalidated ${zustandKeys.length} Zustand state entries`);
   } catch (error) {
     console.error("Error invalidating cache:", error);
   }

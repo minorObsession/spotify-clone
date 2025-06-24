@@ -54,7 +54,6 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
 }: FetchFromSpotifyParams<ResponseType, ReturnType>): Promise<ReturnType> => {
   try {
     console.log(`calling fetch ${endpoint} `);
-    console.trace();
 
     await useStateStore.getState().waitForAuthentication();
 

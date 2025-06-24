@@ -14,7 +14,8 @@ export const getPlaylistLength = (data: TrackType[]) => {
 
 export const isTrackInLibrary = (id: string) => {
   const savedTracks = useStateStore.getState().usersSavedTracks;
-  if (!savedTracks) throw new Error("no saved tracsk");
+
+  if (!savedTracks) throw new Error("no saved tracks object");
 
   const idsFromLikedSongs = (savedTracks.tracks || [])
     .filter(
