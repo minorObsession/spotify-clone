@@ -81,7 +81,7 @@ export interface PlaylistSlice {
   createNewPlaylist: (
     name: string,
     trackId: string,
-  ) => Promise<AsyncResult<SpotifyApi.CreatePlaylistResponse>>;
+  ) => Promise<AsyncResult<UserPlaylistType>>;
 }
 
 export const createPlaylistSlice: StateCreator<
@@ -365,60 +365,73 @@ export const createPlaylistSlice: StateCreator<
   },
 
   createNewPlaylist: async (name: string, trackId: string) => {
-    const userID = get().user?.userID;
+    try {
+      const userID = get().user?.userID;
 
-    if (!userID)
-      return {
-        success: false,
-        error: new Error("User ID not found"),
-      };
+      if (!userID)
+        return {
+          success: false,
+          error: new Error("User ID not found"),
+        };
 
-    const result = await wrapPromiseResult<SpotifyApi.CreatePlaylistResponse>(
-      fetchFromSpotify<
-        SpotifyApi.CreatePlaylistResponse,
-        SpotifyApi.CreatePlaylistResponse
-      >({
-        endpoint: `users/${userID}/playlists`,
-        method: "POST",
-        requestBody: JSON.stringify({
-          name,
+      // todo : NEED IMAGE!!!!
+      // todo : NEED IMAGE!!!!
+      // todo : NEED IMAGE!!!!
+      // todo : NEED IMAGE!!!!
+      // ! IMAGE ISN'T IN THE RESPONSE
+      const result = await wrapPromiseResult<UserPlaylistType>(
+        fetchFromSpotify<SpotifyApi.CreatePlaylistResponse, UserPlaylistType>({
+          endpoint: `users/${userID}/playlists`,
+          method: "POST",
+          requestBody: JSON.stringify({
+            name,
+          }),
+          transformFn: (data) => ({
+            name: data.name,
+            id: data.id,
+            imageUrl: data.images?.[0]?.url,
+            ownerName: data.owner.display_name || get().user?.username || "",
+            trackIds: [trackId],
+          }),
         }),
-        transformFn: (data) => data,
-      }),
-    );
+      );
 
-    if (!result.success)
+      if (!result.success)
+        return {
+          success: false,
+          error: new Error("Failed to create playlist"),
+        };
+
+      const { playlists, playlistNamesWithIds } = get();
+
+      // Add the new playlist to the state
+
+      set(
+        {
+          playlists: [result.data, ...playlists],
+          playlistNamesWithIds: [
+            ...playlistNamesWithIds,
+            {
+              name: name,
+              ids: [trackId],
+            },
+          ],
+        },
+        undefined,
+        "playlist/addNewPlaylist",
+      );
+
+      // Invalidate cache for user playlists
+      // ! TEST WHAT HAPPENS IF I DON'T DO THIS INVALIDATION
+      // await invalidateCacheForEndpoint(`v1/me/playlists`);
+      console.log("FINAL RESULT", result);
+      return result;
+    } catch (error) {
+      console.error(error);
       return {
         success: false,
         error: new Error("Failed to create playlist"),
       };
-
-    // Add trackId to playlistNamesWithIds and playlists
-    const { playlistNamesWithIds, playlists } = get();
-
-    set(
-      {
-        playlistNamesWithIds: playlistNamesWithIds.map((p) =>
-          p.name === name ? { ...p, ids: [...p.ids, trackId] } : p,
-        ),
-      },
-      undefined,
-      "playlist/updatePlaylistNamesWithIdsForNewPlaylist",
-    );
-    set(
-      {
-        playlists: playlists.map((p) =>
-          p.name === name ? { ...p, trackIds: [...p.trackIds, trackId] } : p,
-        ),
-      },
-      undefined,
-      "playlist/setPlaylistsFromAPI",
-    );
-
-    // Invalidate cache for user playlists
-    // ! TEST WHAT HAPPENS IF I DON'T DO THIS INVALIDATION
-    await invalidateCacheForEndpoint(`v1/me/playlists`);
-
-    return result;
+    }
   },
 });

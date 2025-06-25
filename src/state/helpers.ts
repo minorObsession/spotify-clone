@@ -102,10 +102,10 @@ export const fetchFromSpotify = async <ResponseType, ReturnType>({
       console.log(`📦 Serving from cache: ${endpoint}`);
     }
 
-    // if it's a PUT request, we don't need to transform the data
+    // ! this is a dirty hack to get the createNewPlaylist to work
     if (
       method === "PUT" ||
-      method === "POST" ||
+      (method === "POST" && !transformFn) ||
       (method === "DELETE" && !transformFn)
     )
       return undefined as unknown as ReturnType;
