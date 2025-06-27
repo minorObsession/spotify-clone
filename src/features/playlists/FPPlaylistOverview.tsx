@@ -22,7 +22,10 @@ function FPPlaylistOverview({
 
   return (
     // {/* // ! image and title */}
-    <article className="flex gap-3 border-b-2 py-4">
+    <article
+      className="flex gap-3 border-b-2 py-4"
+      data-playlist-id={playlist.id}
+    >
       {/* // ! edit playlist modal */}
       {isEditingPlaylist &&
         createPortal(

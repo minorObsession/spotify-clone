@@ -32,7 +32,8 @@ function FPAlbumTrackItem({ track, index }: TrackProps) {
       onMouseEnter={() => setIsTrackHovered(true)}
       onMouseLeave={() => setIsTrackHovered(false)}
       onClick={() => setIsTrackBoxSelected(true)}
-      className={`album-top-track-row text:xs ${!isTrackBoxSelected && "hover:bg-amber-400"} ${isTrackBoxSelected && "bg-amber-700"} lg:text-lg`}
+      data-track-id={track.id}
+      className={`album-track-row text:xs ${!isTrackBoxSelected && "hover:bg-amber-400"} ${isTrackBoxSelected && "bg-amber-700"} lg:text-base`}
     >
       {/* // * # - THUMB - NAME */}
       <div className="playlist-item grid-rows-1 truncate p-1">

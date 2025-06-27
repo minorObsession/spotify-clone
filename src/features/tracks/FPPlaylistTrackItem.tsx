@@ -44,6 +44,7 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
       onMouseEnter={() => setIsTrackHovered(true)}
       onMouseLeave={() => setIsTrackHovered(false)}
       onClick={() => setIsTrackBoxSelected(true)}
+      data-track-id={track.id}
       className={`playlist-row text:xs ${!isTrackBoxSelected && "hover:bg-amber-400"} ${isTrackBoxSelected && "bg-amber-700"} lg:text-base`}
     >
       <div className="playlist-item p-1">

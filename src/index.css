@@ -139,3 +139,28 @@ form textarea:active {
   outline: none;
   /* background-color: red; */
 }
+
+/* Global Context Menu Styles */
+#global-context-menu {
+  user-select: none;
+
+  line-height: 1.4;
+}
+
+#global-context-menu button {
+  transition: background-color 0.15s ease;
+}
+
+#global-context-menu button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#global-context-menu button:not(:disabled):hover {
+  background-color: #f3f4f6;
+}
+
+/* Ensure context menu appears above other elements */
+#global-context-menu {
+  z-index: 9999 !important;
+}

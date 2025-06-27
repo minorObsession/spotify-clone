@@ -1,6 +1,7 @@
 import { Outlet, redirect } from "react-router";
 import { memo, useEffect } from "react";
 import { useStateStore } from "./state/store";
+import GlobalContextMenu from "./components/GlobalContextMenu";
 
 function Root() {
   const { isAuthenticated, loadPlayer } = useStateStore((store) => store);
@@ -9,7 +10,12 @@ function Root() {
   //   if (isAuthenticated) loadPlayer();
   // }, [isAuthenticated, loadPlayer]);
 
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <GlobalContextMenu />
+    </>
+  );
 }
 
 export const initialLoader = async () => {
