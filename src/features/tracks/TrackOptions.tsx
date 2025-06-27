@@ -4,6 +4,7 @@ import { SlOptions } from "react-icons/sl";
 import useHoverTrackItem from "../../hooks/useHoverTrackItem";
 import Tooltip from "../../components/Tooltip";
 import OptionsMenu from "../../components/OptionsMenu";
+import { TrackType } from "./track";
 
 interface TrackOptionsProps {
   options: string[];
@@ -12,6 +13,7 @@ interface TrackOptionsProps {
   setIsTrackBoxSelected: React.Dispatch<React.SetStateAction<boolean>>;
   isTrackHovered: boolean;
   trackName: string;
+  track: TrackType;
 }
 
 function TrackOptions({
@@ -21,6 +23,7 @@ function TrackOptions({
   isTrackHovered,
   trackName,
   options,
+  track,
 }: TrackOptionsProps) {
   const { isHovered, handleMouseEnter, handleMouseLeave } = useHoverTrackItem();
   const [areOptionsVisible, setAreOptionsVisible] = useState(false);
@@ -29,9 +32,8 @@ function TrackOptions({
     setIsTrackBoxSelected,
   ) as React.RefObject<HTMLUListElement>;
 
-  // Use the hover hook
-
   const handleDisplayTrackOptions = () => {
+    console.log("handleDisplayTrackOptions");
     setAreOptionsVisible(true);
   };
 
@@ -52,7 +54,9 @@ function TrackOptions({
         menuFor="track"
         ref={menuRef}
         areOptionsVisible={areOptionsVisible}
+        setAreOptionsVisible={setAreOptionsVisible}
         options={options}
+        track={track}
       />
       {/* Dots Icon */}
       <span className="justify-self-start hover:cursor-pointer">

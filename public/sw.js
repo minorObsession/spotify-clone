@@ -137,10 +137,11 @@ async function handleSpotifyRequest(request) {
         return new Response(cachedResponse.body, {
           status: cachedResponse.status,
           statusText: cachedResponse.statusText,
-          headers: headers,
+          headers,
         });
       } else {
         // Cache expired, remove it
+        console.log("Cache expired, removing it:", request.url);
         await cache.delete(cacheKey);
       }
     }

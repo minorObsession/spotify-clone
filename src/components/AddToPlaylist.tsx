@@ -30,9 +30,7 @@ function AddToPlaylist({
   const playlistNames = playlists?.map((playlist) => playlist.name) || [];
 
   const playlistMenuRef = useOutsideClick<HTMLUListElement>(
-    () => setIsPlaylistSelectMenuOpen(false),
-    undefined,
-    true,
+    setIsPlaylistSelectMenuOpen,
   ) as React.RefObject<HTMLUListElement>;
 
   const handleAddToLikedSongs = async () => {
@@ -101,6 +99,7 @@ function AddToPlaylist({
       <OptionsMenu
         ref={playlistMenuRef}
         areOptionsVisible={isPlaylistSelectMenuOpen}
+        setAreOptionsVisible={setIsPlaylistSelectMenuOpen}
         menuFor="addToPlaylist"
         options={playlistNames}
         track={track}

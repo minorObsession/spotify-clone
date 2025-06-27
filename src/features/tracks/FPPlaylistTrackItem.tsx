@@ -105,6 +105,7 @@ function FPPlaylistTrackItem({ track, index }: TrackProps) {
           isTrackBoxSelected={isTrackBoxSelected}
           setIsTrackBoxSelected={setIsTrackBoxSelected}
           isTrackHovered={isTrackHovered}
+          track={track}
         />
       </div>
     </article>

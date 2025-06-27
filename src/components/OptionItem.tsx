@@ -1,8 +1,8 @@
-import { FaCircleCheck } from "react-icons/fa6";
-import { FaRegCircle } from "react-icons/fa";
+import { FaCircleCheck, FaRegCircle } from "react-icons/fa6";
 import { MenuFor } from "./OptionsMenu";
 import { useStateStore } from "../state/store";
 import { memo, useCallback } from "react";
+import { useNavigate } from "react-router";
 
 interface OptionItemProps {
   option: string;
@@ -16,12 +16,14 @@ interface PlaylistNamesWithSelectedTrack {
 }
 
 function OptionItem({ option, menuFor, selectedTrackId }: OptionItemProps) {
+  const navigate = useNavigate();
   const {
     logout,
     playlistNamesWithIds,
     playlists,
     setPlaylistNamesWithIds,
     setUserPlaylists,
+    deletePlaylist,
   } = useStateStore((store) => store);
   // for each option (playlist), determine if selected track is in playlist
   const currentPlaylistId = location.pathname.split("/playlist/")[1];
@@ -142,6 +144,50 @@ function OptionItem({ option, menuFor, selectedTrackId }: OptionItemProps) {
     currentPlaylistId,
   ]);
 
+  const handleDeletePlaylist = useCallback(async () => {
+    // Add confirmation dialog
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete "${option}"? This action cannot be undone.`,
+    );
+
+    if (!isConfirmed) return;
+
+    try {
+      const playlist = playlists.find((p) => p.name === option);
+      const playlistId = playlist?.id;
+
+      if (!playlistId) throw Error("No playlist found");
+
+      const result = await deletePlaylist(playlistId);
+
+      if (!result.success) throw Error("Failed to delete playlist");
+
+      // Remove playlist from state
+      const updatedUserPlaylists = playlists.filter((p) => p.id !== playlistId);
+      const updatedPlaylistNamesWithIds = playlistNamesWithIds.filter(
+        (p) => p.name !== option,
+      );
+
+      setUserPlaylists(updatedUserPlaylists);
+      setPlaylistNamesWithIds(updatedPlaylistNamesWithIds);
+
+      console.log("✅ Playlist deleted successfully");
+      // TODO: Show success toast/notification
+      navigate("/home");
+    } catch (error) {
+      console.error("Error deleting playlist:", error);
+      // TODO: Show error toast/notification
+    }
+  }, [
+    option,
+    playlists,
+    playlistNamesWithIds,
+    deletePlaylist,
+    setUserPlaylists,
+    setPlaylistNamesWithIds,
+    navigate,
+  ]);
+
   const handleOptionClick = (
     e: React.MouseEvent<HTMLLIElement>,
     clickedOption: string,
@@ -151,6 +197,9 @@ function OptionItem({ option, menuFor, selectedTrackId }: OptionItemProps) {
     if (menuFor === "playlist") {
       if (clickedOption === "Edit details") {
         // ! open modal
+      }
+      if (clickedOption === "Delete") {
+        handleDeletePlaylist();
       }
     }
 
@@ -174,20 +223,22 @@ function OptionItem({ option, menuFor, selectedTrackId }: OptionItemProps) {
       <li onClick={(e) => handleOptionClick(e, option)} key={option}>
         {option}
       </li>
-      <button
-        className="h-4 w-4 hover:cursor-pointer"
-        onClick={() =>
-          trackInQuestion?.isTrackInPlaylist
-            ? removeTrackFromPlaylist()
-            : handleAddToPlaylist()
-        }
-      >
-        {trackInQuestion?.isTrackInPlaylist ? (
-          <FaCircleCheck fill="green" />
-        ) : (
-          <FaRegCircle fill="black" />
-        )}
-      </button>
+      {menuFor === "addToPlaylist" && (
+        <button
+          className="h-4 w-4 hover:cursor-pointer"
+          onClick={() =>
+            trackInQuestion?.isTrackInPlaylist
+              ? removeTrackFromPlaylist()
+              : handleAddToPlaylist()
+          }
+        >
+          {trackInQuestion?.isTrackInPlaylist ? (
+            <FaCircleCheck fill="green" />
+          ) : (
+            <FaRegCircle fill="black" />
+          )}
+        </button>
+      )}
     </div>
   );
 }

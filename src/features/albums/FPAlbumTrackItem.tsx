@@ -95,6 +95,7 @@ function FPAlbumTrackItem({ track, index }: TrackProps) {
           isTrackBoxSelected={isTrackBoxSelected}
           setIsTrackBoxSelected={setIsTrackBoxSelected}
           isTrackHovered={isTrackHovered}
+          track={track as TrackType}
         />
       </div>
     </article>

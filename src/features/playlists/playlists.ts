@@ -82,6 +82,7 @@ export interface PlaylistSlice {
     name: string,
     trackId: string,
   ) => Promise<AsyncResult<UserPlaylistType>>;
+  deletePlaylist: (id: string) => Promise<AsyncResult<void>>;
 }
 
 export const createPlaylistSlice: StateCreator<
@@ -433,5 +434,20 @@ export const createPlaylistSlice: StateCreator<
         error: new Error("Failed to create playlist"),
       };
     }
+  },
+
+  deletePlaylist: async (id: string) => {
+    const result = await wrapPromiseResult<void>(
+      fetchFromSpotify<void, void>({
+        endpoint: `playlists/${id}`,
+        method: "DELETE",
+      }),
+    );
+
+    if (result.success) {
+      await invalidateCacheForEndpoint(`playlists/${id}`);
+      await invalidateCacheForEndpoint(`me/playlists`);
+    }
+    return result;
   },
 });

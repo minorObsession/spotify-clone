@@ -1,13 +1,14 @@
 import { memo } from "react";
 import Thumbnail from "../../components/Thumbnail";
 
-import { TopTrackType } from "./artist";
+import { TopTrackType } from "../artists/artist";
 import TrackOptions from "../tracks/TrackOptions";
 import { useTrackItem } from "../../hooks/useTrackItem";
 import AddToPlaylist from "../../components/AddToPlaylist";
 import { trackOptions } from "../../config/menuOptions";
 import { FaPlay } from "react-icons/fa";
 import ArtistList, { Artist } from "../../components/ArtistList";
+import { TrackType } from "../tracks/track";
 
 interface TrackProps {
   track: TopTrackType;
@@ -84,12 +85,15 @@ function FPSearchTopTrack({ track, index }: TrackProps) {
         <span className="text-2xs font-mono tabular-nums">
           {trackDurationFormatted}
         </span>
+
+        {/* // !   */}
         <TrackOptions
           options={trackOptions}
           trackName={trackName}
           isTrackBoxSelected={isTrackBoxSelected}
           setIsTrackBoxSelected={setIsTrackBoxSelected}
           isTrackHovered={isTrackHovered}
+          track={track as TrackType}
         />
       </div>
     </article>

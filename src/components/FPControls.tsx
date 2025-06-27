@@ -11,7 +11,7 @@ import Tooltip from "./Tooltip";
 import OptionsMenu from "./OptionsMenu";
 
 import { useStateStore } from "../state/store";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { AlbumType } from "../features/albums/album";
 import { PodcastType } from "../features/podcasts/podcast";
 
@@ -32,9 +32,11 @@ function FPControls({ previewType, item, options }: FPControlsProps) {
   const playTrack = useStateStore((store) => store.playTrack);
   const togglePlayback = useStateStore((store) => store.togglePlayback);
   const deviceId = useStateStore((store) => store.deviceId);
+  const deletePlaylist = useStateStore((store) => store.deletePlaylist);
   const { isHovered, handleMouseEnter, handleMouseLeave } = useHoverTrackItem();
   const [areOptionsVisible, setAreOptionsVisible] = useState(false);
   const params = useParams();
+  const navigate = useNavigate();
   const isCurrentlyPlaying = !playerState?.paused;
 
   const isCurrentlyPlayingThisPlaylist =
@@ -102,13 +104,61 @@ function FPControls({ previewType, item, options }: FPControlsProps) {
         className="cursor-pointer transition duration-200 hover:scale-105 hover:brightness-120"
       />
       {/* // ! menu    */}
-      <OptionsMenu
-        menuFor={previewType}
-        ref={menuRef}
-        areOptionsVisible={areOptionsVisible}
-        options={options}
-        directionOfMenu="bottomLeft"
-      />
+      {previewType === "playlist" ||
+      previewType === "artist" ||
+      previewType === "album" ? (
+        // Simple options menu for playlists, artists, and albums
+        <ul
+          ref={menuRef}
+          className={`absolute -right-4 bottom-2 z-10 max-h-80 overflow-y-auto rounded-md bg-amber-200 p-1 text-sm text-nowrap shadow-md ${areOptionsVisible ? "inline" : "hidden"}`}
+        >
+          {options.map((option) => (
+            <li
+              key={option}
+              className="z-1000 flex h-10 w-full items-center rounded-md p-2 font-bold hover:cursor-pointer hover:bg-amber-400"
+              onClick={() => {
+                if (option === "Delete") {
+                  // Handle delete playlist
+                  const isConfirmed = window.confirm(
+                    `Are you sure you want to delete "${item.name}"? This action cannot be undone.`,
+                  );
+
+                  if (isConfirmed) {
+                    deletePlaylist(item.id).then((result) => {
+                      if (result.success) {
+                        console.log("✅ Playlist deleted successfully");
+                        navigate("/home");
+                      } else {
+                        console.error(
+                          "❌ Failed to delete playlist:",
+                          result.error,
+                        );
+                      }
+                    });
+                  }
+                } else if (option === "Edit details") {
+                  // Handle edit details
+                  console.log("Edit playlist details:", item.id);
+                } else {
+                  console.log("Option clicked:", option);
+                }
+                setAreOptionsVisible(false);
+              }}
+            >
+              {option}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <OptionsMenu
+          menuFor={previewType}
+          ref={menuRef}
+          areOptionsVisible={areOptionsVisible}
+          setAreOptionsVisible={setAreOptionsVisible}
+          options={options}
+          directionOfMenu="bottomLeft"
+        />
+      )}
     </div>
   );
 }
