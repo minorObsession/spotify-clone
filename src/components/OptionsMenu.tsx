@@ -43,7 +43,11 @@ function OptionsMenu({
 
       const { createNewPlaylist } = useStateStore.getState();
 
-      const result = await createNewPlaylist(track.name, track.id);
+      const result = await createNewPlaylist(
+        track.name,
+        track.id,
+        track.imageUrl,
+      );
 
       if (result.success) {
         console.log("✅ Playlist created successfully");

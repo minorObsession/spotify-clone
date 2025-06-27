@@ -81,6 +81,7 @@ export interface PlaylistSlice {
   createNewPlaylist: (
     name: string,
     trackId: string,
+    imageUrl: string,
   ) => Promise<AsyncResult<UserPlaylistType>>;
   deletePlaylist: (id: string) => Promise<AsyncResult<void>>;
 }
@@ -365,7 +366,11 @@ export const createPlaylistSlice: StateCreator<
     return result;
   },
 
-  createNewPlaylist: async (name: string, trackId: string) => {
+  createNewPlaylist: async (
+    name: string,
+    trackId: string,
+    imageUrl: string,
+  ) => {
     try {
       const userID = get().user?.userID;
 
@@ -375,11 +380,7 @@ export const createPlaylistSlice: StateCreator<
           error: new Error("User ID not found"),
         };
 
-      // todo : NEED IMAGE!!!!
-      // todo : NEED IMAGE!!!!
-      // todo : NEED IMAGE!!!!
-      // todo : NEED IMAGE!!!!
-      // ! IMAGE ISN'T IN THE RESPONSE
+      // Create the playlist first
       const result = await wrapPromiseResult<UserPlaylistType>(
         fetchFromSpotify<SpotifyApi.CreatePlaylistResponse, UserPlaylistType>({
           endpoint: `users/${userID}/playlists`,
@@ -390,7 +391,7 @@ export const createPlaylistSlice: StateCreator<
           transformFn: (data) => ({
             name: data.name,
             id: data.id,
-            imageUrl: data.images?.[0]?.url,
+            imageUrl: imageUrl || data.images?.[0]?.url || "",
             ownerName: data.owner.display_name || get().user?.username || "",
             trackIds: [trackId],
           }),
@@ -403,10 +404,22 @@ export const createPlaylistSlice: StateCreator<
           error: new Error("Failed to create playlist"),
         };
 
+      // Add the track to the newly created playlist
+      const addTrackResult = await get().addTrackToPlaylist(
+        result.data.id,
+        trackId,
+      );
+
+      if (!addTrackResult.success) {
+        console.error(
+          "Failed to add track to new playlist:",
+          addTrackResult.error,
+        );
+        // Still return success for playlist creation, but log the error
+      }
       const { playlists, playlistNamesWithIds } = get();
 
       // Add the new playlist to the state
-
       set(
         {
           playlists: [result.data, ...playlists],
@@ -422,13 +435,10 @@ export const createPlaylistSlice: StateCreator<
         "playlist/addNewPlaylist",
       );
 
-      // Invalidate cache for user playlists
-      // ! TEST WHAT HAPPENS IF I DON'T DO THIS INVALIDATION
-      // await invalidateCacheForEndpoint(`v1/me/playlists`);
-      console.log("FINAL RESULT", result);
+      console.log("✅ Playlist created successfully:", result.data);
       return result;
     } catch (error) {
-      console.error(error);
+      console.error("Error creating playlist:", error);
       return {
         success: false,
         error: new Error("Failed to create playlist"),
@@ -437,17 +447,25 @@ export const createPlaylistSlice: StateCreator<
   },
 
   deletePlaylist: async (id: string) => {
-    const result = await wrapPromiseResult<void>(
-      fetchFromSpotify<void, void>({
-        endpoint: `playlists/${id}`,
-        method: "DELETE",
-      }),
-    );
+    try {
+      const result = await wrapPromiseResult<void>(
+        fetchFromSpotify<void, void>({
+          endpoint: `playlists/${id}`,
+          method: "DELETE",
+        }),
+      );
 
-    if (result.success) {
-      await invalidateCacheForEndpoint(`playlists/${id}`);
-      await invalidateCacheForEndpoint(`me/playlists`);
+      if (result.success) {
+        await invalidateCacheForEndpoint(`playlists/${id}`);
+        await invalidateCacheForEndpoint(`me/playlists`);
+      }
+      return result;
+    } catch (error) {
+      console.error("Error deleting playlist:", error);
+      return {
+        success: false,
+        error: new Error("Failed to delete playlist"),
+      };
     }
-    return result;
   },
 });
