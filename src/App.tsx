@@ -24,11 +24,12 @@ import FullPreviewPodcast, {
 } from "./features/podcasts/FPPodcast";
 import FPFiltered from "./features/search/FPFiltered";
 import { ServiceWorkerCacheMonitor } from "./components/ServiceWorkerCacheMonitor";
-import { serviceWorker } from "./serviceWorker";
 
 // TODO :
-// ! fix issue with infinite reloading when only 1 thing in playlist! (problem with assumption that all items are playlists!!!)
-// ! PUT SEARCH FILTERS IN URL BAR
+// ! fix issue with infinite reloading - not working!! (problem - useLoadMoreOnScroll dependency array)
+// ! PUT SEARCH FILTERS IN URL
+// !
+//
 
 // ! :
 
@@ -115,7 +116,7 @@ function App() {
       element: <PageNotFound />,
     },
   ]);
-  console.log(serviceWorker);
+
   return (
     <>
       <RouterProvider router={router} />

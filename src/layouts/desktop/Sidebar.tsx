@@ -8,6 +8,7 @@ import { useStateStore } from "../../state/store";
 //  ! SIDEBAR CAN CONTAIN MORE THAN PLAYLISTS!! ACCOUNT FOR THIS!!
 function Sidebar() {
   const { playlists, usersSavedTracks } = useStateStore((store) => store);
+
   if (!playlists) return null;
   return (
     <aside

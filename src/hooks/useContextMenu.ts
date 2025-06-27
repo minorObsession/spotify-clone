@@ -38,20 +38,20 @@ export function useContextMenu(options: ContextMenuOptions = {}) {
       setIsVisible(true);
 
       // Store any relevant data about what was right-clicked
-      const target = event.target as HTMLElement;
+      const targetEl = event.target as HTMLElement;
       const trackId =
-        target.closest("[data-track-id]")?.getAttribute("data-track-id") ||
+        targetEl.closest("[data-track-id]")?.getAttribute("data-track-id") ||
         null;
       const playlistId =
-        target
+        targetEl
           .closest("[data-playlist-id]")
           ?.getAttribute("data-playlist-id") || null;
 
       setContextData({
         trackId,
         playlistId,
-        target,
-        element: target,
+        targetEl,
+        element: targetEl,
       });
 
       onShow?.(newPosition);

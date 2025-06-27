@@ -33,7 +33,6 @@ function OptionsMenu({
   const { handleMouseEnter, handleMouseLeave } = useHoverTrackItem();
 
   const handleDisplayOptions = () => {
-    console.log("handleDisplayOptions");
     setAreOptionsVisible(true);
   };
 
@@ -64,7 +63,7 @@ function OptionsMenu({
     }
   };
 
-  if (!track) return null;
+  // if (!track) return null;
 
   return (
     <div
@@ -94,7 +93,7 @@ function OptionsMenu({
             menuFor={menuFor}
             option={option}
             key={`${option}-${i}`}
-            selectedTrackId={track.id}
+            selectedTrackId={track?.id || ""}
           />
         ))}
       </ul>

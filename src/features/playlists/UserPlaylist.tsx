@@ -7,6 +7,7 @@ function UserPlaylist({ name, imageUrl, id, ownerName }: UserPlaylistType) {
 
   return (
     <article
+      data-playlist-id={id}
       className="playlist-item cursor-pointer gap-x-2 text-sm hover:bg-amber-300 md:gap-x-3"
       onClick={() => navigate(`/home/playlist/${id}`)}
     >
