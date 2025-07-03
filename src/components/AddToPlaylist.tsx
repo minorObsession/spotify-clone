@@ -26,7 +26,7 @@ function AddToPlaylist({
   const [isPlaylistSelectMenuOpen, setIsPlaylistSelectMenuOpen] =
     useState(false);
 
-  const playlists = useStateStore.getState().playlists;
+  const { playlists } = useStateStore.getState();
   const playlistNames = playlists?.map((playlist) => playlist.name) || [];
 
   const playlistMenuRef = useOutsideClick<HTMLUListElement>(
@@ -61,7 +61,7 @@ function AddToPlaylist({
     // * call spotify api with post req
   };
 
-  const isTheTrackInLibrary = isTrackInLibrary(id) || false;
+  const isTheTrackInLibrary = isTrackInLibrary(id);
   const tooltipMessage = isTheTrackInLibrary
     ? "Add to Playlist"
     : "Add to Liked Songs";

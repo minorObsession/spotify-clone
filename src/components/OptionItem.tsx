@@ -44,12 +44,14 @@ function OptionItem({
   );
 
   const handleAddToPlaylist = useCallback(async () => {
+    console.log("selectedTrackId", selectedTrackId);
     try {
       const { addTrackToPlaylist } = useStateStore.getState();
 
       const playlist = playlists.find((p) => p.name === option);
       const playlistId = playlist?.id;
 
+      console.log("playlistId", playlistId);
       if (!playlistId) throw Error("No playlist found!");
 
       // ! check if track is already in playlist

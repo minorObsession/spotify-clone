@@ -75,3 +75,23 @@ export const getPlaceholderImage = (
 
   return placeholders[type];
 };
+
+// Helper function to get positioning classes based on direction
+export const getPositioningClasses = (direction: string) => {
+  switch (direction) {
+    case "topLeft":
+      return "bottom-2 -right-4"; // Above trigger, aligned to left
+    case "topRight":
+      return "bottom-2 -left-4"; // Above trigger, aligned to right
+    case "bottomLeft":
+      return "top-2 -left-40"; // Below trigger, aligned to left
+    case "bottomRight":
+      return "top-10 right-0"; // Use right-0 instead of negative
+    case "extendToRight":
+      return "-top-1 -right-60"; // Extend to right
+    case "extendToLeft":
+      return "-top-1 right-60"; // Extend to left
+    default:
+      return "bottom-2 -right-4"; // Default fallback
+  }
+};

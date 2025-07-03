@@ -4,6 +4,7 @@ import OptionItem from "./OptionItem";
 import { useStateStore } from "../state/store";
 import { TrackType } from "../features/tracks/track";
 import { RequireAtLeastOne } from "../types/requireAtLeastOneProp";
+import { getPositioningClasses } from "../helpers/helperFunctions";
 
 export type MenuFor =
   | "userAvatar"
@@ -41,33 +42,12 @@ function OptionsMenu({
   menuFor,
   options,
   track,
-  selectedTrackId,
   onOptionClick,
 }: OptionsMenuProps) {
   const { handleMouseEnter, handleMouseLeave } = useHoverTrackItem();
 
   const handleDisplayOptions = () => {
     setAreOptionsVisible(true);
-  };
-
-  // Helper function to get positioning classes based on direction
-  const getPositioningClasses = (direction: string) => {
-    switch (direction) {
-      case "topLeft":
-        return "bottom-2 -right-4"; // Above trigger, aligned to left
-      case "topRight":
-        return "bottom-2 -left-4"; // Above trigger, aligned to right
-      case "bottomLeft":
-        return "top-2 -left-40"; // Below trigger, aligned to left
-      case "bottomRight":
-        return "top-10 right-0"; // Use right-0 instead of negative
-      case "extendToRight":
-        return "-top-1 -right-60"; // Extend to right
-      case "extendToLeft":
-        return "-top-1 right-60"; // Extend to left
-      default:
-        return "bottom-2 -right-4"; // Default fallback
-    }
   };
 
   const handleCreateNewPlaylist = async () => {
@@ -132,7 +112,7 @@ function OptionsMenu({
             menuFor={menuFor}
             option={option}
             key={`${option}-${i}`}
-            selectedTrackId={track?.id || selectedTrackId}
+            selectedTrackId={track?.id || ""}
             onOptionClick={onOptionClick}
           />
         ))}

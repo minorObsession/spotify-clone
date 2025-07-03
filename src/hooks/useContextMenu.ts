@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback } from "react";
-import { useStateStore } from "../state/store";
 
 interface ContextMenuPosition {
   x: number;
@@ -21,19 +20,18 @@ export interface ContextMenuOptions {
   menuWidth: number;
 }
 
+interface ContextDataType {
+  trackId: string | null;
+  playlistId: string | null;
+  targetEl: HTMLElement;
+  element: HTMLElement;
+}
+
 export function useContextMenu(options: ContextMenuOptions) {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState<ContextMenuPosition>({ x: 0, y: 0 });
-  const [contextData, setContextData] = useState<any>(null);
-
-  const {
-    onShow,
-    onHide,
-    customItems = [],
-    preventDefault = true,
-    menuWidth,
-  } = options;
-  const { playlists } = useStateStore.getState();
+  const [contextData, setContextData] = useState<ContextDataType | null>(null);
+  const { onShow, onHide, preventDefault = true, menuWidth } = options;
   const handleContextMenu = useCallback(
     (event: MouseEvent) => {
       // ! to prevent browser default context menu
@@ -45,9 +43,7 @@ export function useContextMenu(options: ContextMenuOptions) {
       // determine if position is outside of the viewport
 
       const shouldFlipMenu = window.innerWidth - newPosition.x < menuWidth;
-      if (shouldFlipMenu) {
-        newPosition.x = event.clientX - menuWidth;
-      }
+      if (shouldFlipMenu) newPosition.x = event.clientX - menuWidth;
 
       setPosition(newPosition);
       setIsVisible(true);
