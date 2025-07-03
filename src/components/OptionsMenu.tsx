@@ -3,23 +3,35 @@ import useHoverTrackItem from "../hooks/useHoverTrackItem";
 import OptionItem from "./OptionItem";
 import { useStateStore } from "../state/store";
 import { TrackType } from "../features/tracks/track";
+import { RequireAtLeastOne } from "../types/requireAtLeastOneProp";
 
 export type MenuFor =
   | "userAvatar"
   | "playlist"
   | "track"
   | "addToPlaylist"
-  | "podcast";
+  | "podcast"
+  | "artist"
+  | "album";
 
-interface OptionsMenuProps {
+type OptionsMenuProps = {
   options: string[];
   menuFor: MenuFor;
   ref: React.RefObject<HTMLUListElement>;
   areOptionsVisible: boolean;
   setAreOptionsVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  directionOfMenu?: "topLeft" | "bottomLeft";
-  track?: TrackType;
-}
+  directionOfMenu?:
+    | "topLeft"
+    | "bottomLeft"
+    | "topRight"
+    | "bottomRight"
+    | "extendToRight"
+    | "extendToLeft";
+  onOptionClick?: (option: string) => void;
+} & RequireAtLeastOne<{
+  track: TrackType;
+  selectedTrackId: string;
+}>;
 
 function OptionsMenu({
   ref,
@@ -29,11 +41,33 @@ function OptionsMenu({
   menuFor,
   options,
   track,
+  selectedTrackId,
+  onOptionClick,
 }: OptionsMenuProps) {
   const { handleMouseEnter, handleMouseLeave } = useHoverTrackItem();
 
   const handleDisplayOptions = () => {
     setAreOptionsVisible(true);
+  };
+
+  // Helper function to get positioning classes based on direction
+  const getPositioningClasses = (direction: string) => {
+    switch (direction) {
+      case "topLeft":
+        return "bottom-2 -right-4"; // Above trigger, aligned to left
+      case "topRight":
+        return "bottom-2 -left-4"; // Above trigger, aligned to right
+      case "bottomLeft":
+        return "top-2 -left-40"; // Below trigger, aligned to left
+      case "bottomRight":
+        return "top-10 right-0"; // Use right-0 instead of negative
+      case "extendToRight":
+        return "-top-1 -right-60"; // Extend to right
+      case "extendToLeft":
+        return "-top-1 right-60"; // Extend to left
+      default:
+        return "bottom-2 -right-4"; // Default fallback
+    }
   };
 
   const handleCreateNewPlaylist = async () => {
@@ -74,7 +108,7 @@ function OptionsMenu({
     >
       <ul
         ref={ref}
-        className={`absolute p-2 ${directionOfMenu === "bottomLeft" ? "-left-20" : "-right-4"} ${directionOfMenu === "bottomLeft" ? "top-2" : "bottom-2"} z-10 max-h-80 overflow-y-auto rounded-md bg-amber-200 p-1 text-sm text-nowrap shadow-md ${areOptionsVisible ? "inline" : "hidden"}`}
+        className={`absolute ${getPositioningClasses(directionOfMenu)} z-10 max-h-80 overflow-y-auto rounded-md bg-amber-200 p-1 text-sm text-nowrap shadow-md ${areOptionsVisible ? "inline" : "hidden"}`}
       >
         {menuFor === "addToPlaylist" && (
           <>
@@ -87,13 +121,19 @@ function OptionsMenu({
             </button>
           </>
         )}
+
+        {/* // *** HERE! TRYUING TO GET TRACK ID  */}
+        {/* // *** HERE! TRYUING TO GET TRACK ID  */}
+        {/* // *** HERE! TRYUING TO GET TRACK ID  */}
+        {/* // *** HERE! TRYUING TO GET TRACK ID  */}
         {options.map((option, i) => (
-          // menuFor
+          // ! pass track id here!!! to determine if track is already in playlist
           <OptionItem
             menuFor={menuFor}
             option={option}
             key={`${option}-${i}`}
-            selectedTrackId={track?.id || ""}
+            selectedTrackId={track?.id || selectedTrackId}
+            onOptionClick={onOptionClick}
           />
         ))}
       </ul>

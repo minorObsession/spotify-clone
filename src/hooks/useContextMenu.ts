@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useStateStore } from "../state/store";
 
 interface ContextMenuPosition {
   x: number;
@@ -17,15 +18,22 @@ export interface ContextMenuOptions {
   onHide?: () => void;
   customItems?: ContextMenuItem[];
   preventDefault?: boolean;
+  menuWidth: number;
 }
 
-export function useContextMenu(options: ContextMenuOptions = {}) {
+export function useContextMenu(options: ContextMenuOptions) {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState<ContextMenuPosition>({ x: 0, y: 0 });
   const [contextData, setContextData] = useState<any>(null);
 
-  const { onShow, onHide, customItems = [], preventDefault = true } = options;
-
+  const {
+    onShow,
+    onHide,
+    customItems = [],
+    preventDefault = true,
+    menuWidth,
+  } = options;
+  const { playlists } = useStateStore.getState();
   const handleContextMenu = useCallback(
     (event: MouseEvent) => {
       // ! to prevent browser default context menu
@@ -34,6 +42,13 @@ export function useContextMenu(options: ContextMenuOptions = {}) {
       }
 
       const newPosition = { x: event.clientX, y: event.clientY };
+      // determine if position is outside of the viewport
+
+      const shouldFlipMenu = window.innerWidth - newPosition.x < menuWidth;
+      if (shouldFlipMenu) {
+        newPosition.x = event.clientX - menuWidth;
+      }
+
       setPosition(newPosition);
       setIsVisible(true);
 
@@ -42,6 +57,7 @@ export function useContextMenu(options: ContextMenuOptions = {}) {
       const trackId =
         targetEl.closest("[data-track-id]")?.getAttribute("data-track-id") ||
         null;
+
       const playlistId =
         targetEl
           .closest("[data-playlist-id]")
@@ -56,7 +72,7 @@ export function useContextMenu(options: ContextMenuOptions = {}) {
 
       onShow?.(newPosition);
     },
-    [preventDefault, onShow],
+    [preventDefault, onShow, menuWidth],
   );
 
   const hideContextMenu = useCallback(() => {

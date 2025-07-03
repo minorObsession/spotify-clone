@@ -8,6 +8,7 @@ interface OptionItemProps {
   option: string;
   menuFor: MenuFor;
   selectedTrackId: string;
+  onOptionClick?: (option: string) => void;
 }
 
 interface PlaylistNamesWithSelectedTrack {
@@ -15,7 +16,12 @@ interface PlaylistNamesWithSelectedTrack {
   isTrackInPlaylist: boolean;
 }
 
-function OptionItem({ option, menuFor, selectedTrackId }: OptionItemProps) {
+function OptionItem({
+  option,
+  menuFor,
+  selectedTrackId,
+  onOptionClick,
+}: OptionItemProps) {
   const navigate = useNavigate();
   const {
     logout,
@@ -27,7 +33,6 @@ function OptionItem({ option, menuFor, selectedTrackId }: OptionItemProps) {
   } = useStateStore((store) => store);
   // for each option (playlist), determine if selected track is in playlist
   const currentPlaylistId = location.pathname.split("/playlist/")[1];
-
   const playlistNamesWithSelectedTrack: PlaylistNamesWithSelectedTrack[] =
     playlistNamesWithIds.map((p) => ({
       playlistName: p.name,
@@ -45,7 +50,7 @@ function OptionItem({ option, menuFor, selectedTrackId }: OptionItemProps) {
       const playlist = playlists.find((p) => p.name === option);
       const playlistId = playlist?.id;
 
-      if (!playlistId) throw Error("No playlist found");
+      if (!playlistId) throw Error("No playlist found!");
 
       // ! check if track is already in playlist
       if (trackInQuestion?.isTrackInPlaylist) {
@@ -192,6 +197,13 @@ function OptionItem({ option, menuFor, selectedTrackId }: OptionItemProps) {
     e: React.MouseEvent<HTMLLIElement>,
     clickedOption: string,
   ) => {
+    // If external callback is provided, use it
+    if (onOptionClick) {
+      onOptionClick(clickedOption);
+      return;
+    }
+
+    // Otherwise, use internal logic
     if (menuFor === "userAvatar") logout();
 
     if (menuFor === "playlist") {

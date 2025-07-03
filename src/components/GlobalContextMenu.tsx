@@ -13,7 +13,7 @@ import {
   FaTrash,
 } from "react-icons/fa";
 import { useContextMenu } from "../hooks/useContextMenu";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Tooltip from "./Tooltip";
 import OptionsMenu from "./OptionsMenu";
 import useOutsideClick from "../hooks/useOutsideClick";
@@ -24,9 +24,20 @@ function GlobalContextMenu() {
   const [isDeleteHovered, setIsDeleteHovered] = useState(false);
   const [isPlaylistSelectMenuOpen, setIsPlaylistSelectMenuOpen] =
     useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuWidth, setMenuWidth] = useState(192); // Default fallback
+
   const { isVisible, position, contextData, hideContextMenu } = useContextMenu({
     preventDefault: true,
+    menuWidth,
   });
+
+  // Update menu width when menu becomes visible
+  useEffect(() => {
+    if (isVisible && menuRef.current) {
+      setMenuWidth(menuRef.current.offsetWidth);
+    }
+  }, [isVisible]);
 
   const trackId = contextData?.trackId;
   const playlistId = contextData?.playlistId;
@@ -50,13 +61,20 @@ function GlobalContextMenu() {
   };
 
   const handleAddToLikedSongs = async () => {
-    if (trackId) {
-      await addToLikedSongs(trackId);
-    }
+    if (!trackId) return;
+    await addToLikedSongs(trackId);
     hideContextMenu();
   };
 
-  const handleAddToPlaylist = () => {
+  const handleAddToPlaylist = (option: string) => {
+    const playlistId = playlists.find((p) => p.name === option)?.id;
+
+    if (!playlistId) throw Error("No playlist found");
+
+    console.log(playlistId);
+    // ! check if track is already in playlist
+    // const isTrackInPlaylist = playlist.trackIds.includes(trackId);
+
     hideContextMenu();
   };
 
@@ -86,6 +104,10 @@ function GlobalContextMenu() {
 
   const menuItems = [];
 
+  //*** */ GOTTA GET WHOLE TRACK OBJECT HERE!!
+  //*** */ GOTTA GET WHOLE TRACK OBJECT HERE!!
+  //*** */ GOTTA GET WHOLE TRACK OBJECT HERE!!
+  //*** */ GOTTA GET WHOLE TRACK OBJECT HERE!!
   // ! Track-specific items
   if (trackId) {
     menuItems.push(
@@ -96,27 +118,25 @@ function GlobalContextMenu() {
       >
         <button
           key="add-to-playlist"
-          className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-gray-100"
+          className="flex w-full items-center gap-3 px-4 py-2 hover:bg-gray-100"
         >
           <FaPlus size={14} />
           <span className="justify-self-start">Add to playlist</span>
           <RiArrowRightSFill size={20} className="grow-1 justify-self-end" />
         </button>
 
-        {/* // ! FIGURING OUT HOW TO PASS WHOLE TRACK OBJECT to the context menu!! */}
-        {/* // ! FIGURING OUT HOW TO PASS WHOLE TRACK OBJECT to the context menu!! */}
-        {/* // ! FIGURING OUT HOW TO PASS WHOLE TRACK OBJECT to the context menu!! */}
-        {/* // ! FIGURING OUT HOW TO PASS WHOLE TRACK OBJECT to the context menu!! */}
-        {/* // ! FIGURING OUT HOW TO PASS WHOLE TRACK OBJECT to the context menu!! */}
-        {/* // ! FIGURING OUT HOW TO PASS WHOLE TRACK OBJECT!! */}
-        {/* // ! FIGURING OUT HOW TO PASS WHOLE TRACK OBJECT!! */}
         <OptionsMenu
           ref={playlistMenuRef}
           areOptionsVisible={isPlaylistSelectMenuOpen}
           setAreOptionsVisible={setIsPlaylistSelectMenuOpen}
           menuFor="addToPlaylist"
           options={playlistNames}
-          directionOfMenu="bottomLeft"
+          directionOfMenu={
+            window.innerWidth - position.x - menuWidth < 250
+              ? "extendToLeft"
+              : "extendToRight"
+          }
+          // onOptionClick={(option) => handleAddToPlaylist(option)}
           // track ={trackId}
         />
       </div>,
@@ -136,13 +156,7 @@ function GlobalContextMenu() {
         <FaHeart size={14} />
         Save to your Liked Songs
       </button>,
-      <button
-        key="add-to-playlist"
-        className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-gray-100"
-      >
-        <FaPlus size={14} />
-        Add to playlist
-      </button>,
+
       <button
         key="share"
         onClick={handleShare}
@@ -227,6 +241,7 @@ function GlobalContextMenu() {
 
   return createPortal(
     <div
+      ref={menuRef}
       id="global-context-menu"
       style={menuStyle}
       className="min-w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
