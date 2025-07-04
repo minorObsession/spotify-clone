@@ -20,7 +20,7 @@ type OptionsMenuProps = {
   menuFor: MenuFor;
   ref: React.RefObject<HTMLUListElement>;
   areOptionsVisible: boolean;
-  setAreOptionsVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  setAreOptionsVisible?: React.Dispatch<React.SetStateAction<boolean>>;
   directionOfMenu?:
     | "topLeft"
     | "bottomLeft"
@@ -47,7 +47,7 @@ function OptionsMenu({
   const { handleMouseEnter, handleMouseLeave } = useHoverTrackItem();
 
   const handleDisplayOptions = () => {
-    setAreOptionsVisible(true);
+    setAreOptionsVisible?.(true);
   };
 
   const handleCreateNewPlaylist = async () => {
@@ -102,10 +102,6 @@ function OptionsMenu({
           </>
         )}
 
-        {/* // *** HERE! TRYUING TO GET TRACK ID  */}
-        {/* // *** HERE! TRYUING TO GET TRACK ID  */}
-        {/* // *** HERE! TRYUING TO GET TRACK ID  */}
-        {/* // *** HERE! TRYUING TO GET TRACK ID  */}
         {options.map((option, i) => (
           // ! pass track id here!!! to determine if track is already in playlist
           <OptionItem

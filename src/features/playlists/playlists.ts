@@ -332,7 +332,36 @@ export const createPlaylistSlice: StateCreator<
       }),
     );
 
-    if (result.success) await invalidateCacheForEndpoint(`playlists/${id}`);
+    if (result.success) {
+      await invalidateCacheForEndpoint(`playlists/${id}`);
+
+      // Update UI state internally
+      const { playlists, playlistNamesWithIds } = get();
+
+      // Find the playlist by ID
+      const playlist = playlists.find((p) => p.id === id);
+      if (playlist) {
+        // Update user playlists
+        const updatedUserPlaylists = playlists.map((p) =>
+          p.id === id ? { ...p, trackIds: [...p.trackIds, trackId] } : p,
+        );
+
+        // Update playlistNamesWithIds
+        const updatedPlaylistNamesWithIds = playlistNamesWithIds.map((p) =>
+          p.name === playlist.name ? { ...p, ids: [...p.ids, trackId] } : p,
+        );
+
+        set(
+          {
+            playlists: updatedUserPlaylists,
+            playlistNamesWithIds: updatedPlaylistNamesWithIds,
+          },
+          undefined,
+          "playlist/addTrackToPlaylist",
+        );
+      }
+    }
+
     return result;
   },
 
@@ -347,7 +376,43 @@ export const createPlaylistSlice: StateCreator<
       }),
     );
 
-    if (result.success) await invalidateCacheForEndpoint(`playlists/${id}`);
+    if (result.success) {
+      await invalidateCacheForEndpoint(`playlists/${id}`);
+
+      // Update UI state internally
+      const { playlists, playlistNamesWithIds } = get();
+
+      // Find the playlist by ID
+      const playlist = playlists.find((p) => p.id === id);
+      if (playlist) {
+        // Update user playlists
+        const updatedUserPlaylists = playlists.map((p) =>
+          p.id === id
+            ? {
+                ...p,
+                trackIds: p.trackIds.filter((id) => id !== trackId),
+              }
+            : p,
+        );
+
+        // Update playlistNamesWithIds
+        const updatedPlaylistNamesWithIds = playlistNamesWithIds.map((p) =>
+          p.name === playlist.name
+            ? { ...p, ids: p.ids.filter((id) => id !== trackId) }
+            : p,
+        );
+
+        set(
+          {
+            playlists: updatedUserPlaylists,
+            playlistNamesWithIds: updatedPlaylistNamesWithIds,
+          },
+          undefined,
+          "playlist/removeTrackFromPlaylist",
+        );
+      }
+    }
+
     return result;
   },
 

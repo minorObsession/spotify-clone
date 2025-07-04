@@ -84,7 +84,7 @@ export const getPositioningClasses = (direction: string) => {
     case "topRight":
       return "bottom-2 -left-4"; // Above trigger, aligned to right
     case "bottomLeft":
-      return "top-2 -left-40"; // Below trigger, aligned to left
+      return "top-2 -left-20"; // Below trigger, aligned to left
     case "bottomRight":
       return "top-10 right-0"; // Use right-0 instead of negative
     case "extendToRight":

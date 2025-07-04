@@ -47,6 +47,7 @@ function UserAvatar({ inHeader = false }: UserAvatarProps) {
             areOptionsVisible={areOptionsVisible}
             options={options}
             directionOfMenu="bottomLeft"
+            selectedTrackId={""}
           />
         </>
       )}

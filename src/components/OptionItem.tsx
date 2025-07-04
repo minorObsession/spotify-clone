@@ -43,6 +43,8 @@ function OptionItem({
     (p) => p.playlistName === option,
   );
 
+  console.log("trackInQuestion", trackInQuestion);
+
   const handleAddToPlaylist = useCallback(async () => {
     console.log("selectedTrackId", selectedTrackId);
     try {
@@ -64,34 +66,12 @@ function OptionItem({
       const result = await addTrackToPlaylist(playlistId, selectedTrackId);
 
       if (!result.success) throw Error("Failed to add track to playlist");
-
-      // ! update user playlists
-      const updatedUserPlaylists = playlists.map((p) =>
-        p.name.toLowerCase() === option.toLowerCase()
-          ? { ...p, trackIds: [...p.trackIds, selectedTrackId] }
-          : p,
-      );
-
-      // ! update playlistNamesWithIds
-      const updatedPlaylistNamesWithIds = playlistNamesWithIds.map((p) =>
-        p.name === option ? { ...p, ids: [...p.ids, selectedTrackId] } : p,
-      );
-
-      setPlaylistNamesWithIds(updatedPlaylistNamesWithIds);
-      setUserPlaylists(updatedUserPlaylists);
     } catch (error) {
       console.error("Error adding track to playlist:", error);
     }
-  }, [
-    playlistNamesWithIds,
-    selectedTrackId,
-    option,
-    trackInQuestion,
-    playlists,
-    setPlaylistNamesWithIds,
-    setUserPlaylists,
-  ]);
+  }, [selectedTrackId, option, trackInQuestion, playlists]);
 
+  // ! working well!
   const removeTrackFromPlaylist = useCallback(async () => {
     try {
       const { removeTrackFromPlaylist } = useStateStore.getState();
@@ -104,26 +84,6 @@ function OptionItem({
       const result = await removeTrackFromPlaylist(playlistId, selectedTrackId);
 
       if (!result.success) throw Error("Failed to remove track from playlist");
-
-      // ! update playlistNamesWithIds
-      const updatedPlaylistNamesWithIds = playlistNamesWithIds.map((p) =>
-        p.name === option
-          ? { ...p, ids: p.ids.filter((id) => id !== selectedTrackId) }
-          : p,
-      );
-
-      // ! update user playlists
-      const updatedUserPlaylists = playlists.map((p) =>
-        p.name.toLowerCase() === option.toLowerCase()
-          ? {
-              ...p,
-              trackIds: p.trackIds.filter((id) => id !== selectedTrackId),
-            }
-          : p,
-      );
-
-      setUserPlaylists(updatedUserPlaylists);
-      setPlaylistNamesWithIds(updatedPlaylistNamesWithIds);
 
       // if current playlist is modified, update UI
       if (playlistId === currentPlaylistId) {
@@ -141,15 +101,7 @@ function OptionItem({
     } catch (error) {
       console.error("Error removing track from playlist:", error);
     }
-  }, [
-    playlistNamesWithIds,
-    selectedTrackId,
-    option,
-    playlists,
-    setPlaylistNamesWithIds,
-    setUserPlaylists,
-    currentPlaylistId,
-  ]);
+  }, [selectedTrackId, option, playlists, currentPlaylistId]);
 
   const handleDeletePlaylist = useCallback(async () => {
     // Add confirmation dialog
@@ -231,6 +183,8 @@ function OptionItem({
       }
     }
   };
+
+  // * NO MATTER IF THE BUTTON IS CLICKED OR LI ITEM IS CLICKED - it should be the same function - add to playlist or remove from playlist
 
   return (
     <div className="z-1000 flex h-10 w-full items-center justify-between rounded-md p-2 font-bold hover:cursor-pointer hover:bg-amber-400">
