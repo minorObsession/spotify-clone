@@ -23,14 +23,8 @@ function OptionItem({
   onOptionClick,
 }: OptionItemProps) {
   const navigate = useNavigate();
-  const {
-    logout,
-    playlistNamesWithIds,
-    playlists,
-    setPlaylistNamesWithIds,
-    setUserPlaylists,
-    deletePlaylist,
-  } = useStateStore((store) => store);
+  const { logout, playlistNamesWithIds, playlists, deletePlaylist } =
+    useStateStore((store) => store);
   // for each option (playlist), determine if selected track is in playlist
   const currentPlaylistId = location.pathname.split("/playlist/")[1];
   const playlistNamesWithSelectedTrack: PlaylistNamesWithSelectedTrack[] =
@@ -43,10 +37,8 @@ function OptionItem({
     (p) => p.playlistName === option,
   );
 
-  console.log("trackInQuestion", trackInQuestion);
-
   const handleAddToPlaylist = useCallback(async () => {
-    console.log("selectedTrackId", selectedTrackId);
+    // console.log(trackInQuestion);
     try {
       const { addTrackToPlaylist } = useStateStore.getState();
 
@@ -71,8 +63,9 @@ function OptionItem({
     }
   }, [selectedTrackId, option, trackInQuestion, playlists]);
 
-  // ! working well!
   const removeTrackFromPlaylist = useCallback(async () => {
+    // console.log(trackInQuestion);
+
     try {
       const { removeTrackFromPlaylist } = useStateStore.getState();
 
@@ -121,15 +114,6 @@ function OptionItem({
 
       if (!result.success) throw Error("Failed to delete playlist");
 
-      // Remove playlist from state
-      const updatedUserPlaylists = playlists.filter((p) => p.id !== playlistId);
-      const updatedPlaylistNamesWithIds = playlistNamesWithIds.filter(
-        (p) => p.name !== option,
-      );
-
-      setUserPlaylists(updatedUserPlaylists);
-      setPlaylistNamesWithIds(updatedPlaylistNamesWithIds);
-
       console.log("✅ Playlist deleted successfully");
       // TODO: Show success toast/notification
       navigate("/home");
@@ -137,20 +121,13 @@ function OptionItem({
       console.error("Error deleting playlist:", error);
       // TODO: Show error toast/notification
     }
-  }, [
-    option,
-    playlists,
-    playlistNamesWithIds,
-    deletePlaylist,
-    setUserPlaylists,
-    setPlaylistNamesWithIds,
-    navigate,
-  ]);
+  }, [option, playlists, deletePlaylist, navigate]);
 
   const handleOptionClick = (
-    e: React.MouseEvent<HTMLLIElement>,
+    e: React.MouseEvent<HTMLElement>,
     clickedOption: string,
   ) => {
+    console.log("clickedOption", clickedOption);
     // If external callback is provided, use it
     if (onOptionClick) {
       onOptionClick(clickedOption);
@@ -170,7 +147,11 @@ function OptionItem({
     }
 
     if (menuFor === "addToPlaylist") {
-      handleAddToPlaylist();
+      if (trackInQuestion?.isTrackInPlaylist) {
+        removeTrackFromPlaylist();
+      } else {
+        handleAddToPlaylist();
+      }
 
       if (clickedOption === "Edit details") {
         // ! open modal
@@ -184,22 +165,14 @@ function OptionItem({
     }
   };
 
-  // * NO MATTER IF THE BUTTON IS CLICKED OR LI ITEM IS CLICKED - it should be the same function - add to playlist or remove from playlist
-
   return (
-    <div className="z-1000 flex h-10 w-full items-center justify-between rounded-md p-2 font-bold hover:cursor-pointer hover:bg-amber-400">
-      <li onClick={(e) => handleOptionClick(e, option)} key={option}>
-        {option}
-      </li>
+    <div
+      onClick={(e) => handleOptionClick(e, option)}
+      className="z-1000 flex h-10 w-full items-center justify-between rounded-md p-2 font-bold hover:cursor-pointer hover:bg-amber-400"
+    >
+      <li key={option}>{option}</li>
       {menuFor === "addToPlaylist" && (
-        <button
-          className="h-4 w-4 hover:cursor-pointer"
-          onClick={() =>
-            trackInQuestion?.isTrackInPlaylist
-              ? removeTrackFromPlaylist()
-              : handleAddToPlaylist()
-          }
-        >
+        <button className="h-4 w-4 hover:cursor-pointer">
           {trackInQuestion?.isTrackInPlaylist ? (
             <FaCircleCheck fill="green" />
           ) : (

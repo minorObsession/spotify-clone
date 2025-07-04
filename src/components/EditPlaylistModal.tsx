@@ -17,7 +17,6 @@ interface EditPlaylistModalProps {
   playlist: PartialPlaylist;
   isEditingPlaylist: boolean;
   setIsEditingPlaylist: (isEditingPlaylist: boolean) => void;
-  // refetchPlaylist: (skipCache?: boolean) => Promise<void>;
 }
 
 function EditPlaylistModal({
@@ -179,68 +178,76 @@ function EditPlaylistModal({
   if (!isEditingPlaylist) return null;
 
   return (
-    <dialog
-      ref={modalRef}
-      className="h-fit-content absolute top-1/2 left-1/2 z-100 flex min-w-[30vw] -translate-x-1/2 -translate-y-1/2 flex-col gap-3 bg-stone-400 p-4"
-    >
-      {/* // ! name and close */}
-      <div className="flex items-center justify-between">
-        <p>Edit details</p>
-        <button onClick={() => setIsEditingPlaylist(false)}>&times;</button>
-      </div>
-      {/* // ! image and name/descr */}
-      <div className="flex">
-        <img
-          src={formData.imageUrl || playlist.imageUrl}
-          alt="Playlist image"
-          //  TODO add overlay pen image
-          className={`max-h-[12rem] w-1/2 hover:cursor-pointer hover:brightness-75`}
-          onClick={() => fileInputRef.current?.click()}
-        />
-        {/* Hidden file input */}
-        <input
-          type="file"
-          accept="image/jpg,image/jpeg"
-          ref={fileInputRef}
-          onChange={handleFileChangeAndUpload}
-          className="hidden"
-        />
-        <form
-          onSubmit={handleSubmitModifiedPlaylist}
-          className="flex w-full flex-col justify-between gap-5 px-2"
-        >
-          <div className="relative">
-            <input
-              onFocus={() => setIsNameFocused(true)}
-              onBlur={() => setIsNameFocused(false)}
-              type="text"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              className="h-10 w-full rounded-md border border-stone-600 bg-stone-400 p-2"
-            />
-            <FloatingLabel visible={isNameFocused} name="name" />
-          </div>
-          <div className="relative grow">
-            <textarea
-              onFocus={() => setIsDescriptionFocused(true)}
-              onBlur={() => setIsDescriptionFocused(false)}
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              defaultValue={playlist.description}
-              className="h-full w-full rounded-md border border-stone-600 bg-stone-400 p-2"
-            />
-            <FloatingLabel visible={isDescriptionFocused} name="description" />
-          </div>
-          <button className="w-fit cursor-pointer self-end rounded-full bg-amber-500 px-5 py-1.5 transition duration-150 hover:contrast-125">
-            Save
-          </button>
-        </form>
-      </div>
-    </dialog>
+    // ! overlay
+    <div className="absolute top-0 left-0 z-100 h-full w-full bg-black/50">
+      {/* // ! modal */}
+      <dialog
+        ref={modalRef}
+        id="edit-playlist-modal"
+        className="h-fit-content absolute top-1/2 left-1/2 z-1000 flex min-w-[30vw] -translate-x-1/2 -translate-y-1/2 flex-col gap-3 bg-stone-400 p-4"
+      >
+        {/* // ! name and close */}
+        <div className="flex items-center justify-between">
+          <p>Edit details</p>
+          <button onClick={() => setIsEditingPlaylist(false)}>&times;</button>
+        </div>
+        {/* // ! image and name/descr */}
+        <div className="flex">
+          <img
+            src={formData.imageUrl || playlist.imageUrl}
+            alt="Playlist image"
+            //  TODO add overlay pen image
+            className={`max-h-[12rem] w-1/2 hover:cursor-pointer hover:brightness-75`}
+            onClick={() => fileInputRef.current?.click()}
+          />
+          {/* Hidden file input */}
+          <input
+            type="file"
+            accept="image/jpg,image/jpeg"
+            ref={fileInputRef}
+            onChange={handleFileChangeAndUpload}
+            className="hidden"
+          />
+          <form
+            onSubmit={handleSubmitModifiedPlaylist}
+            className="flex w-full flex-col justify-between gap-5 px-2"
+          >
+            <div className="relative">
+              <input
+                onFocus={() => setIsNameFocused(true)}
+                onBlur={() => setIsNameFocused(false)}
+                type="text"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                className="h-10 w-full rounded-md border border-stone-600 bg-stone-400 p-2"
+              />
+              <FloatingLabel visible={isNameFocused} name="name" />
+            </div>
+            <div className="relative grow">
+              <textarea
+                onFocus={() => setIsDescriptionFocused(true)}
+                onBlur={() => setIsDescriptionFocused(false)}
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                defaultValue={playlist.description}
+                className="h-full w-full rounded-md border border-stone-600 bg-stone-400 p-2"
+              />
+              <FloatingLabel
+                visible={isDescriptionFocused}
+                name="description"
+              />
+            </div>
+            <button className="w-fit cursor-pointer self-end rounded-full bg-amber-500 px-5 py-1.5 transition duration-150 hover:contrast-125">
+              Save
+            </button>
+          </form>
+        </div>
+      </dialog>
+    </div>
   );
 }
 

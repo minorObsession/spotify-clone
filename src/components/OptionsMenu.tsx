@@ -42,13 +42,10 @@ function OptionsMenu({
   menuFor,
   options,
   track,
+  selectedTrackId,
   onOptionClick,
 }: OptionsMenuProps) {
   const { handleMouseEnter, handleMouseLeave } = useHoverTrackItem();
-
-  const handleDisplayOptions = () => {
-    setAreOptionsVisible?.(true);
-  };
 
   const handleCreateNewPlaylist = async () => {
     try {
@@ -83,7 +80,7 @@ function OptionsMenu({
     <div
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onClick={handleDisplayOptions}
+      onClick={() => setAreOptionsVisible?.(true)}
       className="relative justify-self-end"
     >
       <ul
@@ -103,12 +100,11 @@ function OptionsMenu({
         )}
 
         {options.map((option, i) => (
-          // ! pass track id here!!! to determine if track is already in playlist
           <OptionItem
             menuFor={menuFor}
             option={option}
             key={`${option}-${i}`}
-            selectedTrackId={track?.id || ""}
+            selectedTrackId={track ? track.id : selectedTrackId}
             onOptionClick={onOptionClick}
           />
         ))}

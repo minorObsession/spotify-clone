@@ -1,4 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
+import { useStateStore } from "../state/store";
+import { TrackType } from "../features/tracks/track";
+import { isTrackInLibrary } from "../features/playlists/playlistHelpers";
 
 interface ContextMenuPosition {
   x: number;
@@ -31,13 +34,12 @@ export function useContextMenu(options: ContextMenuOptions) {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState<ContextMenuPosition>({ x: 0, y: 0 });
   const [contextData, setContextData] = useState<ContextDataType | null>(null);
-  const { onShow, onHide, preventDefault = true, menuWidth } = options;
+  const [clickedTrack, setClickedTrack] = useState<TrackType | null>(null);
+  const { onShow, onHide, menuWidth } = options;
   const handleContextMenu = useCallback(
     (event: MouseEvent) => {
       // ! to prevent browser default context menu
-      if (preventDefault) {
-        event.preventDefault();
-      }
+      event.preventDefault();
 
       const newPosition = { x: event.clientX, y: event.clientY };
       // determine if position is outside of the viewport
@@ -68,14 +70,43 @@ export function useContextMenu(options: ContextMenuOptions) {
 
       onShow?.(newPosition);
     },
-    [preventDefault, onShow, menuWidth],
+    [onShow, menuWidth],
   );
 
   const hideContextMenu = useCallback(() => {
     setIsVisible(false);
     setContextData(null);
+    setClickedTrack(null);
     onHide?.();
   }, [onHide]);
+
+  // Fetch track data when context menu becomes visible with a trackId
+  useEffect(() => {
+    if (isVisible && contextData?.trackId && !clickedTrack) {
+      const getClickedTrack = async (): Promise<TrackType | undefined> => {
+        if (isTrackInLibrary(contextData.trackId!)) {
+          const track = useStateStore
+            .getState()
+            .playlist.tracks.find((t) => t.id === contextData.trackId);
+
+          if (track) {
+            setClickedTrack(track);
+            return track;
+          } else {
+            throw Error("Track not found");
+          }
+        } else {
+          const { getTrack } = useStateStore.getState();
+          const result = await getTrack(contextData.trackId!);
+          if (result.success) {
+            setClickedTrack(result.data);
+            return result.data;
+          }
+        }
+      };
+      getClickedTrack();
+    }
+  }, [isVisible, contextData?.trackId, clickedTrack]);
 
   const handleClickOutside = useCallback(
     (event: MouseEvent) => {
@@ -112,6 +143,7 @@ export function useContextMenu(options: ContextMenuOptions) {
     isVisible,
     position,
     contextData,
+    clickedTrack,
     hideContextMenu,
   };
 }

@@ -17,8 +17,8 @@ import { useEffect, useRef, useState } from "react";
 import Tooltip from "./Tooltip";
 import OptionsMenu from "./OptionsMenu";
 import useOutsideClick from "../hooks/useOutsideClick";
-import { TrackType } from "../features/tracks/track";
-import { isTrackInLibrary } from "../features/playlists/playlistHelpers";
+import { PartialPlaylist } from "./EditPlaylistModal";
+import { useEditPlaylistModal } from "../hooks/useEditPlaylistModal";
 
 function GlobalContextMenu() {
   const { playTrack, togglePlayback, playerState, addToLikedSongs } =
@@ -26,15 +26,16 @@ function GlobalContextMenu() {
   const [isDeleteHovered, setIsDeleteHovered] = useState(false);
   const [isPlaylistSelectMenuOpen, setIsPlaylistSelectMenuOpen] =
     useState(false);
-  const [clickedTrack, setClickedTrack] = useState<TrackType | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [menuWidth, setMenuWidth] = useState(192);
+  const { isVisible, position, contextData, clickedTrack, hideContextMenu } =
+    useContextMenu({
+      preventDefault: true,
+      menuWidth,
+    });
 
-  const { isVisible, position, contextData, hideContextMenu } = useContextMenu({
-    preventDefault: true,
-    menuWidth,
-  });
-
+  const { openEditModal, EditPlaylistModalPortal, isEditingPlaylist } =
+    useEditPlaylistModal();
   // Update menu width when menu becomes visible
   useEffect(() => {
     if (isVisible && menuRef.current) {
@@ -45,46 +46,11 @@ function GlobalContextMenu() {
   const trackId: string | null = contextData?.trackId || null;
   const playlistId: string | null = contextData?.playlistId || null;
 
-  // Fetch track data when context menu becomes visible with a trackId
-  useEffect(() => {
-    if (isVisible && trackId && !clickedTrack) {
-      const getClickedTrack = async (): Promise<TrackType | undefined> => {
-        if (isTrackInLibrary(trackId)) {
-          const track = useStateStore
-            .getState()
-            .playlist.tracks.find((t) => t.id === trackId);
-
-          if (track) {
-            setClickedTrack(track);
-            return track;
-          } else {
-            throw Error("Track not found");
-          }
-        } else {
-          const { getTrack } = useStateStore.getState();
-          const result = await getTrack(trackId);
-          if (result.success) {
-            setClickedTrack(result.data);
-            return result.data;
-          }
-        }
-      };
-      getClickedTrack();
-    }
-  }, [isVisible, trackId, clickedTrack]);
-
-  // Reset clickedTrack when context menu is hidden
-  useEffect(() => {
-    if (!isVisible) {
-      setClickedTrack(null);
-    }
-  }, [isVisible]);
-
   const isCurrentlyPlaying = !playerState?.paused;
   const isTrackPlaying =
     playerState?.track_window?.current_track?.id === trackId;
 
-  const playlists = useStateStore.getState().playlists;
+  const { playlists } = useStateStore.getState();
   const playlistNames = playlists?.map((playlist) => playlist.name) || [];
 
   const handlePlayPause = () => {
@@ -104,18 +70,6 @@ function GlobalContextMenu() {
     hideContextMenu();
   };
 
-  const handleAddToPlaylist = (option: string) => {
-    const playlistId = playlists.find((p) => p.name === option)?.id;
-
-    if (!playlistId) throw Error("No playlist found");
-
-    console.log(playlistId);
-    // ! check if track is already in playlist
-    // const isTrackInPlaylist = playlist.trackIds.includes(trackId);
-
-    hideContextMenu();
-  };
-
   const handleShare = () => {
     if (trackId) {
       navigator.clipboard.writeText(
@@ -127,6 +81,14 @@ function GlobalContextMenu() {
       );
     }
     hideContextMenu();
+  };
+
+  const handleOpenEditModal = () => {
+    console.log("playlistId", playlistId);
+    console.log("playlists", playlists);
+    openEditModal(
+      playlists?.find((p) => p.id === playlistId) as PartialPlaylist,
+    );
   };
 
   const menuStyle = {
@@ -142,7 +104,6 @@ function GlobalContextMenu() {
 
   const menuItems = [];
 
-  //*** */ GOTTA GET WHOLE TRACK OBJECT HERE!!
   // ! Track-specific items
   if (trackId) {
     menuItems.push(
@@ -226,6 +187,7 @@ function GlobalContextMenu() {
       <button
         key="edit-playlist"
         className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-gray-100"
+        onClick={handleOpenEditModal}
       >
         <FaEdit size={14} />
         Edit details
@@ -273,8 +235,13 @@ function GlobalContextMenu() {
     );
   }
 
+  // ! context menu not visible
   if (!isVisible) return null;
 
+  // ! edit playlist modal will open and context menu will close
+  if (isEditingPlaylist) return <EditPlaylistModalPortal />;
+
+  // ! context menu will open only when not editing playlist
   return createPortal(
     <div
       ref={menuRef}

@@ -79,7 +79,7 @@ function FullPreviewPlaylist() {
         options={playlistOptions}
       />
       <FPPlaylistTracks
-        tracks={currPlaylist?.tracks || []}
+        tracks={currPlaylist?.tracks}
         sentinelRef={sentinelRef}
       />
     </div>

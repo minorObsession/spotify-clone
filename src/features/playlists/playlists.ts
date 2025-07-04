@@ -523,6 +523,28 @@ export const createPlaylistSlice: StateCreator<
       if (result.success) {
         await invalidateCacheForEndpoint(`playlists/${id}`);
         await invalidateCacheForEndpoint(`me/playlists`);
+
+        // Update UI state internally
+        const { playlists, playlistNamesWithIds } = get();
+
+        // Find the playlist by ID to get its name
+        const playlist = playlists.find((p) => p.id === id);
+        if (playlist) {
+          // Remove playlist from state
+          const updatedUserPlaylists = playlists.filter((p) => p.id !== id);
+          const updatedPlaylistNamesWithIds = playlistNamesWithIds.filter(
+            (p) => p.name !== playlist.name,
+          );
+
+          set(
+            {
+              playlists: updatedUserPlaylists,
+              playlistNamesWithIds: updatedPlaylistNamesWithIds,
+            },
+            undefined,
+            "playlist/deletePlaylist",
+          );
+        }
       }
       return result;
     } catch (error) {
